@@ -6,7 +6,7 @@ on:
   pull_request:
   
 jobs:
-  build_backend:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Node Modules
@@ -36,8 +36,8 @@ jobs:
           name: backend-dist
           path: backend/dist
 
-  lint_backend:
-    needs: [build_backend]
+  lint:
+    needs: [build]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -58,7 +58,7 @@ jobs:
         run: cd backend && npm run lint
 
   test:
-    needs: [build_backend]
+    needs: [build]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -79,7 +79,7 @@ jobs:
         run: cd backend && npm t
 
   security-audit:
-    needs: [build_backend]
+    needs: [build]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -89,7 +89,7 @@ jobs:
         run: cd backend && npm audit --audit-level=medium
 
   static-analysis:
-    needs: [build_backend]
+    needs: [build]
     runs-on: ubuntu-latest
     permissions:
       security-events: write
