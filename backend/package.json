@@ -2,23 +2,27 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "",
-  "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "node src/start.js",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "prestart": "npm run build",
+    "start": "node dist/start.js",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "build": "tsc",
+    "lint": "tslint -c tslint.json 'src/**/*.ts'"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^4.18.1"
+    "express": "^4.18.1",
+    "tslint": "^6.1.3"
   },
   "devDependencies": {
     "jest": "^26.1.0",
     "jest-environment-jsdom-sixteen": "^1.0.3",
-    "jest-environment-node": "^26.1.0"
+    "jest-environment-node": "^26.1.0",
+    "typescript": "^4.8.3"
   },
   "jest": {
     "transform": {},
