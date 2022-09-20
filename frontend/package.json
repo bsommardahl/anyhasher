@@ -18,7 +18,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "lint": "echo lint",
+    "lint": "echo lint"
     
   },
   "eslintConfig": {
