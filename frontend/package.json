@@ -1,6 +1,6 @@
 {
-  "name": "frontend",
-  "version": "0.1.0",
+  "name": "anyhasher-frontend",
+  "version": "0.1.1",
   "homepage": ".",
   "private": true,
   "dependencies": {

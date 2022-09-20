@@ -1,89 +1,89 @@
-name: Continuous Deployment
-on:
-  push:
-    branches:
-      - master
-  pull_request:
+# name: Continuous Deployment
+# on:
+#   push:
+#     branches:
+#       - master
+#   pull_request:
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v1
+# jobs:
+#   test:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v1
 
-      - name: Setup Node
-        uses: actions/setup-node@v1
-        with:
-            node-version: 16.x
+#       - name: Setup Node
+#         uses: actions/setup-node@v1
+#         with:
+#             node-version: 16.x
 
-      - name: Cache Node Modules
-        id: cache-node-modules
-        uses: actions/cache@v2
-        with:
-          path: node_modules
-          key: node-modules-cache
+#       - name: Cache Node Modules
+#         id: cache-node-modules
+#         uses: actions/cache@v2
+#         with:
+#           path: node_modules
+#           key: node-modules-cache
 
-      - name: Install Dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: cd backend && npm i
+#       - name: Install Dependencies
+#         if: steps.cache.outputs.cache-hit != 'true'
+#         run: cd backend && npm i
 
-      - name: Run Unit Tests
-        run: cd backend && npm t
+#       - name: Run Unit Tests
+#         run: cd backend && npm t
 
-  deploy:
-    needs: [test]
-    runs-on: ubuntu-latest
-    env:
-      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-      SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v1
+#   deploy:
+#     needs: [test]
+#     runs-on: ubuntu-latest
+#     env:
+#       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+#       SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v1
 
-      - name: Setup Node
-        uses: actions/setup-node@v1
-        with:
-          node-version: 16.x
+#       - name: Setup Node
+#         uses: actions/setup-node@v1
+#         with:
+#           node-version: 16.x
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1
-        with:
-          terraform_wrapper: false
-          terraform_version: 1.2.9
+#       - name: Setup Terraform
+#         uses: hashicorp/setup-terraform@v1
+#         with:
+#           terraform_wrapper: false
+#           terraform_version: 1.2.9
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+#       - name: Configure AWS Credentials
+#         uses: aws-actions/configure-aws-credentials@v1
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: us-east-1
 
-      - name: Create infrastructure in AWS
-        run: |
-          cd terraform/aws
-          echo "public_key=\"${SSH_PUBLIC_KEY}\"" >> terraform.tfvars
-          terraform init 
-          terraform plan 
-          terraform apply -auto-approve
-          export REACT_APP_API_HOST=$(terraform output -raw ec2_public_ip)
-          export BUCKET_NAME=$(terraform output -raw bucket_name)
-          echo "EC2_HOST=${REACT_APP_API_HOST}" >> $GITHUB_ENV
-          echo $BUCKET_NAME
-          cd ../../frontend
-          npm i --force
-          npm run build
-          aws s3 cp build s3://$BUCKET_NAME --region=us-east-1 --recursive
+#       - name: Create infrastructure in AWS
+#         run: |
+#           cd .github/terraform/aws
+#           echo "public_key=\"${SSH_PUBLIC_KEY}\"" >> terraform.tfvars
+#           terraform init 
+#           terraform plan 
+#           terraform apply -auto-approve
+#           export REACT_APP_API_HOST=$(terraform output -raw ec2_public_ip)
+#           export BUCKET_NAME=$(terraform output -raw bucket_name)
+#           echo "EC2_HOST=${REACT_APP_API_HOST}" >> $GITHUB_ENV
+#           echo $BUCKET_NAME
+#           cd ../../../frontend
+#           npm i --force
+#           npm run build
+#           aws s3 cp build s3://$BUCKET_NAME --region=us-east-1 --recursive
 
-      - name: Run playbook
-        uses: dawidd6/action-ansible-playbook@v2
-        with:
-          playbook: deploy.yml
-          directory: ./ansible
-          key: ${{ env.SSH_PRIVATE_KEY }}
-          inventory: |
-            [ec2]
-            ${{ env.EC2_HOST }}
+#       - name: Run playbook
+#         uses: dawidd6/action-ansible-playbook@v2
+#         with:
+#           playbook: deploy.yml
+#           directory: ./ansible
+#           key: ${{ env.SSH_PRIVATE_KEY }}
+#           inventory: |
+#             [ec2]
+#             ${{ env.EC2_HOST }}
 
-      - name: Other
-        run: echo "MY_TEST_VAR=1234" >> $GITHUB_ENV
+#       - name: Other
+#         run: echo "MY_TEST_VAR=1234" >> $GITHUB_ENV
