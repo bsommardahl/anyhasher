@@ -138,8 +138,11 @@ jobs:
           name: backend-artifact
           path: backend/build
       
-      - name: Generate Artifact
-        run: cd backend/build && zip -r artifact.zip ./ -x '*.git*'
+      - name: Prepare ProcFile
+        run: echo "web: node server.js" > backend/build/Procfile
+
+      - name: Prepare Zip File
+        run: cd backend/build && ls && zip -r artifact.zip ./ -x '*.git*'
 
       - name: Deploy to EB
         id: deployment
