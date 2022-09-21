@@ -107,7 +107,7 @@ jobs:
     outputs:
       url: ${{ steps.deployment.outputs.page_url }}
     if: github.ref == 'refs/heads/main'
-    needs: [static-analysis, security-audit]
+    needs: [static-analysis,security-audit]
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
