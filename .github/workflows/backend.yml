@@ -38,11 +38,14 @@ jobs:
       - name: Build
         run: cd backend && npm run build
 
+      - name: Generate deployment package
+        run: zip -r artifact.zip ./backend/build -x '*.git*'
+
       - name: Store Artifact
         uses: actions/upload-artifact@v2
         with:
-          name: backend-build
-          path: backend/build
+          name: backend-artifact
+          path: artifact.zip
 
   lint:
     needs: [build]
@@ -104,24 +107,24 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v1
-        with:
-          languages: javascript
+      # - name: Initialize CodeQL
+      #   uses: github/codeql-action/init@v1
+      #   with:
+      #     languages: javascript
 
-      - name: Setup Node
-        uses: actions/setup-node@v1
-        with:
-          node-version: 16.x
+      # - name: Setup Node
+      #   uses: actions/setup-node@v1
+      #   with:
+      #     node-version: 16.x
 
-      - name: Install Deps
-        run: cd backend && npm i
+      # - name: Install Deps
+      #   run: cd backend && npm i
 
-      - name: Build
-        run: cd backend && npm run build
+      # - name: Build
+      #   run: cd backend && npm run build
 
-      - name: Perform Analysis
-        uses: github/codeql-action/analyze@v1
+      # - name: Perform Analysis
+      #   uses: github/codeql-action/analyze@v1
 
   deploy_to_eb:
     if: github.ref == 'refs/heads/main'
@@ -131,12 +134,9 @@ jobs:
       - name: Get Artifact
         uses: actions/download-artifact@v2
         with:
-          name: backend-build
-          path: backend/build
+          name: backend-artifact
+          path: artifact.zip
     
-      - name: Generate deployment package
-        run: zip -r deploy.zip ./backend/build -x '*.git*'
-
       - name: Deploy to EB
         uses: einaregilsson/beanstalk-deploy@v20
         with:
@@ -146,4 +146,4 @@ jobs:
           environment_name: AnyHasher-env
           version_label: anyhasher-${{ github.run_number }}
           region: us-east-1
-          deployment_package: deploy.zip
+          deployment_package: artifact.zip
