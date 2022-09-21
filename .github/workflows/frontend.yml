@@ -1,4 +1,14 @@
-name: Frontend CI
+name: Frontend
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "frontend"
+  cancel-in-progress: true
+
 on:
   push:
     paths:
@@ -84,13 +94,47 @@ jobs:
       - name: Perform Analysis
         uses: github/codeql-action/analyze@v1
 
-  deploy_frontend:
-    needs: [security-audit, static-analysis]
+  deploy-pages:
+    if: github.ref == 'refs/heads/main'
+    needs: [static-analysis, security-audit]
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Repository Dispatch
-        uses: peter-evans/repository-dispatch@v2
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Setup Pages
+        uses: actions/configure-pages@v2
+      
+      - name: Get Artifact
+        uses: actions/download-artifact@v2
         with:
-          token: ${{ secrets.REPO_ACCESS_TOKEN }}
-          event-type: deploy_frontend
-  
+          name: frontend-build
+          path: frontend/build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: frontend/build
+      
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
+
+  verify-production:
+    runs-on: ubuntu-latest
+    needs: [deploy-pages]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Run Smoke Test
+        run: |
+          export TEST_URL=${{ steps.deployment.outputs.page_url }}
+          cd e2e
+          npm install
+          npm run smoke
+          exit 1
