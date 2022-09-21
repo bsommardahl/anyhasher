@@ -14,7 +14,7 @@ on:
     branches:
       - main
       - l4
-  
+    
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -129,8 +129,6 @@ jobs:
     #if: github.ref == 'refs/heads/main'
     needs: [static-analysis,security-audit,lint,test]
     runs-on: ubuntu-latest
-    outputs:
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Get Artifact
         uses: actions/download-artifact@v2
@@ -143,10 +141,9 @@ jobs:
           echo "web: node server.js" > backend/build/Procfile
 
       - name: Prepare Zip File
-        run: cd backend/build && ls && zip -r artifact.zip ./ -x '*.git*'
+        run: cd backend/build && zip -r artifact.zip ./ -x '*.git*'
 
       - name: Deploy to EB
-        id: deployment
         uses: einaregilsson/beanstalk-deploy@v20
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
