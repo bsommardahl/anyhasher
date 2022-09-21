@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "prestart": "npm run build",
-    "start": "node dist/start.js",
+    "start": "node dist/server.js",
     "test": "jest",
     "build": "tsc",
     "lint": "tslint -c tslint.json 'src/**/*.ts'"

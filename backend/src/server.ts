@@ -11,6 +11,6 @@ app.use('/hash', hashRoutes);
 
 app.listen(port, () => {
     // tslint:disable-next-line
-    console.log(`Host listening at http://localhost:${port}`);
+    console.log(`Host listening on port ${port}`);
 });
 
