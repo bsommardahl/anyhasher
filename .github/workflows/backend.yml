@@ -10,6 +10,8 @@ on:
     paths:
       - 'backend/**'
       - '.github/workflows/backend.yml'
+    branches:
+      - main
   
 jobs:
   build:

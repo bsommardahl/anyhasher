@@ -20,7 +20,9 @@ on:
     paths:
       - 'frontend/**'
       - '.github/workflows/frontend.yml'
-    
+  branches:
+      - main
+        
 jobs:
   build:
     runs-on: ubuntu-latest
