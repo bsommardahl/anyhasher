@@ -2,11 +2,12 @@ import axios from "axios";
 
 async function main() {
   try {
-    const url = process.env.BACKEND_URL;
-    if (!url) throw Error("No TEST_URL defined.");
-    const res = await axios({ url: `${url}/hash/test` });
+    const baseUrl = (<any>process).env.BACKEND_URL;
+    if (!baseUrl) throw Error("No BACKEND_URL defined.");
+    const url = `${baseUrl}/hash/test`;
+    const res = await axios.get(url);
     console.log(res);
-    const match = res.data === "testhashed";
+    const match = res.data === "098f6bcd4621d373cade4e832627b4f6";
     if (!match) {
       console.log(match);
       throw new Error("Smoke test failed.");

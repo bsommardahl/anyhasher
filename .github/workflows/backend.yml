@@ -169,5 +169,5 @@ jobs:
         run: |
           export BACKEND_URL=http://anyhasher-env.eba-ghw9mq3x.us-east-1.elasticbeanstalk.com/
           cd e2e
-          npm install
-          npm run backend-smoke  
+          chmode +x backend.sh
+          ./backend.sh
