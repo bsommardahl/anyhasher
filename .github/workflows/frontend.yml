@@ -95,6 +95,8 @@ jobs:
         uses: github/codeql-action/analyze@v1
 
   deploy-pages:
+    outputs:
+      url: ${{ steps.deployment.outputs.page_url }}
     if: github.ref == 'refs/heads/main'
     needs: [static-analysis, security-audit]
     environment:
@@ -133,7 +135,9 @@ jobs:
 
       - name: Run Smoke Test
         run: |
-          export TEST_URL=${{ steps.deployment.outputs.page_url }}
+          echo ${{ needs.deploy-pages.outputs.url }}
+          export TEST_URL=${{ needs.deploy-pages.outputs.url }}
+          echo $TEST_URL
           cd e2e
           npm install
           npm run smoke
