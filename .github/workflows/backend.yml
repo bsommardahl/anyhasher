@@ -170,4 +170,4 @@ jobs:
           export BACKEND_URL=http://anyhasher-env.eba-ghw9mq3x.us-east-1.elasticbeanstalk.com/
           cd e2e
           chmod +x backend-smoke.sh
-          ./backend.sh
+          ./backend-smoke.sh
