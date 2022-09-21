@@ -135,10 +135,7 @@ jobs:
 
       - name: Run Smoke Test
         run: |
-          echo ${{ needs.deploy-pages.outputs.url }}
           export TEST_URL=${{ needs.deploy-pages.outputs.url }}
-          echo $TEST_URL
           cd e2e
           npm install
-          npm run smoke
-          exit 1
+          npm run smoke          

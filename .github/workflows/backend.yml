@@ -1,13 +1,13 @@
 name: Backend
 on:
   push:
-    paths:
-      - 'backend/**'
+    # paths:
+    #   - 'backend/**'
     branches:
       - main
   pull_request:
-    paths:
-      - 'backend/**'
+    # paths:
+      # - 'backend/**'
     
 jobs:
   build:
