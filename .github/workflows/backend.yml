@@ -107,43 +107,43 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
-      # - name: Initialize CodeQL
-      #   uses: github/codeql-action/init@v1
-      #   with:
-      #     languages: javascript
-
-      # - name: Setup Node
-      #   uses: actions/setup-node@v1
-      #   with:
-      #     node-version: 16.x
-
-      # - name: Install Deps
-      #   run: cd backend && npm i
-
-      # - name: Build
-      #   run: cd backend && npm run build
-
-      # - name: Perform Analysis
-      #   uses: github/codeql-action/analyze@v1
-
-  deploy_to_eb:
-    if: github.ref == 'refs/heads/main'
-    needs: [static-analysis, security-audit, lint, test]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Get Artifact
-        uses: actions/download-artifact@v2
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v1
         with:
-          name: backend-artifact
-          path: backend/build/artifact.zip
+          languages: javascript
+
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
+
+      - name: Install Deps
+        run: cd backend && npm i
+
+      - name: Build
+        run: cd backend && npm run build
+
+      - name: Perform Analysis
+        uses: github/codeql-action/analyze@v1
+
+  # deploy_to_eb:
+  #   if: github.ref == 'refs/heads/main'
+  #   needs: [static-analysis, security-audit, lint, test]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Get Artifact
+  #       uses: actions/download-artifact@v2
+  #       with:
+  #         name: backend-artifact
+  #         path: backend/build/artifact.zip
     
-      - name: Deploy to EB
-        uses: einaregilsson/beanstalk-deploy@v20
-        with:
-          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          application_name: AnyHasher
-          environment_name: AnyHasher-env
-          version_label: anyhasher-${{ github.run_number }}
-          region: us-east-1
-          deployment_package: backend/build/artifact.zip
+  #     - name: Deploy to EB
+  #       uses: einaregilsson/beanstalk-deploy@v20
+  #       with:
+  #         aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         application_name: AnyHasher
+  #         environment_name: AnyHasher-env
+  #         version_label: anyhasher-${{ github.run_number }}
+  #         region: us-east-1
+  #         deployment_package: backend/build/artifact.zip
