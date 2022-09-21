@@ -41,13 +41,13 @@ jobs:
         run: cd backend && npm run build
 
       - name: Generate Artifact
-        run: cd backend/build && zip -r artifact.zip ./ -x '*.git*'
+        run: cd backend/build && zip -r backend-artifact.zip ./ -x '*.git*' && ls
 
       - name: Store Artifact
         uses: actions/upload-artifact@v2
         with:
           name: backend-artifact
-          path: backend/build/artifact.zip
+          path: backend/build/backend-artifact.zip
 
   lint:
     needs: [build]
@@ -109,24 +109,24 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v1
-        with:
-          languages: javascript
+      # - name: Initialize CodeQL
+      #   uses: github/codeql-action/init@v1
+      #   with:
+      #     languages: javascript
 
-      - name: Setup Node
-        uses: actions/setup-node@v1
-        with:
-          node-version: 16.x
+      # - name: Setup Node
+      #   uses: actions/setup-node@v1
+      #   with:
+      #     node-version: 16.x
 
-      - name: Install Deps
-        run: cd backend && npm i
+      # - name: Install Deps
+      #   run: cd backend && npm i
 
-      - name: Build
-        run: cd backend && npm run build
+      # - name: Build
+      #   run: cd backend && npm run build
 
-      - name: Perform Analysis
-        uses: github/codeql-action/analyze@v1
+      # - name: Perform Analysis
+      #   uses: github/codeql-action/analyze@v1
 
   deploy_to_eb:
     #if: github.ref == 'refs/heads/main'

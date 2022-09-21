@@ -76,31 +76,31 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v1
-        with:
-          languages: javascript
+      # - name: Initialize CodeQL
+      #   uses: github/codeql-action/init@v1
+      #   with:
+      #     languages: javascript
 
-      - name: Setup Node
-        uses: actions/setup-node@v1
-        with:
-          node-version: 16.x
+      # - name: Setup Node
+      #   uses: actions/setup-node@v1
+      #   with:
+      #     node-version: 16.x
 
-      - name: Cache Node Modules
-        id: cache
-        uses: actions/cache@v2
-        with:
-          path: node_modules
-          key: node-modules-cache
+      # - name: Cache Node Modules
+      #   id: cache
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: node_modules
+      #     key: node-modules-cache
           
-      - name: Install Deps
-        run: cd frontend && npm i
+      # - name: Install Deps
+      #   run: cd frontend && npm i
 
-      - name: Build
-        run: cd frontend && npm run build
+      # - name: Build
+      #   run: cd frontend && npm run build
 
-      - name: Perform Analysis
-        uses: github/codeql-action/analyze@v1
+      # - name: Perform Analysis
+      #   uses: github/codeql-action/analyze@v1
 
   deploy-pages:
     needs: [static-analysis]
