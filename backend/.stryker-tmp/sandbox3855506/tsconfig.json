@@ -1,0 +1,16 @@
+{
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  },
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "outDir": "dist",
+    "esModuleInterop": true
+  },
+  "include": [
+    "src/**/*"
+  ]
+}

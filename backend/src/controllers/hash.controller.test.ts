@@ -1,4 +1,4 @@
-import hashController from "./hash.controller";
+import hashController from "./hash.controller"
 
 function createResponse(){
     return {

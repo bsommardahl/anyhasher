@@ -1,21 +1,20 @@
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "Node16",
-    "lib": ["ES2022"],
-    "moduleResolution": "Node16",
-    "outDir": "dist",
-    "allowSyntheticDefaultImports": true,
-    "alwaysStrict": true,
-    "sourceMap": true,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitReturns": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitAny": false,
-    "noImplicitThis": false,
-    "strictNullChecks": false
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    }
   },
-  "include": ["src/**/*"]
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "outDir": "dist",   
+    "esModuleInterop": true, 
+    "skipLibCheck": true,
+    "moduleResolution": "node",
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "rootDir": "src",
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
 }
