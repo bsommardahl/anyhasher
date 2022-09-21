@@ -99,7 +99,7 @@ jobs:
         run: cd backend && npm audit --audit-level=medium
 
   static-analysis:
-    needs: [security-audit, lint, test]
+    needs: [build]
     runs-on: ubuntu-latest
     permissions:
       security-events: write
@@ -127,7 +127,7 @@ jobs:
 
   deploy_to_eb:
     #if: github.ref == 'refs/heads/main'
-    needs: [static-analysis]
+    needs: [static-analysis,security-audit,lint,test]
     runs-on: ubuntu-latest
     outputs:
       url: ${{ steps.deployment.outputs.page_url }}
@@ -137,7 +137,10 @@ jobs:
         with:
           name: backend-artifact
           path: backend/build
-    
+      
+      - name: Generate Artifact
+        run: cd backend/build && zip -r artifact.zip ./ -x '*.git*'
+
       - name: Deploy to EB
         id: deployment
         uses: einaregilsson/beanstalk-deploy@v20
@@ -148,7 +151,7 @@ jobs:
           environment_name: AnyHasher-env
           version_label: anyhasher-${{ github.run_number }}
           region: us-east-1
-          deployment_package: backend/build
+          deployment_package: backend/build/artifact.zip
 
   verify-production:
     runs-on: ubuntu-latest
