@@ -39,13 +39,13 @@ jobs:
         run: cd backend && npm run build
 
       - name: Generate Artifact
-        run: zip -r artifact.zip ./backend/build/**/* -x '*.git*'
+        run: cd backend/build && zip -r artifact.zip ./ -x '*.git*'
 
       - name: Store Artifact
         uses: actions/upload-artifact@v2
         with:
           name: backend-artifact
-          path: artifact.zip
+          path: backend/build/artifact.zip
 
   lint:
     needs: [build]
@@ -135,7 +135,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: backend-artifact
-          path: artifact.zip
+          path: backend/build/artifact.zip
     
       - name: Deploy to EB
         uses: einaregilsson/beanstalk-deploy@v20
@@ -146,4 +146,4 @@ jobs:
           environment_name: AnyHasher-env
           version_label: anyhasher-${{ github.run_number }}
           region: us-east-1
-          deployment_package: artifact.zip
+          deployment_package: backend/build/artifact.zip
