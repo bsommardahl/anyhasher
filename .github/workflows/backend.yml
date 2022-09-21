@@ -6,12 +6,14 @@ on:
       - '.github/workflows/backend.yml'
     branches:
       - main
+      - l4
   pull_request:
     paths:
       - 'backend/**'
       - '.github/workflows/backend.yml'
     branches:
       - main
+      - l4
   
 jobs:
   build:
@@ -100,7 +102,7 @@ jobs:
         run: cd backend && npm audit --audit-level=medium
 
   static-analysis:
-    needs: [build]
+    needs: [security-audit, lint, test]
     runs-on: ubuntu-latest
     permissions:
       security-events: write
@@ -126,24 +128,24 @@ jobs:
       - name: Perform Analysis
         uses: github/codeql-action/analyze@v1
 
-  # deploy_to_eb:
-  #   if: github.ref == 'refs/heads/main'
-  #   needs: [static-analysis, security-audit, lint, test]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Get Artifact
-  #       uses: actions/download-artifact@v2
-  #       with:
-  #         name: backend-artifact
-  #         path: backend/build/artifact.zip
+  deploy_to_eb:
+    if: github.ref == 'refs/heads/main'
+    needs: [static-analysis]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: backend-artifact
+          path: backend/build/artifact.zip
     
-  #     - name: Deploy to EB
-  #       uses: einaregilsson/beanstalk-deploy@v20
-  #       with:
-  #         aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #         application_name: AnyHasher
-  #         environment_name: AnyHasher-env
-  #         version_label: anyhasher-${{ github.run_number }}
-  #         region: us-east-1
-  #         deployment_package: backend/build/artifact.zip
+      - name: Deploy to EB
+        uses: einaregilsson/beanstalk-deploy@v20
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: AnyHasher
+          environment_name: AnyHasher-env
+          version_label: anyhasher-${{ github.run_number }}
+          region: us-east-1
+          deployment_package: backend/build/artifact.zip

@@ -16,12 +16,14 @@ on:
       - '.github/workflows/frontend.yml'
     branches:
       - main
+      - l4
   pull_request:
     paths:
       - 'frontend/**'
       - '.github/workflows/frontend.yml'
     branches:
       - main
+      - l4
 
 jobs:
   build:
@@ -67,7 +69,7 @@ jobs:
         run: cd frontend && npm audit --audit-level=critical
   
   static-analysis:
-    needs: [build]
+    needs: [security-audit]
     runs-on: ubuntu-latest
     permissions:
       security-events: write
@@ -101,6 +103,7 @@ jobs:
         uses: github/codeql-action/analyze@v1
 
   deploy-pages:
+    needs: [static-analysis]
     outputs:
       url: ${{ steps.deployment.outputs.page_url }}
     if: github.ref == 'refs/heads/main'
