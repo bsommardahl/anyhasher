@@ -4,9 +4,9 @@
 **/terraform.tfstate.backup
 **/.terraform.lock.hcl
 /.idea
+
 # dependencies
-/frontend/node_modules
-/backend/node_modules
+**/node_modules
 /frontend/.pnp
 .pnp.js
 

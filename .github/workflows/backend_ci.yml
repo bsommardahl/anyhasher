@@ -1,10 +1,14 @@
 name: Backend CI
 on:
   push:
+    paths:
+      - 'backend/**'
     branches:
       - main
   pull_request:
-  
+    paths:
+      - 'backend/**'
+    
 jobs:
   build:
     runs-on: ubuntu-latest

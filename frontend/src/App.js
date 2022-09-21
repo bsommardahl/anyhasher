@@ -18,6 +18,7 @@ function App() {
 
     return (
         <div className={'Div'}>
+            <h2 id="page-title">AnyHasher</h2>
             <Paper>
                 <TextField
                     fullWidth
