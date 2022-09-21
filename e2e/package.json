@@ -4,11 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "smoke": "ts-node smoke.e2e.ts"
+    "frontend-smoke": "ts-node frontend-smoke.e2e.ts",
+    "backend-smoke": "ts-node backend-smoke.e2e.ts"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.27.2",
     "puppeteer": "^18.0.3"
   },
   "devDependencies": {

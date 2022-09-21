@@ -147,4 +147,4 @@ jobs:
           export TEST_URL=${{ needs.deploy-pages.outputs.url }}
           cd e2e
           npm install
-          npm run smoke          
+          npm run frontend-smoke          
