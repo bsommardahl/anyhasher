@@ -139,7 +139,8 @@ jobs:
           path: backend/build
       
       - name: Prepare ProcFile
-        run: echo "web: node server.js" > backend/build/Procfile
+        run: |
+          echo "web: node server.js" > backend/build/Procfile
 
       - name: Prepare Zip File
         run: cd backend/build && ls && zip -r artifact.zip ./ -x '*.git*'
