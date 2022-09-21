@@ -11,13 +11,13 @@ concurrency:
 
 on:
   push:
-    paths:
-      - 'frontend/**'
+    # paths:
+    #   - 'frontend/**'
     branches:
       - main
   pull_request:
-    paths:
-      - 'frontend/**'
+    # paths:
+    #   - 'frontend/**'
     
 jobs:
   build:
