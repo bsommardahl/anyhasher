@@ -38,8 +38,8 @@ jobs:
       - name: Build
         run: cd backend && npm run build
 
-      - name: Generate deployment package
-        run: zip -r artifact.zip ./backend/build -x '*.git*'
+      - name: Generate Artifact
+        run: zip -r artifact.zip ./backend/build/**/* -x '*.git*'
 
       - name: Store Artifact
         uses: actions/upload-artifact@v2
