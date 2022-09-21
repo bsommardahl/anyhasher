@@ -7,7 +7,7 @@
   "compilerOptions": {
     "target": "es6",
     "module": "commonjs",
-    "outDir": "dist",   
+    "outDir": "build",   
     "esModuleInterop": true, 
     "skipLibCheck": true,
     "moduleResolution": "node",
