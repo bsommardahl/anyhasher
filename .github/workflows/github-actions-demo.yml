@@ -4,6 +4,8 @@ jobs:
   compile:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v1
       - run: cd backend
       - run: npm i
       - run: npm run build
