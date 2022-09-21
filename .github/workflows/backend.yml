@@ -1,14 +1,16 @@
 name: Backend
 on:
   push:
-    # paths:
-    #   - 'backend/**'
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend.yml'
     branches:
       - main
   pull_request:
-    # paths:
-      # - 'backend/**'
-    
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend.yml'
+  
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -139,7 +141,7 @@ jobs:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: AnyHasher
-          environment_name: AnyHasher-Prod
+          environment_name: AnyHasher-env
           version_label: anyhasher-${{ github.run_number }}
           region: us-east-1
           deployment_package: deploy.zip

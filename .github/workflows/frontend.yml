@@ -11,13 +11,15 @@ concurrency:
 
 on:
   push:
-    # paths:
-    #   - 'frontend/**'
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend.yml'
     branches:
       - main
   pull_request:
-    # paths:
-    #   - 'frontend/**'
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend.yml'
     
 jobs:
   build:
