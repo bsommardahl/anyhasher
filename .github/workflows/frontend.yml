@@ -44,7 +44,9 @@ jobs:
         run: cd frontend && npm i
 
       - name: Build
-        run: cd frontend && npm run build
+        run: |
+          export REACT_APP_API_HOST=http://anyhasher-env.eba-ghw9mq3x.us-east-1.elasticbeanstalk.com/
+          cd frontend && npm run build
 
       - name: Store Artifact
         uses: actions/upload-artifact@v2
