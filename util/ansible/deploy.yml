@@ -4,7 +4,7 @@
   remote_user: ubuntu
 
   vars:
-    node_apps_location: /usr/local/opt/node
+    node_apps_location: ~/
 
   tasks:
   - name: deploy backend artifact
