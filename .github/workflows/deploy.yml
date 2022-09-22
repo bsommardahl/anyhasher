@@ -40,6 +40,10 @@ jobs:
       - name: Create Infrastructure
         id: be_infra
         run: |
+          ls
+          ls util
+          ls util/terraform
+          ls util/terraform/backend
           cd util/terraform/backend
           echo "public_key=\"${SSH_PUBLIC_KEY}\"" >> terraform.tfvars
           terraform init 
