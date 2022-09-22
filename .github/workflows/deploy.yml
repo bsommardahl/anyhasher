@@ -48,7 +48,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: backend-tfstate
-          path: util/terraform/backend/terraform.tfstate
+          path: util/terraform/backend
 
   deploy_frontend:
     runs-on: ubuntu-latest
@@ -77,7 +77,6 @@ jobs:
           terraform init 
           terraform plan 
           terraform apply -auto-approve
-          cat terraform.tfstate
           export S3_BUCKET_NAME=$(terraform output -raw bucket_name)
           export S3_URL=$(terraform output -raw website_endpoint)
           echo "::set-output name=frontend_url::$S3_URL"
@@ -86,7 +85,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: frontend-tfstate
-          path: util/terraform/frontend/terraform.tfstate
+          path: util/terraform/frontend
 
   destroy_backend:
     runs-on: ubuntu-latest
