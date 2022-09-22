@@ -15,8 +15,6 @@ concurrency:
 jobs:
   deploy_backend:
     runs-on: ubuntu-latest
-    outputs:
-      url: ${{ steps.be_infra.outputs.backend_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v1
@@ -48,8 +46,6 @@ jobs:
     
   deploy_frontend:
     runs-on: ubuntu-latest
-    outputs:
-      url: ${{ steps.fe_infra.outputs.frontend_url }}    
     steps:
       - name: Checkout
         uses: actions/checkout@v1
