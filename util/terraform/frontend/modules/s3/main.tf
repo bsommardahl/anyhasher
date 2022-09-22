@@ -16,6 +16,9 @@ data "aws_iam_policy_document" "website_policy" {
 resource "aws_s3_bucket" "frontend" {
   bucket = var.bucket_name
   force_destroy = true
+  tags = {
+    Purpose        = "Course"    
+  }
 }
 
 resource "aws_s3_bucket_policy" "allow_access_from_another_account" {
@@ -25,7 +28,7 @@ resource "aws_s3_bucket_policy" "allow_access_from_another_account" {
 
 resource "aws_s3_bucket_website_configuration" "frontend_configuration" {
   bucket = aws_s3_bucket.frontend.id
-
+  
   index_document {
     suffix = "index.html"
   }
