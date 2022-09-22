@@ -152,3 +152,37 @@ jobs:
           cd e2e
           chmod +x backend-smoke.sh
           ./backend-smoke.sh
+
+  promote_green_to_blue:
+    needs: [verify-backend,verify-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_wrapper: false
+          terraform_version: 1.2.9
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Switch CloudFront Router to Green
+        run: |
+          cd util/terraform/promote
+          terraform init 
+          terraform plan 
+          terraform apply -auto-approve
+
+      - name: Kill old blue infrastructure
+        run: |
+          cd util/terraform/destroy
+          terraform init 
+          terraform destroy -auto-approve          
+                    

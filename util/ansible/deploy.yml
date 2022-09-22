@@ -19,4 +19,4 @@
     shell: "sudo npm install pm2 -g"
 
   - name: run server
-    shell: "cd {{ node_apps_location }} && npm i && pm2 start server.js"
+    shell: "cd {{ node_apps_location }} && pm2 start server.js"
