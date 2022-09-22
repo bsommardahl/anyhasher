@@ -10,7 +10,7 @@ on:
 
 concurrency: 
   group: ${{ github.run_id }}
-  # cancel-in-progress: true
+  cancel-in-progress: true
 
 jobs:
   deploy_backend:
@@ -38,7 +38,7 @@ jobs:
         id: be_infra
         run: |
           cd util/terraform/backend
-          echo "instance_name=\"anyhasher-backend-${{ github.run_number}}\"" >> terraform.tfvars
+          echo "instance_name=\"anyhasher-backend-${{ github.run_number }}\"" >> terraform.tfvars
           terraform init 
           terraform plan 
           terraform apply -auto-approve

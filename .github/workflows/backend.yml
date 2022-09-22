@@ -1,7 +1,9 @@
 name: Backend CI
 on:
   push:
-    
+concurrency: 
+  group: ${{ github.run_id }}
+   
 jobs:
   build:
     runs-on: ubuntu-latest
