@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   workflow_run:
     workflows:
-      - Backend CI
+      #- Backend CI
       - Frontend CI
     types:
       - completed
@@ -78,3 +78,58 @@ jobs:
           export S3_BUCKET_NAME=$(terraform output -raw bucket_name)
           export S3_URL=$(terraform output -raw website_endpoint)
           echo "::set-output name=frontend_url::$S3_URL"
+  
+  destroy_backend:
+    runs-on: ubuntu-latest
+    needs: [deploy_backend,deploy_frontend]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_wrapper: false
+          terraform_version: 1.2.9
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Destroy Infrastructure
+        id: be_infra
+        run: |
+          cd util/terraform/backend
+          echo "instance_name=\"anyhasher-backend-${{ github.run_number }}\"" >> terraform.tfvars
+          terraform init
+          terraform destroy -auto-approve          
+    
+  destroy_frontend:
+    runs-on: ubuntu-latest
+    needs: [deploy_backend,deploy_frontend]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_wrapper: false
+          terraform_version: 1.2.9
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+  
+      - name: Destroy Frontend Infrastructure
+        run: |
+          cd util/terraform/frontend
+          echo "bucket_name=\"anyhasher-frontend-${{ github.run_number}}\"" >> terraform.tfvars
+          terraform init
+          terraform destroy -auto-approve
