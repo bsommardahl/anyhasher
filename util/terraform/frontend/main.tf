@@ -19,5 +19,14 @@ provider "aws" {
 
 module "s3" {
   source = "./modules/s3"
-  bucket_name = "frontend.anyhasher.io"
+  bucket_name = "anyhasher.io"
 }
+
+output "website_endpoint" {
+  value = module.s3.website_endpoint
+}
+
+output "bucket_name" {
+  value = module.s3.bucket_name
+}
+

@@ -34,3 +34,15 @@ resource "aws_s3_bucket_website_configuration" "frontend_configuration" {
     key = "error.html"
   }
 }
+
+variable "bucket_name" {
+  description = "Terraform Website bucket name"
+}
+
+output "website_endpoint" {
+  value = aws_s3_bucket_website_configuration.frontend_configuration.website_endpoint
+}
+
+output "bucket_name" {
+  value = aws_s3_bucket.frontend.id
+}
