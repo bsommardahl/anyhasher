@@ -26,6 +26,7 @@ jobs:
         id: be_infra
         run: |
           cd util/terraform/backend
+          terraform init
           terraform destroy -auto-approve          
     
   deploy_frontend:
@@ -50,4 +51,5 @@ jobs:
       - name: Destroy Frontend Infrastructure
         run: |
           cd util/terraform/frontend
+          terraform init
           terraform destroy -auto-approve

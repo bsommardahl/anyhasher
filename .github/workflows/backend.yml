@@ -2,7 +2,7 @@ name: Backend CI
 on:
   push:
 concurrency: 
-  group: ${{ github.run_id }}
+  group: "prod-green"
    
 jobs:
   build:

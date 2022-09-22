@@ -9,7 +9,7 @@ on:
       - completed
 
 concurrency: 
-  group: ${{ github.run_id }}
+  group: "prod-green"
   cancel-in-progress: true
 
 jobs:
