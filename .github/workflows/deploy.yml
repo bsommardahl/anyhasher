@@ -10,7 +10,7 @@ on:
 
 concurrency: 
   group: ${{ github.run_id }}
-  cancel-in-progress: true
+  # cancel-in-progress: true
 
 jobs:
   deploy_backend:

@@ -1,16 +1,9 @@
 name: Frontend CI
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "frontend"
-  cancel-in-progress: true
-
 on:
-
+  push:
+concurrency: 
+  group: ${{ github.run_id }}
+  
 jobs:
   build:
     runs-on: ubuntu-latest
