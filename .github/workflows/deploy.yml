@@ -54,8 +54,8 @@ jobs:
       - name: Get Backend Artifact
         uses: actions/download-artifact@v2
         with:
-          name: backend-build
-          path: backend/build
+          name: backend-artifact
+          path: backend/build/
   
       - name: Configure Infrastructure
         uses: dawidd6/action-ansible-playbook@v2
