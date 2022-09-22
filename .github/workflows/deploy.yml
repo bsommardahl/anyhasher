@@ -111,12 +111,12 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: backend-tfstate
-          path: util/terraform/backend/terraform.tfstate
+          path: util/terraform/backend
 
       - name: Destroy Infrastructure
         run: |
           cd util/terraform/backend
-          terraform destroy -auto-approve          
+          terraform destroy -auto-approve
     
   destroy_frontend:
     runs-on: ubuntu-latest
@@ -142,7 +142,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: frontend-tfstate
-          path: util/terraform/frontend/terraform.tfstate
+          path: util/terraform/frontend
 
       - name: Destroy Frontend Infrastructure
         run: | 
