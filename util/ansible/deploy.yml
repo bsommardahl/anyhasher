@@ -9,11 +9,11 @@
   tasks:
   - name: deploy backend artifact
     copy: 
-      src:  "./backend/build"
+      src:  "../../backend/build"
       dest: "{{ node_apps_location }}"
 
   - name: list
-    shell: "ls"
+    shell: "ls {{ node_apps_location }}"
 
   - name: install node runtime
     shell: "curl -s https://deb.nodesource.com/setup_16.x | sudo bash && sudo apt install nodejs -y"

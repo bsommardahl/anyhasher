@@ -178,15 +178,15 @@ jobs:
           echo Thanks Sean Killeen!! - https://seankilleen.com/2021/07/how-to-automate-aws-cloudfront-distribution-folder-changes-when-deploying-a-static-web-site/
           export cloudfront_distribution_id=${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }}
           export region=us-east-1
-          export profile=123
-
-          aws cloudfront get-distribution-config --id $cloudfront_distribution_id --profile $profile_name --region $region > output.json
+          
+          aws cloudfront get-distribution-config --id $cloudfront_distribution_id --region $region > output.json
+          cat output.json
           etag=`cat output.json | jq -r ".ETag"`
           cat output.json | jq "del(.ETag) | (.DistributionConfig.Origins.Items[] | select(.Id == \"$cloudfront_s3_origin_id\")).OriginPath = \"/$release_number\" | .DistributionConfig" > updated-config.json
-          aws cloudfront update-distribution --id $cloudfront_distribution_id --profile $profile_name --region $region --if-match="$etag" --distribution-config file://updated-config.json
-          aws cloudfront wait distribution-deployed --id $cloudfront_distribution_id --profile $profile_name --region $region
-          aws cloudfront create-invalidation --distribution-id $cloudfront_distribution_id --paths "/*" --profile $profile_name --region $region
-
+          
+          aws cloudfront update-distribution --id $cloudfront_distribution_id --region $region --if-match="$etag" --distribution-config file://updated-config.json
+          aws cloudfront wait distribution-deployed --id $cloudfront_distribution_id --region $region
+          aws cloudfront create-invalidation --distribution-id $cloudfront_distribution_id --paths "/*" --region $region
 
       - name: Kill old blue infrastructure
         run: |
