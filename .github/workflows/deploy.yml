@@ -124,7 +124,7 @@ jobs:
           aws-region: us-east-1
   
       - name: Destroy Frontend Infrastructure
-        run: |
+        run: | 
           cd util/terraform/frontend
           echo "bucket_name=\"anyhasher-frontend-${{ github.run_number}}\"" >> terraform.tfvars
           terraform init
