@@ -10,7 +10,7 @@ on:
 
 concurrency: 
   group: "prod-green"
-  cancel-in-progress: true
+  #cancel-in-progress: true
 
 jobs:
   deploy_backend:
@@ -43,7 +43,13 @@ jobs:
           export EC2_PUBLIC_IP=$(terraform output -raw ec2_public_ip)
           echo "EC2_HOST=${EC2_PUBLIC_IP}" >> $GITHUB_ENV
           echo "::set-output name=backend_url::$EC2_PUBLIC_IP"        
-    
+      
+      - name: Store TF State
+        uses: actions/upload-artifact@v2
+        with:
+          name: backend-tfstate
+          path: util/terraform/backend/terraform.tfstate
+
   deploy_frontend:
     runs-on: ubuntu-latest
     steps:
@@ -75,7 +81,13 @@ jobs:
           export S3_BUCKET_NAME=$(terraform output -raw bucket_name)
           export S3_URL=$(terraform output -raw website_endpoint)
           echo "::set-output name=frontend_url::$S3_URL"
-  
+      
+      - name: Store TF State
+        uses: actions/upload-artifact@v2
+        with:
+          name: frontend-tfstate
+          path: util/terraform/frontend/terraform.tfstate
+
   destroy_backend:
     runs-on: ubuntu-latest
     needs: [deploy_backend,deploy_frontend]
@@ -96,12 +108,15 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      - name: Get TF State
+        uses: actions/download-artifact@v2
+        with:
+          name: backend-tfstate
+          path: util/terraform/backend/terraform.tfstate
+
       - name: Destroy Infrastructure
-        id: be_infra
         run: |
           cd util/terraform/backend
-          echo "instance_name=\"anyhasher-backend-${{ github.run_number }}\"" >> terraform.tfvars
-          terraform init
           terraform destroy -auto-approve          
     
   destroy_frontend:
@@ -124,9 +139,13 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
   
+      - name: Get TF State
+        uses: actions/download-artifact@v2
+        with:
+          name: frontend-tfstate
+          path: util/terraform/frontend/terraform.tfstate
+
       - name: Destroy Frontend Infrastructure
         run: | 
           cd util/terraform/frontend
-          echo "bucket_name=\"anyhasher-frontend-${{ github.run_number}}\"" >> terraform.tfvars
-          terraform init
           terraform destroy -auto-approve

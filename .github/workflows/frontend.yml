@@ -1,8 +1,6 @@
 name: Frontend CI
 on:
   push:
-concurrency: 
-  group: "prod-green"
   
 jobs:
   build:
