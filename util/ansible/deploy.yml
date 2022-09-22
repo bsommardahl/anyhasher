@@ -1,0 +1,22 @@
+---
+- name: Update web servers
+  hosts: ec2
+  remote_user: ubuntu
+
+  vars:
+    node_apps_location: /usr/local/opt/node
+
+  tasks:
+  - name: deploy backend artifact
+    copy: 
+      src:  "{{ playbook_dir }}/../../../backend/build"
+      dest: "{{ node_apps_location }}"
+
+  - name: install node runtime
+    shell: "curl -s https://deb.nodesource.com/setup_16.x | sudo bash && sudo apt install nodejs -y"
+
+  - name: install pm2
+    shell: "sudo npm install pm2 -g"
+
+  - name: run server
+    shell: "cd {{ node_apps_location }} && npm i && pm2 start server.js"
