@@ -1,5 +1,6 @@
 name: Deploy
 on:
+  workflow_dispatch:
   workflow_run:
     workflows:
       - Backend CI
@@ -43,8 +44,8 @@ jobs:
           terraform apply -auto-approve
           export EC2_PUBLIC_IP=$(terraform output -raw ec2_public_ip)
           echo $EC2_PUBLIC_IP
-          echo "EC2_HOST=${EC2_PUBLIC_IP}" >> $GITHUB_ENV          
-        run: echo "::set-output name=backend_url::$EC2_PUBLIC_IP"        
+          echo "EC2_HOST=${EC2_PUBLIC_IP}" >> $GITHUB_ENV
+          echo "::set-output name=backend_url::$EC2_PUBLIC_IP"        
 
       - name: Configure Infrastructure
         uses: dawidd6/action-ansible-playbook@v2
@@ -55,6 +56,7 @@ jobs:
           inventory: |
             [ec2]
             ${{ env.EC2_HOST }}
+            
     outputs:
       url: ${{ steps.be_infra.outputs.backend_url }}
     
