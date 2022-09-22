@@ -1,8 +1,0 @@
----
-  - name: Deploy Backend Artifact
-    copy: 
-      src: "../../backend/build"
-      dest: ~/anyhasher
-
-  - name: Start Server
-    shell: "cd ~/anyhasher && ls && pm2 start server.js"

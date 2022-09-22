@@ -10,20 +10,6 @@ concurrency:
   cancel-in-progress: true
 
 on:
-  push:
-    paths:
-      - 'frontend/**'
-      # - '.github/**'
-    branches:
-      - main
-      - l5
-  pull_request:
-    paths:
-      - 'frontend/**'
-      # - '.github/**'
-    branches:
-      - main
-      - l5
 
 jobs:
   build:

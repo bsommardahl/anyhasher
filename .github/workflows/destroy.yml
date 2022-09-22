@@ -1,22 +1,10 @@
-name: Deploy
+name: Destroy
 on:  
   workflow_dispatch:
-  workflow_run:
-    workflows:
-      - Backend CI
-      - Frontend CI
-    types:
-      - completed
-
-concurrency: 
-  group: ${{ github.run_id }}
-  cancel-in-progress: true
-
+  
 jobs:
-  deploy_backend:
+  destroy_backend:
     runs-on: ubuntu-latest
-    outputs:
-      url: ${{ steps.be_infra.outputs.backend_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v1
@@ -34,22 +22,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Create Infrastructure
+      - name: Destroy Infrastructure
         id: be_infra
         run: |
           cd util/terraform/backend
-          terraform init 
-          terraform plan 
-          terraform apply -auto-approve
-          export EC2_PUBLIC_IP=$(terraform output -raw ec2_public_ip)
-          echo "EC2_HOST=${EC2_PUBLIC_IP}" >> $GITHUB_ENV
-          echo "::set-output name=backend_url::$EC2_PUBLIC_IP"        
+          terraform destroy -auto-approve          
     
   deploy_frontend:
-    needs: [deploy_backend]
     runs-on: ubuntu-latest
-    outputs:
-      url: ${{ steps.fe_infra.outputs.frontend_url }}    
     steps:
       - name: Checkout
         uses: actions/checkout@v1
@@ -67,13 +47,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
   
-      - name: Create Frontend Infrastructure
-        id: fe_infra
+      - name: Destroy Frontend Infrastructure
         run: |
           cd util/terraform/frontend
-          terraform init 
-          terraform plan 
-          terraform apply -auto-approve
-          export S3_BUCKET_NAME=$(terraform output -raw bucket_name)
-          export S3_URL=$(terraform output -raw website_endpoint)
-          echo "::set-output name=frontend_url::$S3_URL"
+          terraform destroy -auto-approve
