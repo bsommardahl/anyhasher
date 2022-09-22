@@ -3,14 +3,14 @@ on:
   push:
     paths:
       - 'backend/**'
-      - '.github/workflows/backend.yml'
+      - '.github/**'
     branches:
       - main
       - l5
   pull_request:
     paths:
       - 'backend/**'
-      - '.github/workflows/backend.yml'
+      - '.github/**'
     branches:
       - main
       - l5
