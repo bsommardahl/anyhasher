@@ -1,6 +1,6 @@
 name: Deploy
 on:
-  push:
+  #push:
   workflow_dispatch:
   workflow_run:
     workflows:
@@ -11,7 +11,7 @@ on:
 
 concurrency: 
   group: ${{ github.run_id }}
-  # cancel-in-progress: true
+  cancel-in-progress: true
 
 jobs:
   deploy_backend:
@@ -51,9 +51,11 @@ jobs:
           echo "EC2_HOST=${EC2_PUBLIC_IP}" >> $GITHUB_ENV
           echo "::set-output name=backend_url::$EC2_PUBLIC_IP"        
 
-      - name: Get Backend Artifact
-        uses: actions/download-artifact@v2
+      - name: Download artifact
+        id: download-artifact
+        uses: dawidd6/action-download-artifact@v2
         with:
+          workflow: backend.yml
           name: backend-artifact
           path: backend/build/
   
