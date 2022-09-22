@@ -40,7 +40,7 @@ jobs:
       - name: Create Infrastructure
         id: be_infra
         run: |
-          cd .github/cd/terraform/backend
+          cd util/terraform/backend
           echo "public_key=\"${SSH_PUBLIC_KEY}\"" >> terraform.tfvars
           terraform init 
           terraform plan 
@@ -54,7 +54,7 @@ jobs:
         uses: dawidd6/action-ansible-playbook@v2
         with:
           playbook: deploy.yml
-          directory: ./.github/cd/ansible
+          directory: ./util/ansible
           key: ${{ env.SSH_PRIVATE_KEY }}
           inventory: |
             [ec2]
@@ -103,7 +103,7 @@ jobs:
       - name: Create Frontend Infrastructure
         id: fe_infra
         run: |
-          cd .github/cd/terraform/frontend
+          cd util/terraform/frontend
           terraform init 
           terraform plan 
           terraform apply -auto-approve
