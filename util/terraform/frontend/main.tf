@@ -17,12 +17,6 @@ provider "aws" {
   region = "us-east-1"
 }
 
-module "ec2" {
-  source = "./modules/ec2"
-  instance_name = "AnyHasherServerInstance"
-  public_key = var.public_key
-}
-
 module "s3" {
   source = "./modules/s3"
   bucket_name = "frontend.anyhasher.io"
