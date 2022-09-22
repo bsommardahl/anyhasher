@@ -2,18 +2,7 @@
 - name: Update web servers
   hosts: ec2
   remote_user: ubuntu
-
-  tasks:
-  - name: install node runtime
-    shell: "curl -s https://deb.nodesource.com/setup_16.x | sudo bash && sudo apt install nodejs -y"
-
-  - name: install pm2
-    shell: "sudo npm install pm2 -g"
-
-  - name: deploy backend artifact
-    copy: 
-      src: "../../backend/build"
-      dest: /anyhasher
-
-  - name: run server
-    shell: "cd /anyhasherr && ls && pm2 start server.js"
+  gather_facts: false
+  roles:
+    - configure-server
+    - deploy-artifact
