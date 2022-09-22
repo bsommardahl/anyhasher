@@ -51,6 +51,12 @@ jobs:
           echo "EC2_HOST=${EC2_PUBLIC_IP}" >> $GITHUB_ENV
           echo "::set-output name=backend_url::$EC2_PUBLIC_IP"        
 
+      - name: Get Backend Artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: backend-build
+          path: backend/build
+  
       - name: Configure Infrastructure
         uses: dawidd6/action-ansible-playbook@v2
         with:

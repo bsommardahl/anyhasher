@@ -9,7 +9,7 @@
   tasks:
   - name: deploy backend artifact
     copy: 
-      src:  "{{ playbook_dir }}/../../backend/build"
+      src:  "../../backend/build"
       dest: "{{ node_apps_location }}"
 
   - name: install node runtime
