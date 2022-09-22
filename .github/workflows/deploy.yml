@@ -42,7 +42,7 @@ jobs:
         id: be_infra
         run: |
           cd util/terraform/backend
-          echo "public_key=\"${SSH_PUBLIC_KEY}\"" >> terraform.tfvars
+          echo "public_key=\"${{ secrets.SSH_PUBLIC_KEY }}\"" >> terraform.tfvars
           terraform init 
           terraform plan 
           terraform apply -auto-approve
@@ -56,7 +56,7 @@ jobs:
         with:
           playbook: deploy.yml
           directory: ./util/ansible
-          key: ${{ env.SSH_PRIVATE_KEY }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           inventory: |
             [ec2]
             ${{ env.EC2_HOST }}
