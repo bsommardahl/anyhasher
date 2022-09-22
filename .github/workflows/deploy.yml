@@ -71,6 +71,7 @@ jobs:
           terraform init 
           terraform plan 
           terraform apply -auto-approve
+          cat terraform.tfstate
           export S3_BUCKET_NAME=$(terraform output -raw bucket_name)
           export S3_URL=$(terraform output -raw website_endpoint)
           echo "::set-output name=frontend_url::$S3_URL"
