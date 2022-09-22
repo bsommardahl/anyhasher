@@ -8,18 +8,13 @@ terraform {
   required_version = ">= 1.2.0"
 }
 
-variable "public_key" {
-  description = "Terraform EC2 instance key pair"
-}
-
 provider "aws" {
   region = "us-east-1"
 }
 
 module "ec2" {
-  source = "./modules/ec2.tf"
+  source = "./modules/ec2"
   instance_name = "AnyHasherServerInstance"
-  public_key = var.public_key
 }
 
 output "ec2_public_ip" {
