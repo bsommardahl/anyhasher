@@ -9,8 +9,8 @@ on:
       - completed
 
 concurrency: 
-  group: ${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.run_id }}
+  # cancel-in-progress: true
 
 jobs:
   deploy_backend:
