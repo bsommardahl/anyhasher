@@ -39,7 +39,7 @@ resource "aws_s3_bucket_website_configuration" "frontend_configuration" {
 }
 
 variable "bucket_name" {
-  description = "Terraform Website bucket name"
+  description = "Website bucket name"
 }
 
 output "website_endpoint" {

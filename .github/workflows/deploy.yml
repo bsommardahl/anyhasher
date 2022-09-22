@@ -38,6 +38,7 @@ jobs:
         id: be_infra
         run: |
           cd util/terraform/backend
+          echo "instance_name=\"anyhasher-backend-${{ github.run_number}}\"" >> terraform.tfvars
           terraform init 
           terraform plan 
           terraform apply -auto-approve
@@ -46,7 +47,6 @@ jobs:
           echo "::set-output name=backend_url::$EC2_PUBLIC_IP"        
     
   deploy_frontend:
-    needs: [deploy_backend]
     runs-on: ubuntu-latest
     outputs:
       url: ${{ steps.fe_infra.outputs.frontend_url }}    
@@ -71,6 +71,7 @@ jobs:
         id: fe_infra
         run: |
           cd util/terraform/frontend
+          echo "bucket_name=\"anyhasher-frontend-${{ github.run_number}}\"" >> terraform.tfvars
           terraform init 
           terraform plan 
           terraform apply -auto-approve

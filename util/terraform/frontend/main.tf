@@ -14,7 +14,11 @@ provider "aws" {
 
 module "s3" {
   source = "./modules/s3"
-  bucket_name = "anyhasher.io"
+  bucket_name = var.bucket_name
+}
+
+variable "bucket_name" {
+  description = "Website bucket name"
 }
 
 output "website_endpoint" {

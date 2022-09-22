@@ -10,7 +10,7 @@ resource "aws_instance" "anyhasher_server" {
 }
 
 variable "instance_name" {
-  description = "Terraform EC2 instance name"
+  description = "EC2 instance name"
 }
 
 output "ec2_public_ip" {

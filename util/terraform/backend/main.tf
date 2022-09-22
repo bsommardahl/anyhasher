@@ -14,7 +14,11 @@ provider "aws" {
 
 module "ec2" {
   source = "./modules/ec2"
-  instance_name = "AnyHasherServerInstance"
+  instance_name = var.instance_name
+}
+
+variable "instance_name" {
+  description = "EC2 instance name"
 }
 
 output "ec2_public_ip" {
