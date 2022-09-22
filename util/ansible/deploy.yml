@@ -15,7 +15,7 @@
 
   - name: deploy backend artifact
     copy: 
-      src: "~/backend/build"
+      src: "../../backend/build"
       dest: "{{ server_location }}/anyhasher"
 
   - name: run server
