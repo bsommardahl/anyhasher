@@ -1,5 +1,6 @@
 name: Deploy
 on:
+  push:
   workflow_dispatch:
   workflow_run:
     workflows:
@@ -40,10 +41,6 @@ jobs:
       - name: Create Infrastructure
         id: be_infra
         run: |
-          ls
-          ls util
-          ls util/terraform
-          ls util/terraform/backend
           cd util/terraform/backend
           echo "public_key=\"${SSH_PUBLIC_KEY}\"" >> terraform.tfvars
           terraform init 
@@ -112,8 +109,9 @@ jobs:
           terraform plan 
           terraform apply -auto-approve
           export S3_BUCKET_NAME=$(terraform output -raw bucket_name)
-          echo "::set-output name=frontend_url::$S3_BUCKET_NAME"
-          echo $S3_BUCKET_NAME          
+          export S3_URL=$(terraform output -raw website_endpoint)
+          echo "::set-output name=frontend_url::$S3_URL"
+          echo $S3_URL          
           aws s3 cp frontend/build s3://$S3_BUCKET_NAME --region=us-east-1 --recursive
     
     outputs:

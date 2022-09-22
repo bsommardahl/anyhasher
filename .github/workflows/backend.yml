@@ -3,14 +3,14 @@ on:
   push:
     paths:
       - 'backend/**'
-      - '.github/**'
+      # - '.github/**'
     branches:
       - main
       - l5
   pull_request:
     paths:
       - 'backend/**'
-      - '.github/**'
+      # - '.github/**'
     branches:
       - main
       - l5
