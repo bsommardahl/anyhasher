@@ -1,4 +1,4 @@
-name: Backend
+name: Backend CI
 on:
   push:
     paths:
@@ -6,13 +6,15 @@ on:
       - '.github/workflows/backend.yml'
     branches:
       - main
+      - l5
   pull_request:
     paths:
       - 'backend/**'
       - '.github/workflows/backend.yml'
     branches:
       - main
-  
+      - l5
+    
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -38,14 +40,11 @@ jobs:
       - name: Build
         run: cd backend && npm run build
 
-      - name: Generate Artifact
-        run: cd backend/build && zip -r artifact.zip ./ -x '*.git*'
-
       - name: Store Artifact
         uses: actions/upload-artifact@v2
         with:
           name: backend-artifact
-          path: backend/build/artifact.zip
+          path: backend/build/
 
   lint:
     needs: [build]
@@ -107,43 +106,21 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v1
-        with:
-          languages: javascript
+      # - name: Initialize CodeQL
+      #   uses: github/codeql-action/init@v1
+      #   with:
+      #     languages: javascript
 
-      - name: Setup Node
-        uses: actions/setup-node@v1
-        with:
-          node-version: 16.x
+      # - name: Setup Node
+      #   uses: actions/setup-node@v1
+      #   with:
+      #     node-version: 16.x
 
-      - name: Install Deps
-        run: cd backend && npm i
+      # - name: Install Deps
+      #   run: cd backend && npm i
 
-      - name: Build
-        run: cd backend && npm run build
+      # - name: Build
+      #   run: cd backend && npm run build
 
-      - name: Perform Analysis
-        uses: github/codeql-action/analyze@v1
-
-  # deploy_to_eb:
-  #   if: github.ref == 'refs/heads/main'
-  #   needs: [static-analysis, security-audit, lint, test]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Get Artifact
-  #       uses: actions/download-artifact@v2
-  #       with:
-  #         name: backend-artifact
-  #         path: backend/build/artifact.zip
-    
-  #     - name: Deploy to EB
-  #       uses: einaregilsson/beanstalk-deploy@v20
-  #       with:
-  #         aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #         application_name: AnyHasher
-  #         environment_name: AnyHasher-env
-  #         version_label: anyhasher-${{ github.run_number }}
-  #         region: us-east-1
-  #         deployment_package: backend/build/artifact.zip
+      # - name: Perform Analysis
+      #   uses: github/codeql-action/analyze@v1
