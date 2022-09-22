@@ -1,19 +1,19 @@
 name: Backend CI
 on:
   push:
-    paths:
-      - 'backend/**'
-      # - '.github/**'
-    branches:
-      - main
-      - l5
-  pull_request:
-    paths:
-      - 'backend/**'
-      # - '.github/**'
-    branches:
-      - main
-      - l5
+  #   paths:
+  #     - 'backend/**'
+  #     # - '.github/**'
+  #   branches:
+  #     - main
+  #     - l5
+  # pull_request:
+  #   paths:
+  #     - 'backend/**'
+  #     # - '.github/**'
+  #   branches:
+  #     - main
+  #     - l5
     
 jobs:
   build:
