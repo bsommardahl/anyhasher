@@ -68,6 +68,8 @@ jobs:
           inventory: |
             [ec2]
             ${{ env.EC2_HOST }}
+          options: |
+            --verbose
 
     outputs:
       url: ${{ steps.be_infra.outputs.backend_url }}
