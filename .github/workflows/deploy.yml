@@ -49,7 +49,6 @@ jobs:
         run: |
           cd util/terraform/backend
           terraform init 
-          terraform plan 
           terraform apply -auto-approve -var instance_name=anyhasher-backend-${{ github.run_number }} 
           echo "::set-output name=backend_url::$(terraform output -raw ec2_public_url)"        
       
@@ -82,7 +81,6 @@ jobs:
         run: |
           cd util/terraform/frontend          
           terraform init 
-          terraform plan 
           terraform apply -auto-approve -var bucket_name=anyhasher-frontend-${{ github.run_number}}
           export S3_BUCKET_NAME=$(terraform output -raw bucket_name)
           export S3_URL=$(terraform output -raw website_endpoint)
