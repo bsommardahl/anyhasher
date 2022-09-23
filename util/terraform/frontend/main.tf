@@ -9,7 +9,7 @@ terraform {
 
   backend "s3" {
     bucket = "anyhasher.terraform.states"
-    key    = "anyhasher.frontend.tfstate"
+    key    = "${var.bucket_name}.tfstate"
     region = "us-east-1"
   }
 }

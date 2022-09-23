@@ -1,13 +1,7 @@
 resource "aws_instance" "anyhasher_server" {
   ami           = "ami-0149b2da6ceec4bb0"
   instance_type = "t2.micro"
-  key_name      = "anyhasher"
-
-  tags = {
-    Name = var.instance_name,
-    Version = "green"
-    Purpose = "Course"
-  }
+  key_name      = "anyhasher"  
 }
 
 variable "instance_name" {

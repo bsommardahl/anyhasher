@@ -37,7 +37,7 @@ jobs:
           auto_approve: true
           path: util/terraform/backend
           variables: |
-            instance_name = "anyhasher-backend-${{ github.run_number }}"
+            instance_name = "anyhasher-backend-$(git rev-parse --short HEAD)"
 
   provision_frontend:
     outputs:
@@ -68,4 +68,4 @@ jobs:
           auto_approve: true
           path: util/terraform/frontend
           variables: |
-            bucket_name = "anyhasher-frontend-${{ github.run_number}}"
+            bucket_name = "anyhasher-frontend-$(git rev-parse --short HEAD)"
