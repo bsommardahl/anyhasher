@@ -119,9 +119,9 @@ jobs:
       - name: Prepare frontend with backend url
         run: |
           export existing="__BACKEND_URL_PLACEHOLDER__"
-          echo $existing
-          export replacement="${{ needs.provision_backend.output.backend_url }}"
-          echo $replacement
+          export replacement="${{ needs.provision_backend.outputs.backend_url }}"
+          echo replacement: $replacement
+          echo dir
           ls frontend/build
           find frontend/build -type f -name "*.*"" -print0 | xargs -0 sed -i '' -e "s/$existing/$replacement/g"
           
