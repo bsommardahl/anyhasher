@@ -125,7 +125,7 @@ jobs:
 
       - name: Upload frontend to S3 Bucket
         run: |
-          aws s3 cp build s3://${{ needs.provision_frontend.outputs.bucket_name }} --region=us-east-1 --recursive
+          aws s3 cp frontend/build s3://${{ needs.provision_frontend.outputs.bucket_name }} --region=us-east-1 --recursive
 
   verify-frontend:
     runs-on: ubuntu-latest
