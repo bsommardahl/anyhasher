@@ -117,12 +117,12 @@ jobs:
           path: frontend/build
   
       - name: Prepare frontend with backend url
-        run: |
-          export existing="__BACKEND_URL_PLACEHOLDER__"
-          export replacement="${{ needs.provision_backend.outputs.backend_url }}"
-          echo rep: $replacement
-          find frontend/build -type f -name "*.*"" -print0 | xargs -0 sed -i '' -e "s/$existing/$replacement/g"
-          
+        uses: jacobtomlinson/gha-find-replace@v2
+        with:
+          find: "__BACKEND_URL_PLACEHOLDER__"
+          replace: "${{ needs.provision_backend.outputs.backend_url }}"
+          regex: false
+
       - name: Upload frontend to S3 Bucket
         run: |
           aws s3 cp build s3://${{ needs.provision_frontend.outputs.frontend_url }} --region=us-east-1 --recursive
