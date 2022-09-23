@@ -196,6 +196,6 @@ jobs:
           directory: ./util/ansible
           options: |
             --verbose
-            --extra-vars distro_id="${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }}" origin_domain="${{ needs.provision_infrastructure.outputs.frontend_url }}"
+            --extra-vars "distro_id='${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }}' origin_domain='${{ needs.provision_infrastructure.outputs.frontend_url }}'"
   
-  //destroy old blue infra (save ref to blue infra before)
+  # destroy old blue infra (save ref to blue infra before)
