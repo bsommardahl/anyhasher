@@ -5,6 +5,7 @@ resource "aws_instance" "anyhasher_server" {
 
   tags = {
     Name = var.instance_name,
+    Version = "green"
     Purpose = "Course"
   }
 }

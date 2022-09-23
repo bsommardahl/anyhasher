@@ -1,6 +1,6 @@
-name: Deploy
+name: Continuous Deployment
 on:  
-  push:
+  #push:
   workflow_dispatch:
   workflow_run:
     workflows:
@@ -48,7 +48,7 @@ jobs:
     needs: [provision_backend]
     runs-on: ubuntu-latest
     environment: 
-      name: Raw Test Backend Url
+      name: Green Backend Environment
       url: ${{ needs.provision_backend.outputs.backend_url }}
     steps:      
       - name: Checkout
@@ -61,8 +61,6 @@ jobs:
           name: backend-artifact
           path: backend/build/
       
-      - run: echo ${{ needs.provision_backend.outputs.backend_url }}
-
       - name: Configure Backend Infrastructure
         uses: dawidd6/action-ansible-playbook@v2
         with:
@@ -73,8 +71,7 @@ jobs:
             [ec2]
             ${{ needs.provision_backend.outputs.backend_url }}
           options: |
-            --verbose
-            --extra-vars hello=there
+            --verbose            
 
   provision_frontend:
     outputs:
@@ -113,7 +110,7 @@ jobs:
     needs: [provision_backend,provision_frontend]
     runs-on: ubuntu-latest
     environment: 
-      name: Raw Test Frontend Url
+      name: Green Frontend Environment
       url: ${{ needs.provision_frontend.outputs.frontend_url }}
     steps:      
       - name: Get Frontend Artifact
@@ -198,4 +195,36 @@ jobs:
             --verbose
             --extra-vars "distro_id='${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }}' origin_domain='${{ needs.provision_infrastructure.outputs.frontend_url }}'"
   
-  # destroy old blue infra (save ref to blue infra before)
+  destroy_blue:
+    needs: [promote_green_to_blue]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_wrapper: false
+          terraform_version: 1.2.9
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Destroy Backend Infrastructure
+        run: |
+          cd util/terraform/backend
+          echo target blue version...
+          # terraform init 
+          # terraform destroy -auto-approve -var instance_name=null
+    
+      - name: Destroy Frontend Infrastructure
+        run: | 
+          cd util/terraform/frontend
+          echo target blue version...
+          # terraform init 
+          # terraform destroy -auto-approve -var bucket_name=null
