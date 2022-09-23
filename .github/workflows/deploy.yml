@@ -106,7 +106,7 @@ jobs:
           echo "::set-output name=frontend_url::$S3_URL"
   
   configure_frontend:
-    needs: [provision_frontend]
+    needs: [provision_backend,provision_frontend]
     runs-on: ubuntu-latest
     steps:      
       - name: Get Frontend Artifact
@@ -120,14 +120,12 @@ jobs:
         run: |
           export existing="__BACKEND_URL_PLACEHOLDER__"
           export replacement="${{ needs.provision_backend.outputs.backend_url }}"
-          echo replacement: $replacement
-          echo dir
           ls frontend/build
           find frontend/build -type f -name "*.*"" -print0 | xargs -0 sed -i '' -e "s/$existing/$replacement/g"
           
       - name: Upload frontend to S3 Bucket
         run: |
-          aws s3 cp build s3://$BUCKET_NAME --region=us-east-1 --recursive
+          aws s3 cp build s3://${{ needs.provision_frontend.outputs.frontend_url }} --region=us-east-1 --recursive
 
   verify-frontend:
     runs-on: ubuntu-latest
