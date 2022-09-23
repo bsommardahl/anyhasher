@@ -61,6 +61,9 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           inventory: |
             [ec2]
+            env
+            $BACKEND_URL
+            step
             ${{ steps.provision-backend.output.backend_url }}
           options: |
             --verbose
