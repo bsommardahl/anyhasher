@@ -10,42 +10,14 @@ on:
 
 concurrency: 
   group: "prod-green"
-  #cancel-in-progress: true
+  cancel-in-progress: true
 
 jobs:
-  deploy_backend:
+  provision_infrastructure:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v1
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1
-        with:
-          terraform_wrapper: false
-          terraform_version: 1.2.9
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Create Infrastructure
-        id: be_infra
-        run: |
-          cd util/terraform/backend
-          echo "instance_name=\"anyhasher-backend-${{ github.run_number }}\"" >> terraform.tfvars
-          terraform init 
-          terraform plan 
-          terraform apply -auto-approve
-          export EC2_PUBLIC_IP=$(terraform output -raw ec2_public_ip)
-          echo "EC2_HOST=${EC2_PUBLIC_IP}" >> $GITHUB_ENV
-          echo "::set-output name=backend_url::$EC2_PUBLIC_IP"        
-      
-  deploy_frontend:
-    runs-on: ubuntu-latest
+    outputs:
+      backend_url: ${{ steps.be_infra.outputs.url }}
+      frontend_url: ${{ steps.fe_infra.outputs.url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v1
@@ -63,6 +35,50 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
   
+      - name: Get Backend Artifact
+        id: download-artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: backend.yml
+          name: backend-artifact
+          path: backend/build/
+  
+      - name: Provision Backend Infrastructure
+        id: be_infra
+        run: |
+          cd util/terraform/backend
+          echo "instance_name=\"anyhasher-backend-${{ github.run_number }}\"" >> terraform.tfvars
+          terraform init 
+          terraform plan 
+          terraform apply -auto-approve
+          export EC2_PUBLIC_IP=$(terraform output -raw ec2_public_ip)
+          echo "EC2_HOST=${EC2_PUBLIC_IP}" >> $GITHUB_ENV
+          echo "::set-output name=backend_url::$EC2_PUBLIC_IP"        
+      
+      - name: Configure Backend Infrastructure
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: deploy.yml
+          directory: ./util/ansible
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          inventory: |
+            [ec2]
+            ${{ env.EC2_HOST }}
+          options: |
+            --verbose
+
+      - name: Get Frontend Artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: frontend-artifact
+          path: frontend/build
+  
+      - name: Prepare frontend with backend url
+        run: |
+          export existing="__BACKEND_URL_PLACEHOLDER__"
+          export replacement="${{ env.EC2_HOST }}"
+          find frontend/build -type f -name "*.*"" -print0 | xargs -0 sed -i '' -e "s/$existing/$replacement/g"
+
       - name: Create Frontend Infrastructure
         id: fe_infra
         run: |
@@ -75,36 +91,37 @@ jobs:
           export S3_URL=$(terraform output -raw website_endpoint)
           echo "::set-output name=frontend_url::$S3_URL"
           
-  destroy_backend:
+  verify-frontend:
     runs-on: ubuntu-latest
-    needs: [deploy_backend,deploy_frontend]
+    needs: [deploy_frontend]
     steps:
       - name: Checkout
         uses: actions/checkout@v1
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1
-        with:
-          terraform_wrapper: false
-          terraform_version: 1.2.9
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Destroy Infrastructure
+      - name: Run Frontend Smoke Test
         run: |
-          cd util/terraform/backend
-          echo "instance_name=\"anyhasher-backend-${{ github.run_number }}\"" >> terraform.tfvars
-          terraform init
-          terraform destroy -auto-approve
-    
-  destroy_frontend:
+          export TEST_URL=${{ needs.deploy_frontend.outputs.url }}
+          cd e2e
+          npm install
+          npm run frontend-smoke   
+      
+  verify-backend:
     runs-on: ubuntu-latest
-    needs: [deploy_backend,deploy_frontend]
+    needs: [deploy_backend]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Run Backend Smoke Test
+        run: |
+          export BACKEND_URL=${{ needs.deploy_backend.outputs.url }}
+          cd e2e
+          chmod +x backend-smoke.sh
+          ./backend-smoke.sh
+
+  promote_green_to_blue:
+    needs: [verify-backend,verify-frontend]
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v1
@@ -121,10 +138,20 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
+
+      - name: Switch CloudFront router from old to new
+        run: |
+          echo Thanks Sean Killeen!! - https://seankilleen.com/2021/07/how-to-automate-aws-cloudfront-distribution-folder-changes-when-deploying-a-static-web-site/
+          export cloudfront_distribution_id=${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }}
+          export region=us-east-1
+          
+          aws cloudfront get-distribution-config --id $cloudfront_distribution_id --region $region > output.json
+          cat output.json
+          etag=`cat output.json | jq -r ".ETag"`
+          cat output.json | jq "del(.ETag) | (.DistributionConfig.Origins.Items[] | select(.Id == \"$cloudfront_s3_origin_id\")).OriginPath = \"/$release_number\" | .DistributionConfig" > updated-config.json
+          
+          aws cloudfront update-distribution --id $cloudfront_distribution_id --region $region --if-match="$etag" --distribution-config file://updated-config.json
+          aws cloudfront wait distribution-deployed --id $cloudfront_distribution_id --region $region
+          aws cloudfront create-invalidation --distribution-id $cloudfront_distribution_id --paths "/*" --region $region
+
   
-      - name: Destroy Frontend Infrastructure
-        run: | 
-          cd util/terraform/frontend
-          echo "bucket_name=\"anyhasher-frontend-${{ github.run_number}}\"" >> terraform.tfvars
-          terraform init
-          terraform destroy -auto-approve

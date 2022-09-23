@@ -32,7 +32,7 @@ jobs:
       - name: Store Artifact
         uses: actions/upload-artifact@v2
         with:
-          name: frontend-build
+          name: frontend-artifact
           path: frontend/build
 
   security-audit:
@@ -46,7 +46,7 @@ jobs:
         run: cd frontend && npm audit --audit-level=critical
   
   static-analysis:
-    needs: [security-audit]
+    needs: [build]
     runs-on: ubuntu-latest
     permissions:
       security-events: write
