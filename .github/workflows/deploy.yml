@@ -1,23 +1,13 @@
 name: Deploy Application
 on:  
-  #push:
-  workflow_dispatch:
   workflow_run:
     branches: [main]
     workflows:
-      #- Backend CI
-      - Frontend CI
+      - Build
     types:
       - completed
 
-concurrency: 
-  group: "prod-green"
-  cancel-in-progress: true
-
 jobs:
-  # mark the currently deployed stack as blue for removal later
-  # need to be able to pull a tag/version that is blue
-
   provision_backend:
     runs-on: ubuntu-latest
     outputs:
@@ -45,7 +35,7 @@ jobs:
         with:
           path: util/terraform/backend
           variables: |
-            instance_name=anyhasher-backend-${{ github.run_number }}
+            instance_name = "anyhasher-backend-${{ github.run_number }}"
 
   configure_backend:
     needs: [provision_backend]
@@ -85,12 +75,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1
-        with:
-          terraform_wrapper: false
-          terraform_version: 1.2.9
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -98,13 +82,19 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
   
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_wrapper: false
+          terraform_version: 1.2.9
+
       - name: Provision Frontend Infrastructure
         id: provision
         uses: dflook/terraform-apply@v1
         with:
           path: util/terraform/frontend
           variables: |
-            bucket_name=anyhasher-frontend-${{ github.run_number}}      
+            bucket_name = "anyhasher-frontend-${{ github.run_number}}"
   
   configure_frontend:
     needs: [provision_backend,provision_frontend]

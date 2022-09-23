@@ -1,8 +1,8 @@
 name: Cleanup Old Infrastructure
-on:  
-  push:
-    tags:
-      - 'blue-*'
+# on:  
+#   push:
+#     tags:
+#       - 'blue-*'
 
 jobs:
   destroy_blue-on-success:

@@ -1,8 +1,8 @@
 name: Infrastructure Cleanup
-on:  
-  push:
-    tags:
-      - 'failure-*'
+# on:  
+#   push:
+#     tags:
+#       - 'failure-*'
 
 jobs:
   destroy-green-on-failure:
