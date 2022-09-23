@@ -17,7 +17,7 @@ jobs:
   provision_backend:
     runs-on: ubuntu-latest
     outputs:
-      backend_url: ${{ steps.provision.outputs.url }}
+      backend_url: ${{ steps.provision.outputs.backend_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v1
@@ -58,6 +58,8 @@ jobs:
           name: backend-artifact
           path: backend/build/
       
+      - run: echo ${{ needs.provision_backend.outputs.backend_url }}
+
       - name: Configure Backend Infrastructure
         uses: dawidd6/action-ansible-playbook@v2
         with:
@@ -72,7 +74,8 @@ jobs:
 
   provision_frontend:
     outputs:
-      backend_url: ${{ steps.provision.outputs.url }}
+      frontend_url: ${{ steps.provision.outputs.frontend_url }}
+      bucket_name: ${{ steps.provision.outputs.bucket_name }}
     runs-on: ubuntu-latest
     steps:      
       - name: Checkout
@@ -94,18 +97,17 @@ jobs:
       - name: Provision Frontend Infrastructure
         id: provision
         run: |
+          export S3_BUCKET_NAME=anyhasher-frontend-${{ github.run_number}}
           cd util/terraform/frontend          
           terraform init 
-          terraform apply -auto-approve -var bucket_name=anyhasher-frontend-${{ github.run_number}}
-          export S3_BUCKET_NAME=$(terraform output -raw bucket_name)
+          terraform apply -auto-approve -var bucket_name=$S3_BUCKET_NAME
+          echo "::set-output name=bucket_name::$S3_BUCKET_NAME"          
           export S3_URL=$(terraform output -raw website_endpoint)
           echo "::set-output name=frontend_url::$S3_URL"
   
   configure_frontend:
     needs: [provision_frontend]
     runs-on: ubuntu-latest
-    outputs:
-      frontend_url: ${{ steps.fe_infra.outputs.url }}
     steps:      
       - name: Get Frontend Artifact
         uses: dawidd6/action-download-artifact@v2
@@ -117,8 +119,11 @@ jobs:
       - name: Prepare frontend with backend url
         run: |
           export existing="__BACKEND_URL_PLACEHOLDER__"
-          export replacement="${{ steps.be_infra.output.backend_url }}"
+          export replacement="${{ needs.provision_backend.output.backend_url }}"
           find frontend/build -type f -name "*.*"" -print0 | xargs -0 sed -i '' -e "s/$existing/$replacement/g"
+      - name: Upload frontend to S3 Bucket
+        run: |
+          aws s3 cp build s3://$BUCKET_NAME --region=us-east-1 --recursive
 
   verify-frontend:
     runs-on: ubuntu-latest
