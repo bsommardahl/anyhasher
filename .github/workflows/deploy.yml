@@ -45,12 +45,14 @@ jobs:
           path: backend/build/
   
       - name: Provision Backend Infrastructure
-        id: be_infra
+        id: provision-backend
         run: |
           cd util/terraform/backend
           terraform init 
           terraform apply -auto-approve -var instance_name=anyhasher-backend-${{ github.run_number }} 
-          echo "::set-output name=backend_url::$(terraform output -raw ec2_public_url)"        
+          export BACKEND_URL=$(terraform output -raw ec2_public_url)
+          echo $BACKEND_URL
+          echo "::set-output name=backend_url::$BACKEND_URL"        
       
       - name: Configure Backend Infrastructure
         uses: dawidd6/action-ansible-playbook@v2
@@ -60,7 +62,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           inventory: |
             [ec2]
-            ${{ steps.be_infra.output.backend_url }}
+            ${{ steps.provision-backend.output.backend_url }}
           options: |
             --verbose
 
@@ -95,7 +97,7 @@ jobs:
 
       - name: Run Frontend Smoke Test
         run: |
-          export TEST_URL=${{ needs.deploy_frontend.outputs.url }}
+          export TEST_URL=${{ needs.provision_infrastructure.outputs.frontend_url }}
           cd e2e
           npm install
           npm run frontend-smoke   
@@ -109,7 +111,7 @@ jobs:
 
       - name: Run Backend Smoke Test
         run: |
-          export BACKEND_URL=${{ needs.deploy_backend.outputs.url }}
+          export BACKEND_URL=${{ needs.provision_infrastructure.outputs.backend_url }}
           cd e2e
           chmod +x backend-smoke.sh
           ./backend-smoke.sh
