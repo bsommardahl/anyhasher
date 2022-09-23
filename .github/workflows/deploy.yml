@@ -50,7 +50,7 @@ jobs:
           terraform init 
           terraform apply -auto-approve -var instance_name=anyhasher-backend-${{ github.run_number }} 
           export BACKEND_URL=$(terraform output -raw ec2_public_url)
-          echo $BACKEND_URL
+          echo "BACKEND_URL=$BACKEND_URL" >> $GITHUB_ENV
           echo "::set-output name=backend_url::$BACKEND_URL"        
       
       - name: Configure Backend Infrastructure
@@ -61,10 +61,10 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           inventory: |
             [ec2]
-            env
-            $BACKEND_URL
             step
             ${{ steps.provision-backend.output.backend_url }}
+            env
+            ${{ env.BACKEND_URL }}
           options: |
             --verbose
 
