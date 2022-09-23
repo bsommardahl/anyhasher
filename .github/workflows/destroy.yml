@@ -1,11 +1,12 @@
 name: Destroy
 on:  
   workflow_dispatch:
-  workflow_run:
-    workflows:
-      - Deploy
-    types:
-      - completed
+  # workflow_run:
+  #   workflows:
+  #     - Deploy
+  #   types:
+  #     - completed
+  
 jobs:
   destroy:
     runs-on: ubuntu-latest
