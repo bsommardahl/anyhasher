@@ -1,0 +1,61 @@
+  
+  provision_backend:
+    runs-on: ubuntu-latest
+    outputs:
+      backend_url: ${{ steps.provision.outputs.backend_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_wrapper: false
+          terraform_version: 1.2.9
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+  
+      - name: Provision Frontend Infrastructure
+        id: provision
+        uses: dflook/terraform-apply@v1
+        with:
+          path: util/terraform/backend
+          variables: |
+            instance_name = "anyhasher-backend-${{ github.run_number }}"
+
+  provision_frontend:
+    outputs:
+      frontend_url: ${{ steps.provision.outputs.frontend_url }}
+      bucket_name: ${{ steps.provision.outputs.bucket_name }}
+    runs-on: ubuntu-latest
+    steps:      
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+  
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_wrapper: false
+          terraform_version: 1.2.9
+
+      - name: Provision Frontend Infrastructure
+        id: provision
+        uses: dflook/terraform-apply@v1
+        with:
+          path: util/terraform/frontend
+          variables: |
+            bucket_name = "anyhasher-frontend-${{ github.run_number}}"
+  
+  

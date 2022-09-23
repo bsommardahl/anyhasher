@@ -1,0 +1,64 @@
+
+  configure_backend:
+    needs: [provision_backend]
+    runs-on: ubuntu-latest
+    environment: 
+      name: Green Backend Environment
+      url: https://${{ needs.provision_backend.outputs.backend_url }}
+    steps:      
+      - name: Checkout
+        uses: actions/checkout@v1
+        
+      - name: Get Backend Artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: backend.yml
+          name: backend-artifact
+          path: backend/build/
+      
+      - name: Configure Backend Infrastructure
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: deploy.yml
+          directory: ./util/ansible
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          inventory: |
+            [ec2]
+            ${{ needs.provision_backend.outputs.backend_url }}
+          options: |
+            --verbose            
+
+  
+  configure_frontend:
+    needs: [provision_backend,provision_frontend]
+    runs-on: ubuntu-latest
+    environment: 
+      name: Green Frontend Environment
+      url: https://${{ needs.provision_frontend.outputs.frontend_url }}
+    steps:      
+      - name: Get Frontend Artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: frontend.yml
+          name: frontend-artifact
+          path: frontend/build
+  
+      - name: Prepare frontend with backend url
+        uses: jacobtomlinson/gha-find-replace@v2
+        with:
+          find: "__BACKEND_URL_PLACEHOLDER__"
+          replace: "${{ needs.provision_backend.outputs.backend_url }}"
+          regex: false
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+  
+      - name: Upload frontend to S3 Bucket
+        run: |
+          aws s3 cp frontend/build s3://${{ needs.provision_frontend.outputs.bucket_name }} --region=us-east-1 --recursive
+
+  
