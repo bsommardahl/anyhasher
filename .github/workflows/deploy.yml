@@ -120,7 +120,7 @@ jobs:
         run: |
           export existing="__BACKEND_URL_PLACEHOLDER__"
           export replacement="${{ needs.provision_backend.outputs.backend_url }}"
-          ls frontend/build
+          echo rep: $replacement
           find frontend/build -type f -name "*.*"" -print0 | xargs -0 sed -i '' -e "s/$existing/$replacement/g"
           
       - name: Upload frontend to S3 Bucket
