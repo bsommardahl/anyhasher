@@ -1,6 +1,6 @@
 name: Frontend CI
 on:
-  push:
+  # push:
   
 jobs:
   build:

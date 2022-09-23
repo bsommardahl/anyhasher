@@ -1,5 +1,6 @@
 name: Deploy
 on:  
+  push:
   workflow_dispatch:
   workflow_run:
     workflows:
@@ -93,7 +94,7 @@ jobs:
           
   verify-frontend:
     runs-on: ubuntu-latest
-    needs: [deploy_frontend]
+    needs: [provision_infrastructure]
     steps:
       - name: Checkout
         uses: actions/checkout@v1
@@ -107,7 +108,7 @@ jobs:
       
   verify-backend:
     runs-on: ubuntu-latest
-    needs: [deploy_backend]
+    needs: [provision_infrastructure]
     steps:
       - name: Checkout
         uses: actions/checkout@v1
