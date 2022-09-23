@@ -52,9 +52,7 @@ jobs:
           terraform init 
           terraform plan 
           terraform apply -auto-approve
-          export EC2_PUBLIC_IP=$(terraform output -raw ec2_public_ip)
-          echo "EC2_HOST=${EC2_PUBLIC_IP}" >> $GITHUB_ENV
-          echo "::set-output name=backend_url::$EC2_PUBLIC_IP"        
+          echo "::set-output name=backend_url::$(terraform output -raw ec2_public_url)"        
       
       - name: Configure Backend Infrastructure
         uses: dawidd6/action-ansible-playbook@v2
@@ -64,7 +62,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           inventory: |
             [ec2]
-            ${{ env.EC2_HOST }}
+            ${{ steps.be_infra.output.backend_url }}
           options: |
             --verbose
 
@@ -77,7 +75,7 @@ jobs:
       - name: Prepare frontend with backend url
         run: |
           export existing="__BACKEND_URL_PLACEHOLDER__"
-          export replacement="${{ env.EC2_HOST }}"
+          export replacement="${{ steps.be_infra.output.backend_url }}"
           find frontend/build -type f -name "*.*"" -print0 | xargs -0 sed -i '' -e "s/$existing/$replacement/g"
 
       - name: Create Frontend Infrastructure
