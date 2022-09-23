@@ -48,9 +48,9 @@ jobs:
         id: be_infra
         run: |
           cd util/terraform/backend
-          terraform init -var instance_name=anyhasher-backend-${{ github.run_number }} 
+          terraform init 
           terraform plan 
-          terraform apply -auto-approve
+          terraform apply -auto-approve -var instance_name=anyhasher-backend-${{ github.run_number }} 
           echo "::set-output name=backend_url::$(terraform output -raw ec2_public_url)"        
       
       - name: Configure Backend Infrastructure
@@ -80,11 +80,10 @@ jobs:
       - name: Create Frontend Infrastructure
         id: fe_infra
         run: |
-          cd util/terraform/frontend
-          echo "bucket_name=\"anyhasher-frontend-${{ github.run_number}}\"" >> terraform.tfvars
+          cd util/terraform/frontend          
           terraform init 
           terraform plan 
-          terraform apply -auto-approve
+          terraform apply -auto-approve -var bucket_name=anyhasher-frontend-${{ github.run_number}}
           export S3_BUCKET_NAME=$(terraform output -raw bucket_name)
           export S3_URL=$(terraform output -raw website_endpoint)
           echo "::set-output name=frontend_url::$S3_URL"
