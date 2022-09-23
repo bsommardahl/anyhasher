@@ -37,7 +37,6 @@ jobs:
           aws-region: us-east-1
   
       - name: Get Backend Artifact
-        id: download-artifact
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: backend.yml
@@ -67,8 +66,9 @@ jobs:
             --verbose
 
       - name: Get Frontend Artifact
-        uses: actions/download-artifact@v2
+        uses: dawidd6/action-download-artifact@v2
         with:
+          workflow: backend.yml
           name: frontend-artifact
           path: frontend/build
   
