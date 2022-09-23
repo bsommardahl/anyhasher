@@ -30,7 +30,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
   
-      - name: Provision Frontend Infrastructure
+      - name: Provision Backend Infrastructure
         id: provision
         uses: dflook/terraform-apply@v1
         with:
