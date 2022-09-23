@@ -1,0 +1,42 @@
+name: Cleanup Old Infrastructure
+on:  
+  push:
+    tags:
+      - 'blue-*'
+
+jobs:
+  destroy_blue-on-success:
+    runs-on: ubuntu-latest
+    steps:      
+      - name: Get Previous Blue Version
+        run: echo "old_blue_ref=$(git describe --match "blue" --abbrev=4 HEAD^)" >> $GITHUB_ENV
+
+      - name: Checkout
+        uses: actions/checkout@v1
+        with:
+          ref: {{ env.old_blue_ref }}
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_wrapper: false
+          terraform_version: 1.2.9
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Destroy Blue Frontend
+        uses: dflook/terraform-destroy@v1
+        with:
+          path: util/terraform/frontend
+          workspace: ${{ github.head_ref }}
+      
+      - name: Destroy Blue Backend
+        uses: dflook/terraform-destroy@v1
+        with:
+          path: util/terraform/backend
+          workspace: ${{ github.head_ref }}

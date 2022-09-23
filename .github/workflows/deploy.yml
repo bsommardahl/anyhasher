@@ -1,8 +1,9 @@
-name: Continuous Deployment
+name: Deploy Application
 on:  
   #push:
   workflow_dispatch:
   workflow_run:
+    branches: [main]
     workflows:
       #- Backend CI
       - Frontend CI
@@ -14,6 +15,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # mark the currently deployed stack as blue for removal later
+  # need to be able to pull a tag/version that is blue
+
   provision_backend:
     runs-on: ubuntu-latest
     outputs:
@@ -35,21 +39,20 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
   
-      - name: Provision Backend Infrastructure
+      - name: Provision Frontend Infrastructure
         id: provision
-        run: |
-          cd util/terraform/backend
-          terraform init 
-          terraform apply -auto-approve -var instance_name=anyhasher-backend-${{ github.run_number }} 
-          export BACKEND_URL=$(terraform output -raw ec2_public_url)
-          echo "::set-output name=backend_url::$BACKEND_URL"        
-    
+        uses: dflook/terraform-apply@v1
+        with:
+          path: util/terraform/backend
+          variables: |
+            instance_name=anyhasher-backend-${{ github.run_number }}
+
   configure_backend:
     needs: [provision_backend]
     runs-on: ubuntu-latest
     environment: 
       name: Green Backend Environment
-      url: ${{ needs.provision_backend.outputs.backend_url }}
+      url: https://${{ needs.provision_backend.outputs.backend_url }}
     steps:      
       - name: Checkout
         uses: actions/checkout@v1
@@ -97,21 +100,18 @@ jobs:
   
       - name: Provision Frontend Infrastructure
         id: provision
-        run: |
-          export S3_BUCKET_NAME=anyhasher-frontend-${{ github.run_number}}
-          cd util/terraform/frontend          
-          terraform init 
-          terraform apply -auto-approve -var bucket_name=$S3_BUCKET_NAME
-          echo "::set-output name=bucket_name::$S3_BUCKET_NAME"          
-          export S3_URL=$(terraform output -raw website_endpoint)
-          echo "::set-output name=frontend_url::$S3_URL"
+        uses: dflook/terraform-apply@v1
+        with:
+          path: util/terraform/frontend
+          variables: |
+            bucket_name=anyhasher-frontend-${{ github.run_number}}      
   
   configure_frontend:
     needs: [provision_backend,provision_frontend]
     runs-on: ubuntu-latest
     environment: 
       name: Green Frontend Environment
-      url: ${{ needs.provision_frontend.outputs.frontend_url }}
+      url: https://${{ needs.provision_frontend.outputs.frontend_url }}
     steps:      
       - name: Get Frontend Artifact
         uses: dawidd6/action-download-artifact@v2
@@ -150,7 +150,14 @@ jobs:
           export TEST_URL=${{ needs.provision_infrastructure.outputs.frontend_url }}
           cd e2e
           npm install
-          npm run frontend-smoke   
+          npm run frontend-smoke  
+
+      - name: Handle Failure
+        if: failure()         
+        uses: rickstaa/action-create-tag@v1
+        with:
+          tag: "failure-{{ github.run_number }}"
+          message: "Failed attempt to verify frontend after deploy" 
       
   verify-backend:
     runs-on: ubuntu-latest
@@ -165,10 +172,19 @@ jobs:
           cd e2e
           chmod +x backend-smoke.sh
           ./backend-smoke.sh
-
+      
+      - name: Handle Failure
+        if: failure()         
+        uses: rickstaa/action-create-tag@v1
+        with:
+          tag: "failure-{{ github.run_number }}"
+          message: "Failed attempt to verify backend after deploy"
+  
   promote_green_to_blue:
-    needs: [verify-backend,verify-frontend]
+    needs: [verify-backend,verify-frontend]    
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v1
@@ -195,36 +211,16 @@ jobs:
             --verbose
             --extra-vars "distro_id='${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }}' origin_domain='${{ needs.provision_infrastructure.outputs.frontend_url }}'"
   
-  destroy_blue:
-    needs: [promote_green_to_blue]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v1
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1
+      - name: Tag Green as New Blue
+        if: success()         
+        uses: rickstaa/action-create-tag@v1
         with:
-          terraform_wrapper: false
-          terraform_version: 1.2.9
+          tag: "blue-{{ github.run_number }}"
+          message: "Latest release" 
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+      - name: Handle Failure
+        if: failure()         
+        uses: rickstaa/action-create-tag@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Destroy Backend Infrastructure
-        run: |
-          cd util/terraform/backend
-          echo target blue version...
-          # terraform init 
-          # terraform destroy -auto-approve -var instance_name=null
-    
-      - name: Destroy Frontend Infrastructure
-        run: | 
-          cd util/terraform/frontend
-          echo target blue version...
-          # terraform init 
-          # terraform destroy -auto-approve -var bucket_name=null
+          tag: "failure-{{ github.run_number }}"
+          message: "Failed attempt to promote after successful verify"
