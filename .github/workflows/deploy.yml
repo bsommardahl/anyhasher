@@ -1,7 +1,8 @@
 name: Deploy Application
 on:  
   workflow_run:
-    branches: [main]
+    branches: 
+      - main
     workflows:
       - Build
     types:
@@ -32,6 +33,7 @@ jobs:
       - name: Provision Frontend Infrastructure
         id: provision
         uses: dflook/terraform-apply@v1
+        auto_approve: true
         with:
           path: util/terraform/backend
           variables: |
@@ -91,6 +93,7 @@ jobs:
       - name: Provision Frontend Infrastructure
         id: provision
         uses: dflook/terraform-apply@v1
+        auto_approve: true
         with:
           path: util/terraform/frontend
           variables: |
