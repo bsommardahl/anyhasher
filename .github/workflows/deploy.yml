@@ -33,8 +33,8 @@ jobs:
       - name: Provision Frontend Infrastructure
         id: provision
         uses: dflook/terraform-apply@v1
-        auto_approve: true
         with:
+          auto_approve: true
           path: util/terraform/backend
           variables: |
             instance_name = "anyhasher-backend-${{ github.run_number }}"
@@ -64,8 +64,8 @@ jobs:
       - name: Provision Frontend Infrastructure
         id: provision
         uses: dflook/terraform-apply@v1
-        auto_approve: true
         with:
+          auto_approve: true
           path: util/terraform/frontend
           variables: |
             bucket_name = "anyhasher-frontend-${{ github.run_number}}"
