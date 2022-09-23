@@ -1,0 +1,8 @@
+---
+- name: Update web servers
+  hosts: ec2
+  remote_user: ubuntu
+  gather_facts: false
+  roles:
+    - configure-server
+    - deploy-artifact
