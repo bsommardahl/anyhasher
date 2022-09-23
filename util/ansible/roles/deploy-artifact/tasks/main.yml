@@ -1,7 +1,7 @@
 ---
   - name: Deploy Backend Artifact
     copy: 
-      src: "../../backend/build"
+      src: "../../../backend/build"
       dest: ~/anyhasher
 
   - name: Start Server

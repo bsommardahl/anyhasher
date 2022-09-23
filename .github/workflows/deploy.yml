@@ -14,11 +14,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  provision_infrastructure:
+  provision_backend:
     runs-on: ubuntu-latest
     outputs:
-      backend_url: ${{ steps.be_infra.outputs.url }}
-      frontend_url: ${{ steps.fe_infra.outputs.url }}
+      backend_url: ${{ steps.provision.outputs.url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v1
@@ -36,15 +35,8 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
   
-      - name: Get Backend Artifact
-        uses: dawidd6/action-download-artifact@v2
-        with:
-          workflow: backend.yml
-          name: backend-artifact
-          path: backend/build/
-  
       - name: Provision Backend Infrastructure
-        id: provision-backend
+        id: provision
         run: |
           cd util/terraform/backend
           terraform init 
@@ -52,6 +44,17 @@ jobs:
           export BACKEND_URL=$(terraform output -raw ec2_public_url)
           echo "BACKEND_URL=$BACKEND_URL" >> $GITHUB_ENV
           echo "::set-output name=backend_url::$BACKEND_URL"        
+    
+  configure_backend:
+    needs: [provision_backend]
+    runs-on: ubuntu-latest
+    steps:      
+      - name: Get Backend Artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: backend.yml
+          name: backend-artifact
+          path: backend/build/
       
       - name: Configure Backend Infrastructure
         uses: dawidd6/action-ansible-playbook@v2
@@ -65,10 +68,47 @@ jobs:
           options: |
             --verbose
 
+  provision_frontend:
+    outputs:
+      backend_url: ${{ steps.provision.outputs.url }}
+    runs-on: ubuntu-latest
+    steps:      
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_wrapper: false
+          terraform_version: 1.2.9
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+  
+      - name: Provision Frontend Infrastructure
+        id: provision
+        run: |
+          cd util/terraform/frontend          
+          terraform init 
+          terraform apply -auto-approve -var bucket_name=anyhasher-frontend-${{ github.run_number}}
+          export S3_BUCKET_NAME=$(terraform output -raw bucket_name)
+          export S3_URL=$(terraform output -raw website_endpoint)
+          echo "::set-output name=frontend_url::$S3_URL"
+  
+  configure_frontend:
+    needs: [provision_frontend]
+    runs-on: ubuntu-latest
+    outputs:
+      frontend_url: ${{ steps.fe_infra.outputs.url }}
+    steps:      
       - name: Get Frontend Artifact
         uses: dawidd6/action-download-artifact@v2
         with:
-          workflow: backend.yml
+          workflow: frontend.yml
           name: frontend-artifact
           path: frontend/build
   
@@ -78,19 +118,9 @@ jobs:
           export replacement="${{ steps.be_infra.output.backend_url }}"
           find frontend/build -type f -name "*.*"" -print0 | xargs -0 sed -i '' -e "s/$existing/$replacement/g"
 
-      - name: Create Frontend Infrastructure
-        id: fe_infra
-        run: |
-          cd util/terraform/frontend          
-          terraform init 
-          terraform apply -auto-approve -var bucket_name=anyhasher-frontend-${{ github.run_number}}
-          export S3_BUCKET_NAME=$(terraform output -raw bucket_name)
-          export S3_URL=$(terraform output -raw website_endpoint)
-          echo "::set-output name=frontend_url::$S3_URL"
-          
   verify-frontend:
     runs-on: ubuntu-latest
-    needs: [provision_infrastructure]
+    needs: [configure_backend,configure_frontend]
     steps:
       - name: Checkout
         uses: actions/checkout@v1
@@ -104,7 +134,7 @@ jobs:
       
   verify-backend:
     runs-on: ubuntu-latest
-    needs: [provision_infrastructure]
+    needs: [configure_backend]
     steps:
       - name: Checkout
         uses: actions/checkout@v1
