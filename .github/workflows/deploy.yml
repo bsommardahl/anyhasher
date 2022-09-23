@@ -123,6 +123,13 @@ jobs:
           replace: "${{ needs.provision_backend.outputs.backend_url }}"
           regex: false
 
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+  
       - name: Upload frontend to S3 Bucket
         run: |
           aws s3 cp frontend/build s3://${{ needs.provision_frontend.outputs.bucket_name }} --region=us-east-1 --recursive
