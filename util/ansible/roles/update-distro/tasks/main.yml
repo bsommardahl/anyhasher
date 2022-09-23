@@ -1,0 +1,12 @@
+---
+- name: "Update domain name for cloudfront distribution"
+  community.aws.cloudfront_distribution:
+    state: present
+    distribution_id: "{{ distro_id }}"
+    origins:
+      - domain_name: "{{ origin_domain }}"
+
+- name: "Invalidate distro"
+  cloudfront_invalidate: 
+    distribution_id: {{ distro_id }}
+    path: "/**/*"    

@@ -1,0 +1,7 @@
+---
+- name: Promote Green to Blue
+  hosts: ec2
+  remote_user: ubuntu
+  gather_facts: false
+  roles:
+    - update-distro

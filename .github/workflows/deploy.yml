@@ -47,6 +47,9 @@ jobs:
   configure_backend:
     needs: [provision_backend]
     runs-on: ubuntu-latest
+    environment: 
+      name: Raw Test Backend Url
+      url: ${{ needs.provision_backend.outputs.backend_url }}
     steps:      
       - name: Checkout
         uses: actions/checkout@v1
@@ -71,6 +74,7 @@ jobs:
             ${{ needs.provision_backend.outputs.backend_url }}
           options: |
             --verbose
+            --extra-vars hello=there
 
   provision_frontend:
     outputs:
@@ -108,6 +112,9 @@ jobs:
   configure_frontend:
     needs: [provision_backend,provision_frontend]
     runs-on: ubuntu-latest
+    environment: 
+      name: Raw Test Frontend Url
+      url: ${{ needs.provision_frontend.outputs.frontend_url }}
     steps:      
       - name: Get Frontend Artifact
         uses: dawidd6/action-download-artifact@v2
@@ -182,19 +189,13 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Switch CloudFront router from old to new
-        run: |
-          echo Thanks Sean Killeen!! - https://seankilleen.com/2021/07/how-to-automate-aws-cloudfront-distribution-folder-changes-when-deploying-a-static-web-site/
-          export cloudfront_distribution_id=${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }}
-          export region=us-east-1
-          
-          aws cloudfront get-distribution-config --id $cloudfront_distribution_id --region $region > output.json
-          cat output.json
-          etag=`cat output.json | jq -r ".ETag"`
-          cat output.json | jq "del(.ETag) | (.DistributionConfig.Origins.Items[] | select(.Id == \"$cloudfront_s3_origin_id\")).OriginPath = \"/$release_number\" | .DistributionConfig" > updated-config.json
-          
-          aws cloudfront update-distribution --id $cloudfront_distribution_id --region $region --if-match="$etag" --distribution-config file://updated-config.json
-          aws cloudfront wait distribution-deployed --id $cloudfront_distribution_id --region $region
-          aws cloudfront create-invalidation --distribution-id $cloudfront_distribution_id --paths "/*" --region $region
-
+      - name: Change CloudFront "Router"
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: promote.yml
+          directory: ./util/ansible
+          options: |
+            --verbose
+            --extra-vars distro_id="${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }}" origin_domain="${{ needs.provision_infrastructure.outputs.frontend_url }}"
   
+  //destroy old blue infra (save ref to blue infra before)
