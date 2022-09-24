@@ -30,6 +30,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
   
+      - name: Use commit workspace
+        uses: dflook/terraform-new-workspace@v1
+        with:
+          path: util/terraform/backend
+          workspace: $(git rev-parse --short HEAD)
+      
       - name: Provision Backend Infrastructure
         id: provision
         uses: dflook/terraform-apply@v1
@@ -61,6 +67,12 @@ jobs:
           terraform_wrapper: false
           terraform_version: 1.2.9
 
+      - name: Use commit workspace
+        uses: dflook/terraform-new-workspace@v1
+        with:
+          path: util/terraform/frontend
+          workspace: $(git rev-parse --short HEAD)
+      
       - name: Provision Frontend Infrastructure
         id: provision
         uses: dflook/terraform-apply@v1
