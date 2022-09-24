@@ -34,7 +34,7 @@ jobs:
         uses: dflook/terraform-new-workspace@v1
         with:
           path: util/terraform/backend
-          workspace: $(git rev-parse --short HEAD)
+          workspace: {{ github.sha }}
       
       - name: Provision Backend Infrastructure
         id: provision
@@ -43,7 +43,7 @@ jobs:
           auto_approve: true
           path: util/terraform/backend
           variables: |
-            instance_name = "anyhasher-backend-$(git rev-parse --short HEAD)"
+            instance_name = "anyhasher-backend-{{ github.sha }}"
 
   provision_frontend:
     outputs:
@@ -71,7 +71,7 @@ jobs:
         uses: dflook/terraform-new-workspace@v1
         with:
           path: util/terraform/frontend
-          workspace: $(git rev-parse --short HEAD)
+          workspace: {{ github.sha }}
       
       - name: Provision Frontend Infrastructure
         id: provision
@@ -80,4 +80,4 @@ jobs:
           auto_approve: true
           path: util/terraform/frontend
           variables: |
-            bucket_name = "anyhasher-frontend-$(git rev-parse --short HEAD)"
+            bucket_name = "anyhasher-frontend-{{ github.sha }}"
