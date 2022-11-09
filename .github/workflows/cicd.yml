@@ -44,8 +44,8 @@ jobs:
         id: cache
         uses: actions/cache@v2
         with:
-          path: node_modules
-          key: node-modules-cache
+          path: backend/node_modules
+          key: be-node-modules
 
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
