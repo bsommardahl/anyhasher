@@ -45,7 +45,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: backend/node_modules
-          key: be-node-modules
+          key: be-node-modules-${{ hashFiles('backend/package-lock.json') }}
 
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
