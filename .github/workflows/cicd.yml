@@ -47,6 +47,11 @@ jobs:
           path: backend/node_modules
           key: be-node-modules-${{ hashFiles('backend/package-lock.json') }}
 
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
+
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: cd backend && npm i
@@ -67,6 +72,11 @@ jobs:
         with:
           path: backend/node_modules
           key: be-node-modules-${{ hashFiles('backend/package-lock.json') }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
 
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
@@ -115,27 +125,28 @@ jobs:
   fe-build:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
       - name: Cache Node Modules
         id: cache
         uses: actions/cache@v2
         with:
-          path: node_modules
-          key: node-modules-cache
-
-      - name: Checkout
-        uses: actions/checkout@v1
+          path: frontend/node_modules
+          key: fe-node-modules-${{ hashFiles('frontend/package-lock.json') }}
 
       - name: Setup Node
         uses: actions/setup-node@v1
         with:
           node-version: 16.x
 
-      - name: Install Deps
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
         run: cd frontend && npm i
 
       - name: Build
         run: |
-          export REACT_APP_API_HOST=__BACKEND_URL_PLACEHOLDER__
+          export REACT_APP_API_HOST=https://eopexkh5hkxhne.m.pipedream.net
           cd frontend && npm run build
 
       - name: Upload artifact
@@ -166,19 +177,20 @@ jobs:
         with:
           languages: javascript
 
+      - name: Cache Node Modules
+        id: cache
+        uses: actions/cache@v2
+        with:
+          path: frontend/node_modules
+          key: fe-node-modules-${{ hashFiles('frontend/package-lock.json') }}
+
       - name: Setup Node
         uses: actions/setup-node@v1
         with:
           node-version: 16.x
 
-      - name: Cache Node Modules
-        id: cache
-        uses: actions/cache@v2
-        with:
-          path: node_modules
-          key: node-modules-cache
-
-      - name: Install Deps
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
         run: cd frontend && npm i
 
       - name: Build
@@ -187,34 +199,34 @@ jobs:
       - name: Perform Analysis
         uses: github/codeql-action/analyze@v1
 
-  # fe-deploy-pages:
-  #   needs: [fe-static-analysis, fe-security-audit]
-  #   runs-on: ubuntu-latest
-  #   permissions:
-  #     pages: write
-  #     id-token: write
-  #   environment:
-  #     name: github-pages
-  #     url: ${{ steps.deployment.outputs.page_url }}
-  #   steps:
-  #     - name: Deploy to GitHub Pages
-  #       id: deployment
-  #       uses: actions/deploy-pages@v1
+  fe-deploy-pages:
+    needs: [fe-static-analysis, fe-security-audit]
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      productionUrl: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
 
-  # fe-smoke-test:
-  #   needs: [fe-deploy-pages]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v1
+  fe-smoke-test:
+    needs: [fe-deploy-pages]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
 
-  #     - name: Setup Node
-  #       uses: actions/setup-node@v1
-  #       with:
-  #         node-version: 16.x
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
 
-  #     - name: Run Smoke Test
-  #       run: |
-  #         export TEST_URL=${{ steps.deployment.outputs.page_url }}
-  #         cd frontend/e2e
-  #         npm i
-  #         npm run smoke-test
+      - name: Run Smoke Test
+        run: |
+          export TEST_URL=${{ needs.fe-deploy-pages.outputs.productionUrl }}
+          cd frontend/e2e && npm i && npm run smoke-test
