@@ -5,14 +5,12 @@ on:
       - 'backend/**'
       - '.github/workflows/backend.yml'
     branches:
-      - main
       - l4
   pull_request:
     paths:
       - 'backend/**'
       - '.github/workflows/backend.yml'
     branches:
-      - main
       - l4
     
 jobs:

@@ -1,28 +1,16 @@
 name: Frontend
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "frontend"
-  cancel-in-progress: true
-
 on:
   push:
     paths:
       - 'frontend/**'
       - '.github/workflows/frontend.yml'
     branches:
-      - main
       - l4
   pull_request:
     paths:
       - 'frontend/**'
       - '.github/workflows/frontend.yml'
     branches:
-      - main
       - l4
 
 jobs:
