@@ -1,8 +1,9 @@
 name: Continuous Integration
 on: 
   push:
-    - 'l3'
-    
+    branches:
+      - 'l3'
+
 jobs:
   build:
     runs-on: ubuntu-latest
