@@ -6,15 +6,15 @@ jobs:
   be-build:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
       - name: Cache Node Modules
         id: cache
         uses: actions/cache@v2
         with:
-          path: node_modules
-          key: node-modules-cache
-
-      - name: Checkout
-        uses: actions/checkout@v1
+          path: backend/node_modules
+          key: be-node-modules-${{ hashFiles('backend/package-lock.json') }}
 
       - name: Setup Node
         uses: actions/setup-node@v1
