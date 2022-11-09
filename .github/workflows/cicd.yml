@@ -212,18 +212,9 @@ jobs:
         with:
           node-version: 16.x
 
-      - name: Cache Node Modules
-        id: cache
-        uses: actions/cache@v2
-        with:
-          path: node_modules
-          key: node-modules-cache
-
-      - name: Install Deps
-        run: cd frontend && npm i
-
       - name: Run Smoke Test
         run: |
           export TEST_URL=${{ steps.deployment.outputs.page_url }}
-          cd frontend
+          cd frontend/e2e
+          npm i
           npm run smoke-test
