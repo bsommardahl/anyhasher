@@ -138,10 +138,9 @@ jobs:
           export REACT_APP_API_HOST=__BACKEND_URL_PLACEHOLDER__
           cd frontend && npm run build
 
-      - name: Store Artifact
-        uses: actions/upload-artifact@v2
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
         with:
-          name: frontend-artifact
           path: frontend/build
 
   fe-security-audit:
@@ -187,3 +186,19 @@ jobs:
 
       - name: Perform Analysis
         uses: github/codeql-action/analyze@v1  
+
+  fe-deploy-pages:
+    needs: [fe-static-analysis]
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write      
+      id-token: write   
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
+      
+
