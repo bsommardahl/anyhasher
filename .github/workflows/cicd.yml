@@ -33,188 +33,188 @@ jobs:
           name: backend-artifact
           path: backend/build/
 
-  be-lint:
-    needs: [be-build]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v1
+  # be-lint:
+  #   needs: [be-build]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v1
 
-      - name: Cache Node Modules
-        id: cache-node-modules
-        uses: actions/cache@v2
-        with:
-          path: node_modules
-          key: node-modules-cache
+  #     - name: Cache Node Modules
+  #       id: cache-node-modules
+  #       uses: actions/cache@v2
+  #       with:
+  #         path: node_modules
+  #         key: node-modules-cache
 
-      - name: Install Dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: cd backend && npm i
+  #     - name: Install Dependencies
+  #       if: steps.cache.outputs.cache-hit != 'true'
+  #       run: cd backend && npm i
 
-      - name: Lint the code
-        run: cd backend && npm run lint
+  #     - name: Lint the code
+  #       run: cd backend && npm run lint
 
-  be-test:
-    needs: [be-build]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v1
+  # be-test:
+  #   needs: [be-build]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v1
 
-      - name: Cache Node Modules
-        id: cache-node-modules
-        uses: actions/cache@v2
-        with:
-          path: node_modules
-          key: node-modules-cache
+  #     - name: Cache Node Modules
+  #       id: cache-node-modules
+  #       uses: actions/cache@v2
+  #       with:
+  #         path: node_modules
+  #         key: node-modules-cache
 
-      - name: Install Dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: cd backend && npm i
+  #     - name: Install Dependencies
+  #       if: steps.cache.outputs.cache-hit != 'true'
+  #       run: cd backend && npm i
 
-      - name: Run Unit Tests
-        run: cd backend && npm t
+  #     - name: Run Unit Tests
+  #       run: cd backend && npm t
 
-  be-security-audit:
-    needs: [be-build]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v1
+  # be-security-audit:
+  #   needs: [be-build]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v1
 
-      - name: Check for security issue
-        run: cd backend && npm audit --audit-level=medium
+  #     - name: Check for security issue
+  #       run: cd backend && npm audit --audit-level=medium
 
-  be-static-analysis:
-    needs: [be-build]
-    runs-on: ubuntu-latest
-    permissions:
-      security-events: write
-    steps:
-      - uses: actions/checkout@v1
+  # be-static-analysis:
+  #   needs: [be-build]
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     security-events: write
+  #   steps:
+  #     - uses: actions/checkout@v1
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v1
-        with:
-          languages: javascript
+  #     - name: Initialize CodeQL
+  #       uses: github/codeql-action/init@v1
+  #       with:
+  #         languages: javascript
 
-      - name: Setup Node
-        uses: actions/setup-node@v1
-        with:
-          node-version: 16.x
+  #     - name: Setup Node
+  #       uses: actions/setup-node@v1
+  #       with:
+  #         node-version: 16.x
 
-      - name: Install Deps
-        run: cd backend && npm i
+  #     - name: Install Deps
+  #       run: cd backend && npm i
 
-      - name: Build
-        run: cd backend && npm run build
+  #     - name: Build
+  #       run: cd backend && npm run build
 
-      - name: Perform Analysis
-        uses: github/codeql-action/analyze@v1
+  #     - name: Perform Analysis
+  #       uses: github/codeql-action/analyze@v1
 
-  fe-build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cache Node Modules
-        id: cache
-        uses: actions/cache@v2
-        with:
-          path: node_modules
-          key: node-modules-cache
+  # fe-build:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Cache Node Modules
+  #       id: cache
+  #       uses: actions/cache@v2
+  #       with:
+  #         path: node_modules
+  #         key: node-modules-cache
 
-      - name: Checkout
-        uses: actions/checkout@v1
+  #     - name: Checkout
+  #       uses: actions/checkout@v1
 
-      - name: Setup Node
-        uses: actions/setup-node@v1
-        with:
-          node-version: 16.x
+  #     - name: Setup Node
+  #       uses: actions/setup-node@v1
+  #       with:
+  #         node-version: 16.x
 
-      - name: Install Deps
-        run: cd frontend && npm i
+  #     - name: Install Deps
+  #       run: cd frontend && npm i
 
-      - name: Build
-        run: |
-          export REACT_APP_API_HOST=__BACKEND_URL_PLACEHOLDER__
-          cd frontend && npm run build
+  #     - name: Build
+  #       run: |
+  #         export REACT_APP_API_HOST=__BACKEND_URL_PLACEHOLDER__
+  #         cd frontend && npm run build
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
-        with:
-          path: frontend/build
+  #     - name: Upload artifact
+  #       uses: actions/upload-pages-artifact@v1
+  #       with:
+  #         path: frontend/build
 
-  fe-security-audit:
-    needs: [fe-build]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v1
+  # fe-security-audit:
+  #   needs: [fe-build]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v1
 
-      - name: Check for security issue
-        run: cd frontend && npm audit --audit-level=critical
+  #     - name: Check for security issue
+  #       run: cd frontend && npm audit --audit-level=critical
 
-  fe-static-analysis:
-    needs: [fe-build]
-    runs-on: ubuntu-latest
-    permissions:
-      security-events: write
-    steps:
-      - uses: actions/checkout@v1
+  # fe-static-analysis:
+  #   needs: [fe-build]
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     security-events: write
+  #   steps:
+  #     - uses: actions/checkout@v1
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v1
-        with:
-          languages: javascript
+  #     - name: Initialize CodeQL
+  #       uses: github/codeql-action/init@v1
+  #       with:
+  #         languages: javascript
 
-      - name: Setup Node
-        uses: actions/setup-node@v1
-        with:
-          node-version: 16.x
+  #     - name: Setup Node
+  #       uses: actions/setup-node@v1
+  #       with:
+  #         node-version: 16.x
 
-      - name: Cache Node Modules
-        id: cache
-        uses: actions/cache@v2
-        with:
-          path: node_modules
-          key: node-modules-cache
+  #     - name: Cache Node Modules
+  #       id: cache
+  #       uses: actions/cache@v2
+  #       with:
+  #         path: node_modules
+  #         key: node-modules-cache
 
-      - name: Install Deps
-        run: cd frontend && npm i
+  #     - name: Install Deps
+  #       run: cd frontend && npm i
 
-      - name: Build
-        run: cd frontend && npm run build
+  #     - name: Build
+  #       run: cd frontend && npm run build
 
-      - name: Perform Analysis
-        uses: github/codeql-action/analyze@v1
+  #     - name: Perform Analysis
+  #       uses: github/codeql-action/analyze@v1
 
-  fe-deploy-pages:
-    needs: [fe-static-analysis, fe-security-audit]
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v1
+  # fe-deploy-pages:
+  #   needs: [fe-static-analysis, fe-security-audit]
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     pages: write
+  #     id-token: write
+  #   environment:
+  #     name: github-pages
+  #     url: ${{ steps.deployment.outputs.page_url }}
+  #   steps:
+  #     - name: Deploy to GitHub Pages
+  #       id: deployment
+  #       uses: actions/deploy-pages@v1
 
-  fe-smoke-test:
-    needs: [fe-deploy-pages]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
+  # fe-smoke-test:
+  #   needs: [fe-deploy-pages]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v1
 
-      - name: Setup Node
-        uses: actions/setup-node@v1
-        with:
-          node-version: 16.x
+  #     - name: Setup Node
+  #       uses: actions/setup-node@v1
+  #       with:
+  #         node-version: 16.x
 
-      - name: Run Smoke Test
-        run: |
-          export TEST_URL=${{ steps.deployment.outputs.page_url }}
-          cd frontend/e2e
-          npm i
-          npm run smoke-test
+  #     - name: Run Smoke Test
+  #       run: |
+  #         export TEST_URL=${{ steps.deployment.outputs.page_url }}
+  #         cd frontend/e2e
+  #         npm i
+  #         npm run smoke-test
