@@ -14,11 +14,11 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "eject": "react-scripts eject",
-    "lint": "echo lint"    
+    "lint": "echo lint"
   },
   "eslintConfig": {
     "extends": [
-      "react-app"      
+      "react-app"
     ]
   },
   "browserslist": {

@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "prestart": "npm run build",
-    "start": "node dist/server.js",
+    "start": "node build/server.js",
     "test": "jest",
     "build": "tsc",
     "postbuild": "cp package*.json build && cd build && npm ci --production",
