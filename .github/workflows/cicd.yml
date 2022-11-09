@@ -229,4 +229,4 @@ jobs:
       - name: Run Smoke Test
         run: |
           export TEST_URL=${{ needs.fe-deploy-pages.outputs.productionUrl }}
-          cd frontend/e2e && npm i && npm run smoke-test
+          cd frontend/e2e && npm i && npm run smoke
