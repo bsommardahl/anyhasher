@@ -131,7 +131,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: 
       name: Green Frontend Environment
-      url: https://${{ needs.provision_frontend.outputs.frontend_url }}
+      url: https://${{ needs.provision_backend.outputs.backend_url }}
     steps:      
       - name: Get Frontend Artifact
         uses: dawidd6/action-download-artifact@v2
@@ -158,6 +158,10 @@ jobs:
         run: |
           aws s3 cp frontend/build s3://${{ needs.provision_frontend.outputs.bucket_name }} --region=us-east-1 --recursive
       
+      - name: Checkout
+        if: failure()         
+        uses: actions/checkout@v1
+     
       - name: Cleanup On Failure
         if: failure()         
         run: |
