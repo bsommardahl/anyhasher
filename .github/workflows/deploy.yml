@@ -5,7 +5,6 @@ on:
       - 'candidate-*'
    
 jobs:
-
   provision_green_backend:
     runs-on: ubuntu-latest
     outputs:
@@ -95,7 +94,7 @@ jobs:
           message: "Failed attempt to provision frontend."
     
   deploy_green_backend:
-    needs: [provision_backend]
+    needs: [provision_green_backend]
     runs-on: ubuntu-latest
     environment: 
       name: Green Backend Environment
@@ -131,7 +130,7 @@ jobs:
           message: "Failed attempt to deploy backend."
     
   deploy_green_frontend:
-    needs: [provision_backend,provision_frontend]
+    needs: [provision_green_backend,provision_green_frontend]
     runs-on: ubuntu-latest
     environment: 
       name: Green Frontend Environment
