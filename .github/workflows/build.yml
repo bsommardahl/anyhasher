@@ -201,7 +201,7 @@ jobs:
       - name: Create the tag
         run: |
           git tag "candidate-${{ github.sha }}"
-          git push origin
+          git push origin "candidate-${{ github.sha }}"
         # uses: actions-ecosystem/action-push-tag@v1
         # with:
         #   tag: "candidate-${{ github.sha }}"
