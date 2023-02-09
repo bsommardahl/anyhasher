@@ -6,13 +6,6 @@ on:
    
 jobs:
 
-#  ____  ____  ____  _     _  ____  _  ____  _     
-# /  __\/  __\/  _ \/ \ |\/ \/ ___\/ \/  _ \/ \  /|
-# |  \/||  \/|| / \|| | //| ||    \| || / \|| |\ ||
-# |  __/|    /| \_/|| \// | |\___ || || \_/|| | \||
-# \_/   \_/\_\\____/\__/  \_/\____/\_/\____/\_/  \|
-                                                 
-
   provision_green_backend:
     runs-on: ubuntu-latest
     outputs:
@@ -101,15 +94,6 @@ jobs:
           tag: "cleanup-{{ github.sha }}"
           message: "Failed attempt to provision frontend."
     
-
-
-#  ____  _____ ____  _     ____ ___  _
-# /  _ \/  __//  __\/ \   /  _ \\  \//
-# | | \||  \  |  \/|| |   | / \| \  / 
-# | |_/||  /_ |  __/| |_/\| \_/| / /  
-# \____/\____\\_/   \____/\____//_/   
-                                    
-
   deploy_green_backend:
     needs: [provision_backend]
     runs-on: ubuntu-latest
@@ -188,11 +172,9 @@ jobs:
   tag-prerelease:
     needs: [deploy_green_frontend,deploy_green_backend]
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
-    - uses: actions/checkout@v2
-    - name: Create the tag
-        uses: negz/create-tag@v1
+      - uses: actions/checkout@v2
+      - name: Create the tag
+        uses: rickstaa/action-create-tag@v1
         with:
-          version: "prerelease-${{ github.sha }}"
+          tag: "prerelease-${{ github.sha }}"

@@ -195,11 +195,11 @@ jobs:
     permissions:
       contents: write
     steps:
-    - uses: actions/checkout@v2
-    - name: Create the tag
-        uses: negz/create-tag@v1
+      - uses: actions/checkout@v2
+      - name: Create the tag
+        uses: rickstaa/action-create-tag@v1
         with:
-          version: "candidate-${{ github.sha }}"
+          tag: "candidate-${{ github.sha }}"
         
     # - uses: ncipollo/release-action@v1
     #   with:

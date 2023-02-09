@@ -51,8 +51,8 @@ jobs:
     permissions:
       contents: write
     steps:
-    - uses: actions/checkout@v2
-    - name: Create the tag
-        uses: negz/create-tag@v1
+      - uses: actions/checkout@v2
+      - name: Create the tag
+        uses: rickstaa/action-create-tag@v1
         with:
-          version: "green-${{ github.sha }}"
+          tag: "green-${{ github.sha }}"
