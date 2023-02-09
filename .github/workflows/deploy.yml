@@ -2,7 +2,7 @@ name: Deploy
 on:
   push:
     tags: 
-      - 'candidate-*'
+      #- 'candidate-*'
    
 jobs:
   provision_green_backend:
