@@ -1,8 +1,7 @@
 name: Deploy
 on:
   push:
-    tags: 
-      #- 'candidate-*'
+    tags: [candidate-*]
    
 jobs:
   provision_green_backend:
@@ -31,9 +30,7 @@ jobs:
         with:
           path: util/terraform/backend
           workspace: ${{ github.sha }}
-      
-      #terraform refresh
-      
+
       - name: Provision Backend Infrastructure
         id: provision
         uses: dflook/terraform-apply@v1
