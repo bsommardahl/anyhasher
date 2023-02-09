@@ -1,7 +1,8 @@
 name: Build
 on:
   push:
-   
+    - l7
+    
 jobs:
   be-build:
     runs-on: ubuntu-latest
@@ -86,7 +87,7 @@ jobs:
         run: cd backend && npm audit --production --audit-level=medium
 
   be-static-analysis:
-    needs: [be-build]
+    needs: [be-build,be-lint,be-test]
     runs-on: ubuntu-latest
     permissions:
       security-events: write
@@ -155,7 +156,7 @@ jobs:
         run: cd frontend && npm audit --production --audit-level=critical
   
   fe-static-analysis:
-    needs: [fe-build]
+    needs: [fe-build,fe-security-audit]
     runs-on: ubuntu-latest
     permissions:
       security-events: write
@@ -188,9 +189,9 @@ jobs:
       # - name: Perform Analysis
       #   uses: github/codeql-action/analyze@v1  
 
-  tag-candidate:
+  potentially-trigger-deploy:
     if: github.ref == 'refs/heads/main'
-    needs: [be-static-analysis, be-security-audit, fe-static-analysis, fe-security-audit]
+    needs: [be-static-analysis, fe-static-analysis]
     runs-on: ubuntu-latest
     permissions:
       contents: write
