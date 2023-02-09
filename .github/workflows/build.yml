@@ -1,8 +1,9 @@
 name: Build
 on:
   push:
-    - l7
-    
+    branches:
+      - l7
+
 jobs:
   be-build:
     runs-on: ubuntu-latest
