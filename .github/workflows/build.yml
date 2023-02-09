@@ -187,3 +187,23 @@ jobs:
 
       # - name: Perform Analysis
       #   uses: github/codeql-action/analyze@v1  
+
+  tag-candidate:
+    if: github.ref == 'refs/heads/main'
+    needs: [be-static-analysis, be-security-audit, fe-static-analysis, fe-security-audit]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v2
+    - name: Create the tag
+        uses: negz/create-tag@v1
+        with:
+          version: "candidate-${{ github.sha }}"
+        
+    # - uses: ncipollo/release-action@v1
+    #   with:
+    #     artifacts: "frontend/build/**/*,backend/build/**/*"      
+    #     prerelease: true
+    #     tag: "prerelease-${{ github.sha }}"
+    #     commit: ${{ github.sha }}

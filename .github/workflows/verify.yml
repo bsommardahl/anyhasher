@@ -1,0 +1,58 @@
+name: Verify
+on:
+  push:
+    tags: 
+    - 'prerelease-*'
+
+jobs:
+  verify-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Run Frontend Smoke Test
+        run: |
+          export TEST_URL=${{ needs.provision_infrastructure.outputs.frontend_url }}
+          cd e2e
+          npm install
+          npm run frontend-smoke  
+
+      - name: Cleanup On Failure
+        if: failure()         
+        uses: rickstaa/action-create-tag@v1
+        with:
+          tag: "cleanup-{{ github.sha }}"
+          message: "Failed attempt to verify frontend."
+    
+  verify-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Run Backend Smoke Test
+        run: |
+          export BACKEND_URL=${{ needs.provision_infrastructure.outputs.backend_url }}
+          cd e2e
+          chmod +x backend-smoke.sh
+          ./backend-smoke.sh
+      
+      - name: Cleanup On Failure
+        if: failure()         
+        uses: rickstaa/action-create-tag@v1
+        with:
+          tag: "cleanup-{{ github.sha }}"
+          message: "Failed attempt to verify backend."
+    
+  tag-green:
+    needs: [verify-backend,verify-frontend]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v2
+    - name: Create the tag
+        uses: negz/create-tag@v1
+        with:
+          version: "green-${{ github.sha }}"

@@ -1,0 +1,11 @@
+name: Announce New Blue Version
+on:
+  push:
+    tags: 
+    - 'blue-*'
+
+jobs:
+  announce:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo Need to hook up slack here!

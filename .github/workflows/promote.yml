@@ -1,0 +1,65 @@
+name: Promote Green to Blue
+on:  
+  push:
+    tags:
+      - 'green-*'
+
+jobs:
+  promote_green_to_blue:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Get Previous Blue Version
+        run: echo "old_blue_ref=$(git describe --match "blue" --abbrev=4 HEAD^)" >> $GITHUB_ENV
+
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_wrapper: false
+          terraform_version: 1.2.9
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Change CloudFront "Router"
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: promote.yml
+          directory: ./util/ansible
+          options: |
+            --verbose
+            --extra-vars "distro_id='${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }}' origin_domain='${{ needs.provision_infrastructure.outputs.frontend_url }}'"
+  
+      - name: Tag Green as New Blue
+        if: success()         
+        uses: rickstaa/action-create-tag@v1
+        with:
+          tag: "blue-{{ github.run_number }}"
+          message: "Verified release" 
+
+      - name: Cleanup Green Infrastructure After Failure
+        if: failure()         
+        uses: rickstaa/action-create-tag@v1
+        with:
+          tag: "cleanup-{{ github.sha }}"
+          message: "Failed attempt to promote after successful verify"
+    
+      - name: Checkout Old Blue
+        if: success()         
+        uses: actions/checkout@v1
+        with:
+          ref: {{ env.old_blue_ref }}
+      
+      - name: Tag Old Blue for Cleanup
+        if: success()         
+        uses: rickstaa/action-create-tag@v1
+        with:
+          tag: "cleanup-${{ github.sha }}"          

@@ -1,20 +1,15 @@
-name: Cleanup Old Infrastructure
-# on:  
-#   push:
-#     tags:
-#       - 'blue-*'
+name: Cleanup Infrastructure
+on:  
+  push:
+    tags:
+      - 'cleanup-*'
 
 jobs:
-  destroy_blue-on-success:
+  destroy_infrastructure:
     runs-on: ubuntu-latest
     steps:      
-      - name: Get Previous Blue Version
-        run: echo "old_blue_ref=$(git describe --match "blue" --abbrev=4 HEAD^)" >> $GITHUB_ENV
-
       - name: Checkout
         uses: actions/checkout@v1
-        with:
-          ref: {{ env.old_blue_ref }}
       
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
@@ -40,3 +35,5 @@ jobs:
         with:
           path: util/terraform/backend
           workspace: ${{ github.head_ref }}
+
+      - run: echo Need to hook up slack here!

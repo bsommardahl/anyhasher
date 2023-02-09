@@ -1,18 +1,14 @@
-name: Deploy
-on:
-  push:
-    tags: 
-    - 'candidate-*'
-   
+name: Deploy Green Application
+on:  
+  workflow_run:
+    branches: 
+      - main
+    workflows:
+      - Build
+    types:
+      - completed
+
 jobs:
-
-#  ____  ____  ____  _     _  ____  _  ____  _     
-# /  __\/  __\/  _ \/ \ |\/ \/ ___\/ \/  _ \/ \  /|
-# |  \/||  \/|| / \|| | //| ||    \| || / \|| |\ ||
-# |  __/|    /| \_/|| \// | |\___ || || \_/|| | \||
-# \_/   \_/\_\\____/\__/  \_/\____/\_/\____/\_/  \|
-                                                 
-
   provision_green_backend:
     runs-on: ubuntu-latest
     outputs:
@@ -48,14 +44,6 @@ jobs:
           path: util/terraform/backend
           variables: |
             instance_name = "anyhasher-backend-${{ github.sha }}"
-
-      - name: Cleanup On Failure
-        if: failure()         
-        uses: rickstaa/action-create-tag@v1
-        with:
-          tag: "cleanup-{{ github.sha }}"
-          message: "Failed attempt to provision backend."
-    
   
   provision_green_frontend:
     outputs:
@@ -93,22 +81,6 @@ jobs:
           path: util/terraform/frontend
           variables: |
             bucket_name = "anyhasher-frontend-${{ github.sha }}"
-      
-      - name: Cleanup On Failure
-        if: failure()         
-        uses: rickstaa/action-create-tag@v1
-        with:
-          tag: "cleanup-{{ github.sha }}"
-          message: "Failed attempt to provision frontend."
-    
-
-
-#  ____  _____ ____  _     ____ ___  _
-# /  _ \/  __//  __\/ \   /  _ \\  \//
-# | | \||  \  |  \/|| |   | / \| \  / 
-# | |_/||  /_ |  __/| |_/\| \_/| / /  
-# \____/\____\\_/   \____/\____//_/   
-                                    
 
   deploy_green_backend:
     needs: [provision_backend]
@@ -138,14 +110,7 @@ jobs:
             ${{ needs.provision_backend.outputs.backend_url }}
           options: |
             --verbose            
-    
-      - name: Cleanup On Failure
-        if: failure()         
-        uses: rickstaa/action-create-tag@v1
-        with:
-          tag: "cleanup-{{ github.sha }}"
-          message: "Failed attempt to deploy backend."
-    
+  
   deploy_green_frontend:
     needs: [provision_backend,provision_frontend]
     runs-on: ubuntu-latest
@@ -177,22 +142,5 @@ jobs:
       - name: Upload frontend to S3 Bucket
         run: |
           aws s3 cp frontend/build s3://${{ needs.provision_frontend.outputs.bucket_name }} --region=us-east-1 --recursive
-      
-      - name: Cleanup On Failure
-        if: failure()         
-        uses: rickstaa/action-create-tag@v1
-        with:
-          tag: "cleanup-{{ github.sha }}"
-          message: "Failed attempt to deploy frontend."
-    
-  tag-prerelease:
-    needs: [deploy_green_frontend,deploy_green_backend]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-    - uses: actions/checkout@v2
-    - name: Create the tag
-        uses: negz/create-tag@v1
-        with:
-          version: "prerelease-${{ github.sha }}"
+
+  
