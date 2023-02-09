@@ -2,7 +2,7 @@ name: Cleanup Infrastructure
 on:  
   push:
     tags:
-      - 'cleanup-*'
+      - 'cleanup/*'
 
 jobs:
   destroy_infrastructure:

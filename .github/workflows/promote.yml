@@ -2,7 +2,7 @@ name: Promote Green to Blue
 on:  
   push:
     tags:
-      - 'green-*'
+      - 'green/*'
 
 jobs:
   promote_green_to_blue:
@@ -39,8 +39,8 @@ jobs:
       - name: Tag Green as New Blue
         if: success()         
         run: |
-          git tag "blue-${{ github.sha }}"
-          git push origin "blue-${{ github.sha }}"     
+          git tag "blue/${{ github.sha }}"
+          git push origin "blue/${{ github.sha }}"     
 
       - name: Checkout Old Blue
         if: success()         
@@ -51,12 +51,12 @@ jobs:
       - name: Tag Old Blue for Cleanup
         if: success()         
         run: |
-          git tag "cleanup-${{ github.sha }}"
-          git push origin "cleanup-${{ github.sha }}"          
+          git tag "cleanup/${{ github.sha }}"
+          git push origin "cleanup/${{ github.sha }}"          
       
       - name: Cleanup Green Infrastructure After Failure
         if: failure()         
         run: |
-          git tag "cleanup-${{ github.sha }}"
-          git push origin "cleanup-${{ github.sha }}"     
+          git tag "cleanup/${{ github.sha }}"
+          git push origin "cleanup/${{ github.sha }}"     
           

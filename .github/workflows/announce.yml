@@ -2,7 +2,7 @@ name: Announce New Blue Version
 on:
   push:
     tags: 
-    - 'blue-*'
+    - 'blue/*'
 
 jobs:
   announce:
