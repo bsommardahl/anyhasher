@@ -43,10 +43,9 @@ jobs:
 
       - name: Cleanup On Failure
         if: failure()         
-        uses: rickstaa/action-create-tag@v1
-        with:
-          tag: "cleanup/{{ github.sha }}"
-          message: "Failed attempt to provision backend."
+        run: |
+          git tag "cleanup/${{ github.sha }}"
+          git push origin "cleanup/${{ github.sha }}" 
     
   
   provision_green_frontend:
@@ -88,10 +87,9 @@ jobs:
       
       - name: Cleanup On Failure
         if: failure()         
-        uses: rickstaa/action-create-tag@v1
-        with:
-          tag: "cleanup/{{ github.sha }}"
-          message: "Failed attempt to provision frontend."
+        run: |
+          git tag "cleanup/${{ github.sha }}"
+          git push origin "cleanup/${{ github.sha }}" 
     
   deploy_green_backend:
     needs: [provision_green_backend]
@@ -124,10 +122,9 @@ jobs:
     
       - name: Cleanup On Failure
         if: failure()         
-        uses: rickstaa/action-create-tag@v1
-        with:
-          tag: "cleanup/{{ github.sha }}"
-          message: "Failed attempt to deploy backend."
+        run: |
+          git tag "cleanup/${{ github.sha }}"
+          git push origin "cleanup/${{ github.sha }}"   
     
   deploy_green_frontend:
     needs: [provision_green_backend,provision_green_frontend]
@@ -163,10 +160,9 @@ jobs:
       
       - name: Cleanup On Failure
         if: failure()         
-        uses: rickstaa/action-create-tag@v1
-        with:
-          tag: "cleanup/{{ github.sha }}"
-          message: "Failed attempt to deploy frontend."
+        run: |
+          git tag "cleanup/${{ github.sha }}"
+          git push origin "cleanup/${{ github.sha }}"          
     
   tag-prerelease:
     needs: [deploy_green_frontend,deploy_green_backend]

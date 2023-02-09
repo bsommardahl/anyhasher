@@ -20,10 +20,9 @@ jobs:
 
       - name: Cleanup On Failure
         if: failure()         
-        uses: rickstaa/action-create-tag@v1
-        with:
-          tag: "cleanup/{{ github.sha }}"
-          message: "Failed attempt to verify frontend."
+        run: |
+          git tag "cleanup/${{ github.sha }}"
+          git push origin "cleanup/${{ github.sha }}" 
     
   verify-backend:
     runs-on: ubuntu-latest
@@ -40,10 +39,9 @@ jobs:
       
       - name: Cleanup On Failure
         if: failure()         
-        uses: rickstaa/action-create-tag@v1
-        with:
-          tag: "cleanup/{{ github.sha }}"
-          message: "Failed attempt to verify backend."
+        run: |
+          git tag "cleanup/${{ github.sha }}"
+          git push origin "cleanup/${{ github.sha }}" 
     
   tag-green:
     needs: [verify-backend,verify-frontend]

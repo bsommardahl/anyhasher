@@ -32,14 +32,12 @@
   
       - name: Tag Green as New Blue
         if: success()         
-        uses: rickstaa/action-create-tag@v1
-        with:
-          tag: "blue-{{ github.run_number }}"
-          message: "Latest release" 
+        run: |
+          git tag "blue/${{ github.sha }}"
+          git push origin "blue/${{ github.sha }}" 
 
       - name: Handle Failure
         if: failure()         
-        uses: rickstaa/action-create-tag@v1
-        with:
-          tag: "failure-{{ github.run_number }}"
-          message: "Failed attempt to promote after successful verify"
+        run: |
+          git tag "cleanup/${{ github.sha }}"
+          git push origin "cleanup/${{ github.sha }}" 
