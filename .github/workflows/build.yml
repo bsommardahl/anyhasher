@@ -157,7 +157,7 @@ jobs:
         run: cd frontend && npm audit --production --audit-level=critical
   
   fe-static-analysis:
-    needs: [fe-build,fe-security-audit]
+    needs: [fe-security-audit]
     runs-on: ubuntu-latest
     permissions:
       security-events: write
@@ -190,7 +190,7 @@ jobs:
       # - name: Perform Analysis
       #   uses: github/codeql-action/analyze@v1  
 
-  potentially-trigger-deploy:
+  tag-candidate:
     #if: github.ref == 'refs/heads/main'
     needs: [be-static-analysis, fe-static-analysis]
     runs-on: ubuntu-latest
@@ -199,7 +199,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Create the tag
-        uses: rickstaa/action-create-tag@v1
+        uses: actions-ecosystem/action-push-tag@v1
         with:
           tag: "candidate-${{ github.sha }}"
         
