@@ -199,13 +199,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Create the tag
-        uses: actions-ecosystem/action-push-tag@v1
-        with:
-          tag: "candidate-${{ github.sha }}"
+        run: |
+          git tag "candidate-${{ github.sha }}"
+          git push origin
+        # uses: actions-ecosystem/action-push-tag@v1
+        # with:
+        #   tag: "candidate-${{ github.sha }}"
         
-    # - uses: ncipollo/release-action@v1
-    #   with:
-    #     artifacts: "frontend/build/**/*,backend/build/**/*"      
-    #     prerelease: true
-    #     tag: "prerelease-${{ github.sha }}"
-    #     commit: ${{ github.sha }}
