@@ -175,6 +175,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Create the tag
-        uses: actions-ecosystem/action-push-tag@v1
-        with:
-          tag: "prerelease-${{ github.sha }}"
+        run: |
+          git tag "prerelease-${{ github.sha }}"
+          git push origin "prerelease-${{ github.sha }}"               

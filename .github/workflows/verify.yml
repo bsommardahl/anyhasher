@@ -53,6 +53,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Create the tag
-        uses: actions-ecosystem/action-push-tag@v1
-        with:
-          tag: "green-${{ github.sha }}"
+        run: |
+          git tag "green-${{ github.sha }}"
+          git push origin "green-${{ github.sha }}"     

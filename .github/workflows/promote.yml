@@ -7,8 +7,6 @@ on:
 jobs:
   promote_green_to_blue:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Get Previous Blue Version
         run: echo "old_blue_ref=$(git describe --match "blue" --abbrev=4 HEAD^)" >> $GITHUB_ENV
@@ -40,18 +38,10 @@ jobs:
   
       - name: Tag Green as New Blue
         if: success()         
-        uses: actions-ecosystem/action-push-tag@v1
-        with:
-          tag: "blue-{{ github.run_number }}"
-          message: "Verified release" 
+        run: |
+          git tag "blue-${{ github.sha }}"
+          git push origin "blue-${{ github.sha }}"     
 
-      - name: Cleanup Green Infrastructure After Failure
-        if: failure()         
-        uses: actions-ecosystem/action-push-tag@v1
-        with:
-          tag: "cleanup-{{ github.sha }}"
-          message: "Failed attempt to promote after successful verify"
-    
       - name: Checkout Old Blue
         if: success()         
         uses: actions/checkout@v1
@@ -60,6 +50,13 @@ jobs:
       
       - name: Tag Old Blue for Cleanup
         if: success()         
-        uses: actions-ecosystem/action-push-tag@v1
-        with:
-          tag: "cleanup-${{ github.sha }}"          
+        run: |
+          git tag "cleanup-${{ github.sha }}"
+          git push origin "cleanup-${{ github.sha }}"          
+      
+      - name: Cleanup Green Infrastructure After Failure
+        if: failure()         
+        run: |
+          git tag "cleanup-${{ github.sha }}"
+          git push origin "cleanup-${{ github.sha }}"     
+          
