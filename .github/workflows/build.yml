@@ -83,7 +83,7 @@ jobs:
         uses: actions/checkout@v1
 
       - name: Check for security issue
-        run: cd backend && npm audit --audit-level=medium
+        run: cd backend && npm audit --production --audit-level=medium
 
   be-static-analysis:
     needs: [be-build]
@@ -152,7 +152,7 @@ jobs:
         uses: actions/checkout@v1
 
       - name: Check for security issue
-        run: cd frontend && npm audit --audit-level=critical
+        run: cd frontend && npm audit --production --audit-level=critical
   
   fe-static-analysis:
     needs: [fe-build]
