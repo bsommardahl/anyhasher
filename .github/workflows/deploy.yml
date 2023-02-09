@@ -32,6 +32,8 @@ jobs:
           path: util/terraform/backend
           workspace: ${{ github.sha }}
       
+      #terraform refresh
+      
       - name: Provision Backend Infrastructure
         id: provision
         uses: dflook/terraform-apply@v1
