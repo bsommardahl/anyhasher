@@ -191,15 +191,25 @@ jobs:
       # - name: Perform Analysis
       #   uses: github/codeql-action/analyze@v1  
 
-  tag-candidate:
+  # tag-candidate:
+  #   #if: github.ref == 'refs/heads/main'
+  #   needs: [be-static-analysis, fe-static-analysis]
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     contents: write
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Create the tag
+  #       run: |
+  #         git tag "candidate/3"
+  #         git push origin "candidate/3"       
+
+  trigger-deploy:
     #if: github.ref == 'refs/heads/main'
     needs: [be-static-analysis, fe-static-analysis]
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
-      - uses: actions/checkout@v2
-      - name: Create the tag
-        run: |
-          git tag "candidate/3"
-          git push origin "candidate/3"       
+      - name: Dispatch Workflow
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: Deploy

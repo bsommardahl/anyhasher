@@ -1,9 +1,7 @@
 name: Deploy
 on:
-  push:
-    tags: 
-      - 'candidate/*'
-   
+  repository_dispatch:
+    
 jobs:
   provision_green_backend:
     runs-on: ubuntu-latest
