@@ -195,8 +195,7 @@ jobs:
     #if: github.ref == 'refs/heads/main'
     needs: [be-static-analysis, fe-static-analysis]
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    permissions: write-all
     steps:
       - name: Dispatch
         uses: benc-uk/workflow-dispatch@v1
