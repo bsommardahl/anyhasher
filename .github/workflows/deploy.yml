@@ -111,7 +111,7 @@ jobs:
         with:
           playbook: deploy.yml
           directory: ./util/ansible
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
           inventory: |
             [ec2]
             ${{ needs.provision_backend.outputs.backend_url }}
