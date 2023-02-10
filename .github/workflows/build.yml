@@ -212,6 +212,4 @@ jobs:
         uses: softprops/action-gh-release@v1
         #if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: 
-            - frontend/build
-            - backend/build
+          files: 'frontend/build/**,backend/build/**'
