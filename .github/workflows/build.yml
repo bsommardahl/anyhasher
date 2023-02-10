@@ -201,5 +201,5 @@ jobs:
       - uses: actions/checkout@v2
       - name: Create the tag
         run: |
-          git tag "candidate/${{ github.sha }}"
-          git push origin "candidate/${{ github.sha }}"       
+          git tag "candidate/3"
+          git push origin "candidate/3"       
