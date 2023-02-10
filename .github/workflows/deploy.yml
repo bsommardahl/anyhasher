@@ -6,7 +6,7 @@ jobs:
   provision_backend:
     runs-on: ubuntu-latest
     outputs:
-      backend_url: ${{ steps.provision.outputs.backend_url }}
+      backend_url: ${{ steps.provision.outputs.ec2_public_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v1
@@ -48,7 +48,7 @@ jobs:
   
   provision_frontend:
     outputs:
-      frontend_url: ${{ steps.provision.outputs.frontend_url }}
+      frontend_url: ${{ steps.provision.outputs.website_endpoint }}
       bucket_name: ${{ steps.provision.outputs.bucket_name }}
     runs-on: ubuntu-latest
     steps:      
