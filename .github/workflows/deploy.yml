@@ -1,7 +1,8 @@
 name: Deploy
 on:
   repository_dispatch:
-    
+  workflow_call:
+  
 jobs:
   provision_green_backend:
     runs-on: ubuntu-latest

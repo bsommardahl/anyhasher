@@ -209,7 +209,8 @@ jobs:
     needs: [be-static-analysis, fe-static-analysis]
     runs-on: ubuntu-latest
     steps:
-      - name: Dispatch Workflow
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: Deploy
+      - name: Trigger Deploy
+        uses: ./.github/workflows/deploy.yml
+        # uses: benc-uk/workflow-dispatch@v1
+    #     with:
+    #       workflow: Deploy
