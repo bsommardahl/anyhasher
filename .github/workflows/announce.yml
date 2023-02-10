@@ -1,5 +1,6 @@
 name: Announce New Blue Version
 on:
+  workflow_call:
   push:
     tags: 
     - 'blue/*'
