@@ -1,9 +1,6 @@
 name: Promote Green to Blue
 on:  
-  workflow_call:
-  push:
-    tags:
-      - 'green/*'
+  workflow_dispatch:
 
 jobs:
   promote_green_to_blue:

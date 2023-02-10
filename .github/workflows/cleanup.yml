@@ -1,9 +1,6 @@
 name: Cleanup Infrastructure
 on:  
-  workflow_call:
-  push:
-    tags:
-      - 'cleanup/*'
+  workflow_dispatch:
 
 jobs:
   destroy_infrastructure:

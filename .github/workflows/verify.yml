@@ -1,9 +1,6 @@
 name: Verify
 on:
-  workflow_call:
-  push:
-    tags: 
-    - 'prerelease/*'
+  workflow_dispatch:
 
 jobs:
   verify-frontend:
@@ -44,14 +41,12 @@ jobs:
           git tag "cleanup/${{ github.sha }}"
           git push origin "cleanup/${{ github.sha }}" 
     
-  tag-green:
+  trigger-promotion:
     needs: [verify-backend,verify-frontend]
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    permissions: write-all
     steps:
-      - uses: actions/checkout@v2
-      - name: Create the tag
-        run: |
-          git tag "green/{{ github.sha }}"
-          git push origin "green/{{ github.sha }}"     
+      - name: Dispatch
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: Promote

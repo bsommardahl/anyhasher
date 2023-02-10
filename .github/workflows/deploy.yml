@@ -166,7 +166,12 @@ jobs:
           git tag "cleanup/${{ github.sha }}"
           git push origin "cleanup/${{ github.sha }}"          
     
-  verify:
+  trigger-verify:
     needs: [deploy_green_frontend,deploy_green_backend]
     runs-on: ubuntu-latest
-    uses: ./.github/workflows/verify.yml
+    permissions: write-all
+    steps:
+      - name: Dispatch
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: Verify
