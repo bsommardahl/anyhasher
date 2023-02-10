@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  provision_green_backend:
+  provision_backend:
     runs-on: ubuntu-latest
     outputs:
       backend_url: ${{ steps.provision.outputs.backend_url }}
@@ -46,7 +46,7 @@ jobs:
           git push origin "cleanup/${{ github.sha }}" 
     
   
-  provision_green_frontend:
+  provision_frontend:
     outputs:
       frontend_url: ${{ steps.provision.outputs.frontend_url }}
       bucket_name: ${{ steps.provision.outputs.bucket_name }}
@@ -89,8 +89,8 @@ jobs:
           git tag "cleanup/${{ github.sha }}"
           git push origin "cleanup/${{ github.sha }}" 
     
-  deploy_green_backend:
-    needs: [provision_green_backend]
+  deploy_backend:
+    needs: [provision_backend]
     runs-on: ubuntu-latest
     environment: 
       name: Green Backend Environment
@@ -124,8 +124,8 @@ jobs:
           git tag "cleanup/${{ github.sha }}"
           git push origin "cleanup/${{ github.sha }}"   
     
-  deploy_green_frontend:
-    needs: [provision_green_backend,provision_green_frontend]
+  deploy_frontend:
+    needs: [provision_backend,provision_frontend]
     runs-on: ubuntu-latest
     environment: 
       name: Green Frontend Environment
@@ -167,7 +167,7 @@ jobs:
           git push origin "cleanup/${{ github.sha }}"          
     
   trigger-verify:
-    needs: [deploy_green_frontend,deploy_green_backend]
+    needs: [deploy_frontend,deploy_backend]
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
