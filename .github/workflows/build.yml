@@ -206,6 +206,7 @@ jobs:
 
   deploy:
     #if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
     needs: [be-static-analysis, fe-static-analysis]
     steps:
       - name: Release
