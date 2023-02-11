@@ -1,4 +1,4 @@
-name: Promote Green to Blue
+name: Promote
 on:  
   workflow_dispatch:
     inputs:
