@@ -12,6 +12,7 @@ on:
 jobs:
   verify-frontend:
     runs-on: ubuntu-latest
+    permissions: write-all
     steps:
       - name: Checkout
         uses: actions/checkout@v1
@@ -25,16 +26,14 @@ jobs:
 
       - name: Cleanup On Failure
         if: failure()     
-        permissions: write-all
-        steps:
-          - name: Dispatch
-            uses: benc-uk/workflow-dispatch@v1
-            with:
-              workflow: Cleanup
-              inputs: '{ "ref": "${{ github.event.inputs.ref }}" }'
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: Cleanup
+          inputs: '{ "ref": "${{ github.event.inputs.ref }}" }'
     
   verify-backend:
     runs-on: ubuntu-latest
+    permissions: write-all
     steps:
       - name: Checkout
         uses: actions/checkout@v1
@@ -47,14 +46,11 @@ jobs:
           ./backend-smoke.sh
       
       - name: Cleanup On Failure
-        if: failure()     
-        permissions: write-all
-        steps:
-          - name: Dispatch
-            uses: benc-uk/workflow-dispatch@v1
-            with:
-              workflow: Cleanup
-              inputs: '{ "ref": "${{ github.event.inputs.ref }}" }'
+        if: failure()             
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: Cleanup
+          inputs: '{ "ref": "${{ github.event.inputs.ref }}" }'
         
   trigger-promotion:
     needs: [verify-backend,verify-frontend]
