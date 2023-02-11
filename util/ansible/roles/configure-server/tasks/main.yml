@@ -19,7 +19,8 @@
     production: yes
     state: present
 
-- name: Set server port in /etc/environment
+- name: "set server port in /etc/environment"
+  become: true
   ansible.builtin.lineinfile:
     dest: "/etc/environment"
     insertbefore: "BOF"
