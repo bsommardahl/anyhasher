@@ -1,4 +1,4 @@
-name: Verify Candidate
+name: Verify
 on:
   workflow_dispatch:
 

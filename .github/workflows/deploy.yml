@@ -1,4 +1,4 @@
-name: Deploy Candidate
+name: Deploy
 on:
   workflow_dispatch:
 
@@ -176,4 +176,4 @@ jobs:
       - name: Dispatch
         uses: benc-uk/workflow-dispatch@v1
         with:
-          workflow: Verify Candidate
+          workflow: Verify
