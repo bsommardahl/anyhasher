@@ -1,6 +1,9 @@
 name: Promote Green to Blue
 on:  
   workflow_dispatch:
+    inputs:
+      ref:
+        required: true
 
 jobs:
   promote_green_to_blue:
@@ -11,6 +14,8 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v1
+        with:
+          ref: ${{ github.event.inputs.ref }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
@@ -40,6 +45,7 @@ jobs:
           git tag "blue/${{ github.sha }}"
           git push origin "blue/${{ github.sha }}"     
 
+      
       - name: Checkout Old Blue
         if: success()         
         uses: actions/checkout@v1
@@ -58,3 +64,13 @@ jobs:
           git tag "cleanup/${{ github.sha }}"
           git push origin "cleanup/${{ github.sha }}"     
           
+  trigger-cleanup:
+    needs: [promote_green_to_blue]
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - name: Dispatch
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: Cleanup
+          inputs: '{ "ref": "${{ env.old_blue_ref }}" }'

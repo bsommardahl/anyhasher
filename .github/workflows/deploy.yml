@@ -1,6 +1,9 @@
 name: Deploy
 on:
   workflow_dispatch:
+    inputs:
+      ref:
+        required: true
 
 jobs:
   provision_backend:
@@ -10,7 +13,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v1
-
+        with:
+          ref: ${{ github.event.inputs.ref }}
+          
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
         with:
@@ -28,23 +33,23 @@ jobs:
         uses: dflook/terraform-new-workspace@v1
         with:
           path: util/terraform/backend
-          workspace: anyhasher-backend-${{ github.sha }}
+          workspace: anyhasher-backend-${{ github.event.inputs.ref }}
 
       - name: Provision Backend Infrastructure
         id: provision
         uses: dflook/terraform-apply@v1
         with:
-          workspace: anyhasher-backend-${{ github.sha }}
+          workspace: anyhasher-backend-${{ github.event.inputs.ref }}
           auto_approve: true
           path: util/terraform/backend
           variables: |
-            instance_name = "anyhasher-backend-${{ github.sha }}"
+            instance_name = "anyhasher-backend-${{ github.event.inputs.ref }}"
 
       - name: Cleanup On Failure
         if: failure()         
         run: |
-          git tag "cleanup/${{ github.sha }}"
-          git push origin "cleanup/${{ github.sha }}" 
+          git tag "cleanup/${{ github.event.inputs.ref }}"
+          git push origin "cleanup/${{ github.event.inputs.ref }}" 
     
   
   provision_frontend:
@@ -73,23 +78,23 @@ jobs:
         uses: dflook/terraform-new-workspace@v1
         with:
           path: util/terraform/frontend
-          workspace: anyhasher-frontend-${{ github.sha }}
+          workspace: anyhasher-frontend-${{ github.event.inputs.ref }}
       
       - name: Provision Frontend Infrastructure
         id: provision
         uses: dflook/terraform-apply@v1
         with:
-          workspace: anyhasher-frontend-${{ github.sha }}
+          workspace: anyhasher-frontend-${{ github.event.inputs.ref }}
           auto_approve: true
           path: util/terraform/frontend
           variables: |
-            bucket_name = "anyhasher-frontend-${{ github.sha }}"
+            bucket_name = "anyhasher-frontend-${{ github.event.inputs.ref }}"
       
       - name: Cleanup On Failure
         if: failure()         
         run: |
-          git tag "cleanup/${{ github.sha }}"
-          git push origin "cleanup/${{ github.sha }}" 
+          git tag "cleanup/${{ github.event.inputs.ref }}"
+          git push origin "cleanup/${{ github.event.inputs.ref }}" 
     
   deploy_backend:
     needs: [provision_backend]
@@ -123,16 +128,16 @@ jobs:
       - name: Cleanup On Failure
         if: failure()         
         run: |
-          git tag "cleanup/${{ github.sha }}"
-          git push origin "cleanup/${{ github.sha }}"   
+          git tag "cleanup/${{ github.event.inputs.ref }}"
+          git push origin "cleanup/${{ github.event.inputs.ref }}"   
     
   deploy_frontend:
     needs: [provision_backend,provision_frontend]
     runs-on: ubuntu-latest
     environment: 
       name: Green Frontend Environment
-      url: https://${{ needs.provision_backend.outputs.backend_url }}
-    steps:      
+      url: https://${{ needs.provision_frontend.outputs.frontend_url }}
+    steps:
       - name: Get Frontend Artifact
         uses: dawidd6/action-download-artifact@v2
         with:
@@ -165,11 +170,11 @@ jobs:
       - name: Cleanup On Failure
         if: failure()         
         run: |
-          git tag "cleanup/${{ github.sha }}"
-          git push origin "cleanup/${{ github.sha }}"          
+          git tag "cleanup/${{ github.event.inputs.ref }}"
+          git push origin "cleanup/${{ github.event.inputs.ref }}"          
     
   trigger-verify:
-    needs: [deploy_frontend,deploy_backend]
+    needs: [provision_frontend,deploy_frontend,provision_backend,deploy_backend]
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
@@ -177,3 +182,4 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Verify
+          inputs: '{ "backend_url": "${{ needs.provision_backend.outputs.backend_url }}", "frontend_url": "https://${{ needs.provision_frontend.outputs.frontend_url }}", "ref": "${{ github.event.inputs.ref }}" }'

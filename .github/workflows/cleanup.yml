@@ -1,13 +1,18 @@
 name: Cleanup Infrastructure
 on:  
-  workflow_dispatch:
+   workflow_dispatch:
+    inputs:
+      ref:
+        required: true
 
 jobs:
   destroy_infrastructure:
     runs-on: ubuntu-latest
     steps:      
-      - name: Checkout
-        uses: actions/checkout@v1
+      # - name: Checkout
+      #   uses: actions/checkout@v1
+      #   with:
+      #     ref: ${{ github.event.inputs.ref }}          
       
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
@@ -22,16 +27,16 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Destroy Blue Frontend
+      - name: Destroy Frontend
         uses: dflook/terraform-destroy@v1
         with:
           path: util/terraform/frontend
-          workspace: ${{ github.head_ref }}
-      
-      - name: Destroy Blue Backend
+          workspace: anyhasher-frontend-${{ github.event.inputs.ref }}
+          
+      - name: Destroy Backend
         uses: dflook/terraform-destroy@v1
         with:
           path: util/terraform/backend
-          workspace: ${{ github.head_ref }}
+          workspace: anyhasher-backend-${{ github.event.inputs.ref }}
 
       - run: echo Need to hook up slack here!

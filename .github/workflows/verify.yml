@@ -1,7 +1,14 @@
 name: Verify
 on:
   workflow_dispatch:
-
+    inputs:
+      backend_url:
+        required: true
+      frontend_url:
+        required: true
+      ref:
+        required: true
+        
 jobs:
   verify-frontend:
     runs-on: ubuntu-latest
@@ -11,16 +18,20 @@ jobs:
 
       - name: Run Frontend Smoke Test
         run: |
-          export TEST_URL=${{ needs.provision_infrastructure.outputs.frontend_url }}
+          export TEST_URL=${{ github.event.inputs.frontend_url }}
           cd e2e
           npm install
           npm run frontend-smoke  
 
       - name: Cleanup On Failure
-        if: failure()         
-        run: |
-          git tag "cleanup/${{ github.sha }}"
-          git push origin "cleanup/${{ github.sha }}" 
+        if: failure()     
+        permissions: write-all
+        steps:
+          - name: Dispatch
+            uses: benc-uk/workflow-dispatch@v1
+            with:
+              workflow: Cleanup
+              inputs: '{ "ref": "${{ github.event.inputs.ref }}" }'
     
   verify-backend:
     runs-on: ubuntu-latest
@@ -30,17 +41,21 @@ jobs:
 
       - name: Run Backend Smoke Test
         run: |
-          export BACKEND_URL=${{ needs.provision_infrastructure.outputs.backend_url }}
+          export BACKEND_URL=${{ github.event.inputs.backend_url }}
           cd e2e
           chmod +x backend-smoke.sh
           ./backend-smoke.sh
       
       - name: Cleanup On Failure
-        if: failure()         
-        run: |
-          git tag "cleanup/${{ github.sha }}"
-          git push origin "cleanup/${{ github.sha }}" 
-    
+        if: failure()     
+        permissions: write-all
+        steps:
+          - name: Dispatch
+            uses: benc-uk/workflow-dispatch@v1
+            with:
+              workflow: Cleanup
+              inputs: '{ "ref": "${{ github.event.inputs.ref }}" }'
+        
   trigger-promotion:
     needs: [verify-backend,verify-frontend]
     runs-on: ubuntu-latest
@@ -50,3 +65,4 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Promote
+          inputs: '{ "ref": "${{ github.events.inputs.ref }}" }'
