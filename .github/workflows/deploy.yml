@@ -116,7 +116,7 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           inventory: |
             [ec2]
-            ${{ needs.provision_backend.outputs.backend_url }}
+            ${{ needs.provision_backend.outputs.backend_url }} ansible_user=ubuntu
           options: |
             --verbose            
     
