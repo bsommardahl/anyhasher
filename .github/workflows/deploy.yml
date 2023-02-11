@@ -1,4 +1,4 @@
-name: Deploy
+name: Deploy Candidate
 on:
   workflow_dispatch:
 
@@ -28,12 +28,13 @@ jobs:
         uses: dflook/terraform-new-workspace@v1
         with:
           path: util/terraform/backend
-          workspace: ${{ github.sha }}
+          workspace: anyhasher-backend-${{ github.sha }}
 
       - name: Provision Backend Infrastructure
         id: provision
         uses: dflook/terraform-apply@v1
         with:
+          workspace: anyhasher-backend-${{ github.sha }}
           auto_approve: true
           path: util/terraform/backend
           variables: |
@@ -72,12 +73,13 @@ jobs:
         uses: dflook/terraform-new-workspace@v1
         with:
           path: util/terraform/frontend
-          workspace: ${{ github.sha }}
+          workspace: anyhasher-frontend-${{ github.sha }}
       
       - name: Provision Frontend Infrastructure
         id: provision
         uses: dflook/terraform-apply@v1
         with:
+          workspace: anyhasher-frontend-${{ github.sha }}
           auto_approve: true
           path: util/terraform/frontend
           variables: |
@@ -174,4 +176,4 @@ jobs:
       - name: Dispatch
         uses: benc-uk/workflow-dispatch@v1
         with:
-          workflow: Verify
+          workflow: Verify Candidate
