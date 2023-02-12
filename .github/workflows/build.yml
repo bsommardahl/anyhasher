@@ -12,13 +12,13 @@ jobs:
         uses: actions/cache@v3
         with:
           path: node_modules
-          key: node-modules-cache
+          key: node-${{ hashFiles('**/package-lock.json') }}
 
       - name: Checkout
         uses: actions/checkout@v3
 
       - name: Setup Node
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: 16.x
 
@@ -29,7 +29,7 @@ jobs:
         run: cd backend && npm run build
 
       - name: Store Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: backend-artifact
           path: backend/build/
@@ -46,7 +46,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: node_modules
-          key: node-modules-cache
+          key: node-${{ hashFiles('**/package-lock.json') }}
 
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
@@ -67,7 +67,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: node_modules
-          key: node-modules-cache
+          key: key: node-${{ hashFiles('**/package-lock.json') }}
 
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
@@ -100,7 +100,7 @@ jobs:
       #     languages: javascript
 
       # - name: Setup Node
-      #   uses: actions/setup-node@v1
+      #   uses: actions/setup-node@v3
       #   with:
       #     node-version: 16.x
 
@@ -121,13 +121,13 @@ jobs:
         uses: actions/cache@v3
         with:
           path: node_modules
-          key: node-modules-cache
+          key: key: node-${{ hashFiles('**/package-lock.json') }}
 
       - name: Checkout
         uses: actions/checkout@v3
 
       - name: Setup Node
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: 16.x
 
@@ -140,7 +140,7 @@ jobs:
           cd frontend && npm run build
 
       - name: Store Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: frontend-artifact
           path: frontend/build
@@ -169,7 +169,7 @@ jobs:
       #     languages: javascript
 
       # - name: Setup Node
-      #   uses: actions/setup-node@v1
+      #   uses: actions/setup-node@v3
       #   with:
       #     node-version: 16.x
 
@@ -178,7 +178,7 @@ jobs:
       #   uses: actions/cache@v3
       #   with:
       #     path: node_modules
-      #     key: node-modules-cache
+      #     key: key: node-${{ hashFiles('**/package-lock.json') }}
           
       # - name: Install Deps
       #   run: cd frontend && npm i
