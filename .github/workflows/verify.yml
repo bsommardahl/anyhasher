@@ -20,7 +20,7 @@ jobs:
       - name: Run Frontend Smoke Test
         run: |
           export TEST_URL=${{ github.event.inputs.frontend_url }}
-          cd frontent/e2e
+          cd frontend/e2e
           npm install
           npm run frontend-smoke  
 
