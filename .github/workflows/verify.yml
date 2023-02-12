@@ -10,7 +10,7 @@ on:
         required: true
         
 jobs:
-  verify-frontend:
+  frontend:
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
@@ -22,16 +22,9 @@ jobs:
           export TEST_URL=${{ github.event.inputs.frontend_url }}
           cd frontend/e2e
           npm install
-          npm run frontend-smoke  
-
-      - name: Cleanup On Failure
-        if: failure()     
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: Cleanup
-          inputs: '{ "ref": "${{ github.event.inputs.ref }}" }'
+          npm run smoke  
     
-  verify-backend:
+  backend:
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
@@ -44,16 +37,22 @@ jobs:
           cd backend/e2e
           chmod +x backend-smoke.sh
           ./backend-smoke.sh
-      
+          
+  trigger-cleanup:
+    if: needs.testsjob.result !== 'success'
+    needs: [backend,frontend]
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
       - name: Cleanup On Failure
-        if: failure()             
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Cleanup
           inputs: '{ "ref": "${{ github.event.inputs.ref }}" }'
-        
+              
   trigger-promotion:
-    needs: [verify-backend,verify-frontend]
+    if: needs.testsjob.result == 'success'
+    needs: [backend,frontend]
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
