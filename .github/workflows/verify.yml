@@ -21,7 +21,7 @@ jobs:
       - name: Run Frontend Smoke Test
         run: |
           export TEST_URL=${{ github.event.inputs.frontend_url }}
-          cd e2e
+          cd frontent/e2e
           npm install
           npm run frontend-smoke  
 
@@ -42,7 +42,7 @@ jobs:
       - name: Run Backend Smoke Test
         run: |
           export BACKEND_URL=${{ github.event.inputs.backend_url }}
-          cd e2e
+          cd backend/e2e
           chmod +x backend-smoke.sh
           ./backend-smoke.sh
       
