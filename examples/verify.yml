@@ -4,7 +4,7 @@
     needs: [configure_backend,configure_frontend]
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
 
       - name: Run Frontend Smoke Test
         run: |
@@ -24,7 +24,7 @@
     needs: [configure_backend]
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
 
       - name: Run Backend Smoke Test
         run: |

@@ -9,13 +9,13 @@ jobs:
     steps:
       - name: Cache Node Modules
         id: cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: node_modules
           key: node-modules-cache
 
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
 
       - name: Setup Node
         uses: actions/setup-node@v1
@@ -39,11 +39,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
 
       - name: Cache Node Modules
         id: cache-node-modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: node_modules
           key: node-modules-cache
@@ -60,11 +60,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
 
       - name: Cache Node Modules
         id: cache-node-modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: node_modules
           key: node-modules-cache
@@ -81,7 +81,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
 
       - name: Check for security issue
         run: cd backend && npm audit --production --audit-level=medium
@@ -92,7 +92,7 @@ jobs:
     permissions:
       security-events: write
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
 
       # - name: Initialize CodeQL
       #   uses: github/codeql-action/init@v1
@@ -118,13 +118,13 @@ jobs:
     steps:
       - name: Cache Node Modules
         id: cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: node_modules
           key: node-modules-cache
 
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
 
       - name: Setup Node
         uses: actions/setup-node@v1
@@ -150,7 +150,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
 
       - name: Check for security issue
         run: cd frontend && npm audit --production --audit-level=critical
@@ -161,7 +161,7 @@ jobs:
     permissions:
       security-events: write
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
 
       # - name: Initialize CodeQL
       #   uses: github/codeql-action/init@v1
@@ -175,7 +175,7 @@ jobs:
 
       # - name: Cache Node Modules
       #   id: cache
-      #   uses: actions/cache@v2
+      #   uses: actions/cache@v3
       #   with:
       #     path: node_modules
       #     key: node-modules-cache

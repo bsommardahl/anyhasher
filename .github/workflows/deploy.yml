@@ -12,7 +12,7 @@ jobs:
       backend_url: ${{ steps.provision.outputs.ec2_public_url }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.ref }}
           
@@ -59,7 +59,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:      
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -104,7 +104,7 @@ jobs:
     #   url: https://${{ needs.provision_backend.outputs.backend_url }}
     steps:      
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
         
       - name: Get Backend Artifact
         uses: dawidd6/action-download-artifact@v2
@@ -165,7 +165,7 @@ jobs:
       
       - name: Checkout
         if: failure()         
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
      
       - name: Cleanup On Failure
         if: failure()         

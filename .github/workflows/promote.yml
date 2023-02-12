@@ -13,7 +13,7 @@ jobs:
         run: echo "old_blue_ref=$(git describe --match "blue" --abbrev=4 HEAD^)" >> $GITHUB_ENV
 
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.ref }}
 
@@ -48,7 +48,7 @@ jobs:
       
       - name: Checkout Old Blue
         if: success()         
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
         with:
           ref: {{ env.old_blue_ref }}
       

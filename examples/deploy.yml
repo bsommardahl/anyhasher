@@ -15,7 +15,7 @@ jobs:
       backend_url: ${{ steps.provision.outputs.backend_url }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:      
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -90,7 +90,7 @@ jobs:
       url: https://${{ needs.provision_backend.outputs.backend_url }}
     steps:      
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
         
       - name: Get Backend Artifact
         uses: dawidd6/action-download-artifact@v2
