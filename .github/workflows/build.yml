@@ -31,7 +31,7 @@ jobs:
       - name: Store Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: backend-artifact
+          name: backend-artifact-${{ github.sha }}
           path: backend/build/
 
   be-lint:
@@ -142,7 +142,7 @@ jobs:
       - name: Store Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: frontend-artifact
+          name: frontend-artifact-${{ github.sha }}
           path: frontend/build
 
   fe-security-audit:

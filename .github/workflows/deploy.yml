@@ -105,7 +105,7 @@ jobs:
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: build.yml
-          name: backend-artifact
+          name: backend-artifact-${{ github.event.inputs.ref }}
           path: backend/build/
       
       - name: Configure Backend Infrastructure
@@ -138,7 +138,7 @@ jobs:
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: build.yml
-          name: frontend-artifact
+          name: frontend-artifact-${{ github.event.inputs.ref }}
           path: frontend/build
   
       - name: Prepare frontend with backend url
@@ -170,7 +170,7 @@ jobs:
           workflow: Cleanup
           inputs: '{ "ref": "${{ github.event.inputs.ref }}" }'               
     
-  trigger-verify:
+  trigger_verify:
     needs: [provision_frontend,deploy_frontend,provision_backend,deploy_backend]
     runs-on: ubuntu-latest
     permissions: write-all
