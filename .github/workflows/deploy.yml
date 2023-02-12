@@ -44,11 +44,11 @@ jobs:
 
       - name: Cleanup On Failure
         if: failure()         
-        run: |
-          git tag "cleanup/${{ github.event.inputs.ref }}"
-          git push origin "cleanup/${{ github.event.inputs.ref }}" 
-    
-  
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: Cleanup
+          inputs: '{ "ref": "${{ github.event.inputs.ref }}" }' 
+        
   provision_frontend:
     outputs:
       frontend_url: ${{ steps.provision.outputs.website_endpoint }}
@@ -86,9 +86,10 @@ jobs:
       
       - name: Cleanup On Failure
         if: failure()         
-        run: |
-          git tag "cleanup/${{ github.event.inputs.ref }}"
-          git push origin "cleanup/${{ github.event.inputs.ref }}" 
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: Cleanup
+          inputs: '{ "ref": "${{ github.event.inputs.ref }}" }' 
     
   deploy_backend:
     needs: [provision_backend]
@@ -121,9 +122,10 @@ jobs:
     
       - name: Cleanup On Failure
         if: failure()         
-        run: |
-          git tag "cleanup/${{ github.event.inputs.ref }}"
-          git push origin "cleanup/${{ github.event.inputs.ref }}"   
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: Cleanup
+          inputs: '{ "ref": "${{ github.event.inputs.ref }}" }' 
     
   deploy_frontend:
     needs: [provision_backend,provision_frontend,deploy_backend]
@@ -163,9 +165,10 @@ jobs:
      
       - name: Cleanup On Failure
         if: failure()         
-        run: |
-          git tag "cleanup/${{ github.event.inputs.ref }}"
-          git push origin "cleanup/${{ github.event.inputs.ref }}"          
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: Cleanup
+          inputs: '{ "ref": "${{ github.event.inputs.ref }}" }'               
     
   trigger-verify:
     needs: [provision_frontend,deploy_frontend,provision_backend,deploy_backend]
