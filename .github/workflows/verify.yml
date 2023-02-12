@@ -1,6 +1,5 @@
 name: Verify
 on:
-  push:
   workflow_dispatch:
     inputs:
       backend_url:
