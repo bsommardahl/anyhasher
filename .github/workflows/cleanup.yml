@@ -29,11 +29,15 @@ jobs:
         with:
           path: util/terraform/frontend
           workspace: anyhasher-frontend-${{ github.event.inputs.ref }}
-          
+          variables: |
+            bucket_name = "anyhasher-frontend-${{ github.event.inputs.ref }}"
+      
       - name: Destroy Backend
         uses: dflook/terraform-destroy@v1
         with:
           path: util/terraform/backend
           workspace: anyhasher-backend-${{ github.event.inputs.ref }}
+          variables: |
+            instance_name = "anyhasher-backend-${{ github.event.inputs.ref }}"
 
       - run: echo Need to hook up slack here!
