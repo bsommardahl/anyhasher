@@ -1,6 +1,6 @@
 ---
   - name: Deploy Backend Artifact
-    copy: 
+    synchronize: 
       src: "../../backend/build"
       dest: ~/anyhasher
 
