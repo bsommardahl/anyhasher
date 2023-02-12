@@ -1,0 +1,9 @@
+name: Announce New Blue Version
+on:
+  workflow_dispatch:
+
+jobs:
+  announce:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo Need to hook up slack here!

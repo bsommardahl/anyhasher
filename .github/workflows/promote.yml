@@ -1,12 +1,21 @@
+name: Promote
+on:  
+  workflow_dispatch:
+    inputs:
+      ref:
+        required: true
 
+jobs:
   promote_green_to_blue:
-    needs: [verify-backend,verify-frontend]    
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
+      - name: Get Previous Blue Version
+        run: echo "old_blue_ref=$(git describe --match "blue" --abbrev=4 HEAD^)" >> $GITHUB_ENV
+
       - name: Checkout
         uses: actions/checkout@v1
+        with:
+          ref: ${{ github.event.inputs.ref }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
@@ -34,10 +43,34 @@
         if: success()         
         run: |
           git tag "blue/${{ github.sha }}"
-          git push origin "blue/${{ github.sha }}" 
+          git push origin "blue/${{ github.sha }}"     
 
-      - name: Handle Failure
+      
+      - name: Checkout Old Blue
+        if: success()         
+        uses: actions/checkout@v1
+        with:
+          ref: {{ env.old_blue_ref }}
+      
+      - name: Tag Old Blue for Cleanup
+        if: success()         
+        run: |
+          git tag "cleanup/${{ github.sha }}"
+          git push origin "cleanup/${{ github.sha }}"          
+      
+      - name: Cleanup Green Infrastructure After Failure
         if: failure()         
         run: |
           git tag "cleanup/${{ github.sha }}"
-          git push origin "cleanup/${{ github.sha }}" 
+          git push origin "cleanup/${{ github.sha }}"     
+          
+  trigger-cleanup:
+    needs: [promote_green_to_blue]
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - name: Dispatch
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: Cleanup
+          inputs: '{ "ref": "${{ env.old_blue_ref }}" }'

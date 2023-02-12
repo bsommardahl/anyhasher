@@ -15,10 +15,9 @@
 
       - name: Handle Failure
         if: failure()         
-        uses: rickstaa/action-create-tag@v1
-        with:
-          tag: "failure-{{ github.run_number }}"
-          message: "Failed attempt to verify frontend after deploy" 
+        run: |
+          git tag "cleanup/${{ github.sha }}"
+          git push origin "cleanup/${{ github.sha }}" 
       
   verify-backend:
     runs-on: ubuntu-latest
@@ -36,8 +35,7 @@
       
       - name: Handle Failure
         if: failure()         
-        uses: rickstaa/action-create-tag@v1
-        with:
-          tag: "failure-{{ github.run_number }}"
-          message: "Failed attempt to verify backend after deploy"
+        run: |
+          git tag "cleanup/${{ github.sha }}"
+          git push origin "cleanup/${{ github.sha }}" 
   

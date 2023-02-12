@@ -18,3 +18,11 @@
     global: yes
     production: yes
     state: present
+
+- name: "set server port in /etc/environment"
+  become: true
+  ansible.builtin.lineinfile:
+    dest: "/etc/environment"
+    insertbefore: "BOF"
+    line: PORT=80
+    state: present    

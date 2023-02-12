@@ -1,0 +1,185 @@
+name: Deploy
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        required: true
+
+jobs:
+  provision_backend:
+    runs-on: ubuntu-latest
+    outputs:
+      backend_url: ${{ steps.provision.outputs.ec2_public_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+        with:
+          ref: ${{ github.event.inputs.ref }}
+          
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_wrapper: false
+          terraform_version: 1.2.9
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+  
+      - name: Use commit workspace
+        uses: dflook/terraform-new-workspace@v1
+        with:
+          path: util/terraform/backend
+          workspace: anyhasher-backend-${{ github.event.inputs.ref }}
+
+      - name: Provision Backend Infrastructure
+        id: provision
+        uses: dflook/terraform-apply@v1
+        with:
+          workspace: anyhasher-backend-${{ github.event.inputs.ref }}
+          auto_approve: true
+          path: util/terraform/backend
+          variables: |
+            instance_name = "anyhasher-backend-${{ github.event.inputs.ref }}"
+
+      - name: Cleanup On Failure
+        if: failure()         
+        run: |
+          git tag "cleanup/${{ github.event.inputs.ref }}"
+          git push origin "cleanup/${{ github.event.inputs.ref }}" 
+    
+  
+  provision_frontend:
+    outputs:
+      frontend_url: ${{ steps.provision.outputs.website_endpoint }}
+      bucket_name: ${{ steps.provision.outputs.bucket_name }}
+    runs-on: ubuntu-latest
+    steps:      
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+  
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_wrapper: false
+          terraform_version: 1.2.9
+
+      - name: Use commit workspace
+        uses: dflook/terraform-new-workspace@v1
+        with:
+          path: util/terraform/frontend
+          workspace: anyhasher-frontend-${{ github.event.inputs.ref }}
+      
+      - name: Provision Frontend Infrastructure
+        id: provision
+        uses: dflook/terraform-apply@v1
+        with:
+          workspace: anyhasher-frontend-${{ github.event.inputs.ref }}
+          auto_approve: true
+          path: util/terraform/frontend
+          variables: |
+            bucket_name = "anyhasher-frontend-${{ github.event.inputs.ref }}"
+      
+      - name: Cleanup On Failure
+        if: failure()         
+        run: |
+          git tag "cleanup/${{ github.event.inputs.ref }}"
+          git push origin "cleanup/${{ github.event.inputs.ref }}" 
+    
+  deploy_backend:
+    needs: [provision_backend]
+    runs-on: ubuntu-latest
+    # environment: 
+    #   name: Green Backend Environment
+    #   url: https://${{ needs.provision_backend.outputs.backend_url }}
+    steps:      
+      - name: Checkout
+        uses: actions/checkout@v1
+        
+      - name: Get Backend Artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: build.yml
+          name: backend-artifact
+          path: backend/build/
+      
+      - name: Configure Backend Infrastructure
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: deploy.yml
+          directory: ./util/ansible
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          inventory: |
+            [ec2]
+            ${{ needs.provision_backend.outputs.backend_url }} ansible_user=ubuntu
+          options: |
+            --verbose            
+    
+      - name: Cleanup On Failure
+        if: failure()         
+        run: |
+          git tag "cleanup/${{ github.event.inputs.ref }}"
+          git push origin "cleanup/${{ github.event.inputs.ref }}"   
+    
+  deploy_frontend:
+    needs: [provision_backend,provision_frontend,deploy_backend]
+    runs-on: ubuntu-latest
+    environment: 
+      name: New Production (Green)
+      url: https://${{ needs.provision_frontend.outputs.frontend_url }}
+    steps:
+      - name: Get Frontend Artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: build.yml
+          name: frontend-artifact
+          path: frontend/build
+  
+      - name: Prepare frontend with backend url
+        uses: jacobtomlinson/gha-find-replace@v2
+        with:
+          find: "__BACKEND_URL_PLACEHOLDER__"
+          replace: "${{ needs.provision_backend.outputs.backend_url }}"
+          regex: false
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+  
+      - name: Upload frontend to S3 Bucket
+        run: |
+          aws s3 cp frontend/build s3://${{ needs.provision_frontend.outputs.bucket_name }} --region=us-east-1 --recursive
+      
+      - name: Checkout
+        if: failure()         
+        uses: actions/checkout@v1
+     
+      - name: Cleanup On Failure
+        if: failure()         
+        run: |
+          git tag "cleanup/${{ github.event.inputs.ref }}"
+          git push origin "cleanup/${{ github.event.inputs.ref }}"          
+    
+  trigger-verify:
+    needs: [provision_frontend,deploy_frontend,provision_backend,deploy_backend]
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - name: Dispatch
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: Verify
+          inputs: '{ "backend_url": "${{ needs.provision_backend.outputs.backend_url }}", "frontend_url": "https://${{ needs.provision_frontend.outputs.frontend_url }}", "ref": "${{ github.event.inputs.ref }}" }'
