@@ -94,21 +94,26 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # - name: Initialize CodeQL
-      #   uses: github/codeql-action/init@v1
-      #   with:
-      #     languages: javascript
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v1
+        with:
+          config-file: ./.github/codeql/codeql-config.yml          
+          paths:
+            - backend
+          paths-ignore:
+            - backend/node_modules
+            - 'backend/**/*.test.js'
 
-      # - name: Setup Node
-      #   uses: actions/setup-node@v3
-      #   with:
-      #     node-version: 16.x
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
 
-      # - name: Install Deps
-      #   run: cd backend && npm i
+      - name: Install Deps
+        run: cd backend && npm i
 
-      # - name: Build
-      #   run: cd backend && npm run build
+      - name: Build
+        run: cd backend && npm run build
 
       # - name: Perform Analysis
       #   uses: github/codeql-action/analyze@v1
@@ -163,34 +168,39 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # - name: Initialize CodeQL
-      #   uses: github/codeql-action/init@v1
-      #   with:
-      #     languages: javascript
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          config-file: ./.github/codeql/codeql-config.yml
+          paths:
+            - frontend
+          paths-ignore:
+            - frontend/node_modules
+            - 'frontent/**/*.test.js'
 
-      # - name: Setup Node
-      #   uses: actions/setup-node@v3
-      #   with:
-      #     node-version: 16.x
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
 
-      # - name: Cache Node Modules
-      #   id: cache
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: node_modules
-      #     key: node-${{ hashFiles('**/package-lock.json') }}
+      - name: Cache Node Modules
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: node-${{ hashFiles('**/package-lock.json') }}
           
-      # - name: Install Deps
-      #   run: cd frontend && npm i
+      - name: Install Deps
+        run: cd frontend && npm i
 
-      # - name: Build
-      #   run: cd frontend && npm run build
+      - name: Build
+        run: cd frontend && npm run build
 
       # - name: Perform Analysis
-      #   uses: github/codeql-action/analyze@v1  
+      #   uses: github/codeql-action/analyze@v2  
 
   trigger-deploy:
-    #if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     needs: [be-static-analysis, fe-static-analysis]
     runs-on: ubuntu-latest
     permissions: write-all

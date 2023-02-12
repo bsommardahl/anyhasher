@@ -1,0 +1,11 @@
+name: "Anyhasher Code Quality"
+
+disable-default-queries: true
+
+languages: javascript
+
+queries:
+  - name: Extended Security
+    uses: security-extended
+  - name: Security and Quality
+    uses: security-and-quality
