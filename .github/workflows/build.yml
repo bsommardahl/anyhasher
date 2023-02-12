@@ -1,9 +1,7 @@
 name: Build
 on:
   pull_request:
-  push:
-    branches:
-      - l7
+  push:    
 
 jobs:
   be-build:
