@@ -1,4 +1,4 @@
-name: Cleanup Infrastructure
+name: Cleanup
 on:  
    workflow_dispatch:
     inputs:

@@ -1,4 +1,4 @@
-name: Announce New Blue Version
+name: Announcegit 
 on:
   workflow_dispatch:
 
