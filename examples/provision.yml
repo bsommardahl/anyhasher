@@ -8,11 +8,8 @@
         uses: actions/checkout@v3
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1
-        with:
-          terraform_wrapper: false
-          terraform_version: 1.2.9
-
+        uses: hashicorp/setup-terraform@v2
+        
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -45,11 +42,8 @@
           aws-region: us-east-1
   
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1
-        with:
-          terraform_wrapper: false
-          terraform_version: 1.2.9
-
+        uses: hashicorp/setup-terraform@v2
+        
       - name: Provision Frontend Infrastructure
         id: provision
         uses: dflook/terraform-apply@v1

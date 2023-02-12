@@ -15,11 +15,8 @@ jobs:
       #     ref: ${{ github.event.inputs.ref }}          
       
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1
-        with:
-          terraform_wrapper: false
-          terraform_version: 1.2.9
-
+        uses: hashicorp/setup-terraform@v2
+        
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
