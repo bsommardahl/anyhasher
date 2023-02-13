@@ -67,7 +67,9 @@ jobs:
   cleanup_old_blue:
     name: Clean up Previous Blue
     needs: [promote]
-    if: ${{ success() && env.old_blue_ref != '' }}
+    if: |
+      success() && 
+      env.old_blue_ref != ''
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
