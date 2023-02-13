@@ -39,7 +39,7 @@ jobs:
           ./backend-smoke.sh
           
   trigger-cleanup:
-    if: needs.backend.result != 'success' || needs.frontend.result != 'success'
+    if: needs.backend.result == 'failure' || needs.frontend.result == 'failure'
     needs: [backend,frontend]
     runs-on: ubuntu-latest
     permissions: write-all
