@@ -60,4 +60,4 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Promote
-          inputs: '{ "ref": "${{ github.events.inputs.ref }}" }'
+          inputs: '{ "ref": "${{ github.event.inputs.ref }}" }'
