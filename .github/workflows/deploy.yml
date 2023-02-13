@@ -132,7 +132,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: 
       name: New Production (Green)
-      url: https://${{ needs.provision_frontend.outputs.frontend_url }}
+      url: http://${{ needs.provision_frontend.outputs.frontend_url }}
     steps:
       - name: Get Frontend Artifact
         uses: dawidd6/action-download-artifact@v2
@@ -179,4 +179,4 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Verify
-          inputs: '{ "backend_url": "${{ needs.provision_backend.outputs.backend_url }}", "frontend_url": "https://${{ needs.provision_frontend.outputs.frontend_url }}", "ref": "${{ github.event.inputs.ref }}" }'
+          inputs: '{ "backend_url": "http://${{ needs.provision_backend.outputs.backend_url }}", "frontend_url": "https://${{ needs.provision_frontend.outputs.frontend_url }}", "ref": "${{ github.event.inputs.ref }}" }'
