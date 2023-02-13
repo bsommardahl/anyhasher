@@ -33,7 +33,7 @@ jobs:
 
       - name: Run Backend Smoke Test
         run: |
-          export BACKEND_URL=${{ github.event.inputs.backend_url }}:5001
+          export BACKEND_URL=${{ github.event.inputs.backend_url }}
           cd backend/e2e
           chmod +x backend-smoke.sh
           ./backend-smoke.sh

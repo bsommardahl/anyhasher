@@ -9,7 +9,7 @@ jobs:
   provision_backend:
     runs-on: ubuntu-latest
     outputs:
-      backend_url: http://${{ steps.provision.outputs.ec2_public_url }}
+      backend_url: http://${{ steps.provision.outputs.ec2_public_url }}:5001
       backend_host: ${{ steps.provision.outputs.ec2_public_url }}
     steps:
       - name: Checkout
