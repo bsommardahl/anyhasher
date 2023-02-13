@@ -1,10 +1,12 @@
 name: Build
+run-name: Produce Verified Build Artifacts (CI)
 on:
   pull_request:
   push:    
 
 jobs:
   be-build:
+    name: Build Backend Artifact
     runs-on: ubuntu-latest
     steps:
       - name: Cache Node Modules
@@ -35,6 +37,7 @@ jobs:
           path: backend/build/
 
   be-lint:
+    name: Lint Backend Code
     needs: [be-build]
     runs-on: ubuntu-latest
     steps:
@@ -56,6 +59,7 @@ jobs:
         run: cd backend && npm run lint
 
   be-test:
+    name: Run Backend Unit Tests
     needs: [be-build]
     runs-on: ubuntu-latest
     steps:
@@ -77,6 +81,7 @@ jobs:
         run: cd backend && npm t
 
   be-security-audit:
+    name: Audit Backend Packages for Security Vulnerabilities
     needs: [be-build]
     runs-on: ubuntu-latest
     steps:
@@ -87,6 +92,7 @@ jobs:
         run: cd backend && npm audit --production --audit-level=medium
 
   be-static-analysis:
+    name: Run Static Analysis on Backend Code
     needs: [be-build,be-lint,be-test,be-security-audit]
     runs-on: ubuntu-latest
     permissions:
@@ -114,6 +120,7 @@ jobs:
       #   uses: github/codeql-action/analyze@v1
 
   fe-build:
+    name: Build Backend Artifact
     runs-on: ubuntu-latest
     steps:
       - name: Cache Node Modules
@@ -146,6 +153,7 @@ jobs:
           path: frontend/build
 
   fe-security-audit:
+    name: Audit Frontend Packages for Security Vulnerabilities
     needs: [fe-build]
     runs-on: ubuntu-latest
     steps:
@@ -156,6 +164,7 @@ jobs:
         run: cd frontend && npm audit --production --audit-level=critical
   
   fe-static-analysis:
+    name: Run Static Analysis on Frontend Code
     needs: [fe-security-audit]
     runs-on: ubuntu-latest
     permissions:
@@ -190,6 +199,7 @@ jobs:
       #   uses: github/codeql-action/analyze@v2  
 
   trigger-deploy:
+    name: Start Deployment
     if: github.ref == 'refs/heads/main'
     needs: [be-static-analysis, fe-static-analysis]
     runs-on: ubuntu-latest

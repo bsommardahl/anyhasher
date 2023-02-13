@@ -1,4 +1,5 @@
 name: Deploy
+run-name: Deploy Artifacts to New Environment
 on:
   workflow_dispatch:
     inputs:
@@ -7,6 +8,7 @@ on:
 
 jobs:
   provision_backend:
+    name: Provision Backend Infrastructure
     runs-on: ubuntu-latest
     outputs:
       backend_url: http://${{ steps.provision.outputs.ec2_public_url }}:5001
@@ -33,7 +35,7 @@ jobs:
           path: util/terraform/backend
           workspace: anyhasher-backend-${{ github.event.inputs.ref }}
 
-      - name: Provision Backend Infrastructure
+      - name: Provision
         id: provision
         uses: dflook/terraform-apply@v1
         with:
@@ -42,15 +44,9 @@ jobs:
           path: util/terraform/backend
           variables: |
             instance_name = "anyhasher-backend-${{ github.event.inputs.ref }}"
-
-      - name: Cleanup On Failure
-        if: failure()         
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: Cleanup
-          inputs: '{ "ref": "${{ github.event.inputs.ref }}" }' 
         
   provision_frontend:
+    name: Provision Frontend Infrastructure
     outputs:
       frontend_url: http://${{ steps.provision.outputs.website_endpoint }}
       bucket_name: ${{ steps.provision.outputs.bucket_name }}
@@ -75,7 +71,7 @@ jobs:
           path: util/terraform/frontend
           workspace: anyhasher-frontend-${{ github.event.inputs.ref }}
       
-      - name: Provision Frontend Infrastructure
+      - name: Provision
         id: provision
         uses: dflook/terraform-apply@v1
         with:
@@ -83,16 +79,10 @@ jobs:
           auto_approve: true
           path: util/terraform/frontend
           variables: |
-            bucket_name = "anyhasher-frontend-${{ github.event.inputs.ref }}"
-      
-      - name: Cleanup On Failure
-        if: failure()         
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: Cleanup
-          inputs: '{ "ref": "${{ github.event.inputs.ref }}" }' 
+            bucket_name = "anyhasher-frontend-${{ github.event.inputs.ref }}"          
     
   deploy_backend:
+    name: Deploy Backend Artifact
     needs: [provision_backend]
     runs-on: ubuntu-latest
     # environment: 
@@ -120,15 +110,9 @@ jobs:
             ${{ needs.provision_backend.outputs.backend_host }} ansible_user=ubuntu
           options: |
             --verbose            
-    
-      - name: Cleanup On Failure
-        if: failure()         
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: Cleanup
-          inputs: '{ "ref": "${{ github.event.inputs.ref }}" }' 
-    
+          
   deploy_frontend:
+    name: Deploy Frontend Artifact
     needs: [provision_backend,provision_frontend,deploy_backend]
     runs-on: ubuntu-latest
     environment: 
@@ -160,20 +144,11 @@ jobs:
         run: |
           aws s3 cp frontend/build s3://${{ needs.provision_frontend.outputs.bucket_name }} --region=us-east-1 --recursive
       
-      - name: Checkout
-        if: failure()         
-        uses: actions/checkout@v3
-     
-      - name: Cleanup On Failure
-        if: failure()         
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: Cleanup
-          inputs: '{ "ref": "${{ github.event.inputs.ref }}" }'               
-    
   trigger_verify:
+    name: Start Environment Verification
     needs: [provision_frontend,deploy_frontend,provision_backend,deploy_backend]
     runs-on: ubuntu-latest
+    if: success()         
     permissions: write-all
     steps:
       - name: Dispatch
@@ -181,3 +156,15 @@ jobs:
         with:
           workflow: Verify
           inputs: '{ "backend_url": "${{ needs.provision_backend.outputs.backend_url }}", "frontend_url": "${{ needs.provision_frontend.outputs.frontend_url }}", "ref": "${{ github.event.inputs.ref }}" }'
+
+  trigger_cleanup_on_failure:
+    name: Start Cleanup for Failing Environment
+    needs: [provision_frontend,deploy_frontend,provision_backend,deploy_backend]
+    if: failure()         
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: Cleanup
+          inputs: '{ "ref": "${{ github.event.inputs.ref }}" }'   

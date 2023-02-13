@@ -1,4 +1,5 @@
 name: Promote
+run-name: Promote Green to Blue (And Decommission Previous Blue)
 on:  
   workflow_dispatch:
     inputs:
@@ -8,13 +9,16 @@ on:
         required: true
       
 jobs:
-  Get Previous Blue Ref:
+  old_blue_ref:
+    name: Get Previous Blue Ref
     runs-on: ubuntu-latest
     steps:
       - name: Get Previous Blue Version
         run: echo "old_blue_ref=$(git tag --list --sort=-version:refname "blue*" | head -n 1)" >> $GITHUB_ENV
 
-  Promote Green to Blue:
+  promote:
+    name: Promote Green to Blue     
+    needs: [old_blue_ref]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -47,8 +51,9 @@ jobs:
           git tag "blue/${{ github.event.inputs.ref }}"
           git push origin "blue/${{ github.event.inputs.ref }}"     
 
-  Clean up Failing Green:
-    needs: [Promote Green to Blue]
+  cleanup_failing_green:
+    name: Clean up Failing Green
+    needs: [promote]
     if: failure()         
     runs-on: ubuntu-latest
     permissions: write-all
@@ -59,8 +64,9 @@ jobs:
           workflow: Cleanup
           inputs: '{ "ref": "${{ github.event.inputs.ref }}" }'
 
-  Clean up Previous Blue:
-    needs: [Promote Green to Blue]
+  cleanup_old_blue:
+    name: Clean up Previous Blue
+    needs: [promote]
     if: ${{ success() && env.old_blue_ref != '' }}
     runs-on: ubuntu-latest
     permissions: write-all
