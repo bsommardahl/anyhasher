@@ -9,7 +9,7 @@ jobs:
   provision_backend:
     runs-on: ubuntu-latest
     outputs:
-      backend_url: ${{ steps.provision.outputs.ec2_public_url }}
+      backend_url: http://${{ steps.provision.outputs.ec2_public_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -51,7 +51,7 @@ jobs:
         
   provision_frontend:
     outputs:
-      frontend_url: ${{ steps.provision.outputs.website_endpoint }}
+      frontend_url: http://${{ steps.provision.outputs.website_endpoint }}
       bucket_name: ${{ steps.provision.outputs.bucket_name }}
     runs-on: ubuntu-latest
     steps:      
@@ -132,7 +132,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: 
       name: New Production (Green)
-      url: http://${{ needs.provision_frontend.outputs.frontend_url }}
+      url: ${{ needs.provision_frontend.outputs.frontend_url }}
     steps:
       - name: Get Frontend Artifact
         uses: dawidd6/action-download-artifact@v2
@@ -145,7 +145,7 @@ jobs:
         uses: jacobtomlinson/gha-find-replace@v2
         with:
           find: "__BACKEND_URL_PLACEHOLDER__"
-          replace: "http://${{ needs.provision_backend.outputs.backend_url }}"
+          replace: "${{ needs.provision_backend.outputs.backend_url }}"
           regex: false
 
       - name: Configure AWS Credentials
@@ -179,4 +179,4 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Verify
-          inputs: '{ "backend_url": "http://${{ needs.provision_backend.outputs.backend_url }}", "frontend_url": "https://${{ needs.provision_frontend.outputs.frontend_url }}", "ref": "${{ github.event.inputs.ref }}" }'
+          inputs: '{ "backend_url": "${{ needs.provision_backend.outputs.backend_url }}", "frontend_url": "${{ needs.provision_frontend.outputs.frontend_url }}", "ref": "${{ github.event.inputs.ref }}" }'
