@@ -6,7 +6,7 @@ on:
         required: true
       frontend_url:
         required: true
-
+      
 jobs:
   promote_green_to_blue:
     runs-on: ubuntu-latest

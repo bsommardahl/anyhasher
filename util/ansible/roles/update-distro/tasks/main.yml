@@ -8,5 +8,5 @@
 
 - name: "Invalidate distro"
   cloudfront_invalidate: 
-    distribution_id: {{ distro_id }}
+    distribution_id: "{{ distro_id }}"
     path: "/**/*"    
