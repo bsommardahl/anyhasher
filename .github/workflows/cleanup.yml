@@ -1,5 +1,5 @@
 name: Cleanup
-run-name: "❌ Cleanup for ${{ github.event.inputs.ref }}"
+run-name: "❌ CD: Cleanup for ${{ github.event.inputs.ref }}"
 on:  
    workflow_dispatch:
     inputs:

@@ -1,5 +1,5 @@
 name: Promote
-run-name: Promote Green to Blue (And Decommission Previous Blue)
+run-name: "🤩 CD: Promote Green to Blue (And Decommission Previous Blue)"
 on:  
   workflow_dispatch:
     inputs:
