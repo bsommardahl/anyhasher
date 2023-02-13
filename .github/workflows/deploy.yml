@@ -1,5 +1,5 @@
 name: Deploy
-run-name: Deploy Artifacts to New Environment
+run-name: 🚀 Deploy Artifacts to New Environment
 on:
   workflow_dispatch:
     inputs:

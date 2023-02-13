@@ -1,5 +1,5 @@
 name: Verify
-run-name: Verify Deployed Environment (Smoke Tests)
+run-name: 🧪 Verify Deployed Environment (Smoke Tests)git 
 on:
   workflow_dispatch:
     inputs:
@@ -12,7 +12,7 @@ on:
         
 jobs:
   frontend:
-    name: ":test_tube: Check Frontend"
+    name: 🧪 Check Frontend
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
@@ -27,7 +27,7 @@ jobs:
           npm run smoke  
     
   backend:
-    name: ":test_tube: Check Backend"
+    name: 🧪 Check Backend
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
