@@ -4,6 +4,8 @@ on:
     inputs:
       ref:
         required: true
+      frontend_url:
+        required: true
 
 jobs:
   promote_green_to_blue:
@@ -18,7 +20,7 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -31,7 +33,7 @@ jobs:
           directory: ./util/ansible
           options: |
             --verbose
-            --extra-vars "distro_id='${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }}' origin_domain='${{ needs.provision_infrastructure.outputs.frontend_url }}'"
+            --extra-vars "distro_id='${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }}' origin_domain='${{ github.event.inputs.frontend_url }}'"
   
       - name: Get Previous Blue Version
         run: echo "old_blue_ref=$(git describe --match "blue" --abbrev=4 HEAD^)" >> $GITHUB_ENV
@@ -42,12 +44,12 @@ jobs:
           git tag "blue/${{ github.sha }}"
           git push origin "blue/${{ github.sha }}"     
 
-      - name: Tag Old Blue for Cleanup
-        if: success()         
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: Cleanup
-          inputs: '{ "ref": "${{ env.old_blue_ref }}" }' 
+      # - name: Trigger Cleanup for Old Blue
+      #   if: success()         
+      #   uses: benc-uk/workflow-dispatch@v1
+      #   with:
+      #     workflow: Cleanup
+      #     inputs: '{ "ref": "${{ env.old_blue_ref }}" }' 
         
       - name: Cleanup Green Infrastructure After Failure
         if: failure()         
