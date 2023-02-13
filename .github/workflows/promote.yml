@@ -8,7 +8,13 @@ on:
         required: true
       
 jobs:
-  promote_green_to_blue:
+  Get Previous Blue Ref:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Previous Blue Version
+        run: echo "old_blue_ref=$(git describe --match "blue*" --abbrev=4 HEAD)" >> $GITHUB_ENV
+
+  Promote Green to Blue:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -35,31 +41,27 @@ jobs:
             --verbose
             --extra-vars "distro_id='${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }}' origin_domain='${{ github.event.inputs.frontend_url }}'"
   
-      - name: Get Previous Blue Version
-        run: echo "old_blue_ref=$(git describe --match "blue" --abbrev=4 HEAD^)" >> $GITHUB_ENV
-
       - name: Tag Green as New Blue
         if: success()         
         run: |
-          git tag "blue/${{ github.sha }}"
-          git push origin "blue/${{ github.sha }}"     
+          git tag "blue/${{ github.event.inputs.ref }}"
+          git push origin "blue/${{ github.event.inputs.ref }}"     
 
-      # - name: Trigger Cleanup for Old Blue
-      #   if: success()         
-      #   uses: benc-uk/workflow-dispatch@v1
-      #   with:
-      #     workflow: Cleanup
-      #     inputs: '{ "ref": "${{ env.old_blue_ref }}" }' 
-        
-      - name: Cleanup Green Infrastructure After Failure
-        if: failure()         
+  Clean up Failing Green:
+    needs: [Promote Green to Blue]
+    if: failure()         
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - name: Dispatch
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Cleanup
-          inputs: '{ "ref": "${{ github.sha }}" }' 
-          
-  trigger-cleanup:
-    needs: [promote_green_to_blue]
+          inputs: '{ "ref": "${{ github.event.inputs.ref }}" }'
+
+  Clean up Previous Blue:
+    needs: [Promote Green to Blue]
+    if: success()         
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
