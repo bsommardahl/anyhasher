@@ -1,4 +1,4 @@
-name: Announcegit 
+name: Announce 
 on:
   workflow_dispatch:
 
