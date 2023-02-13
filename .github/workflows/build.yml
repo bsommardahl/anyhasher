@@ -59,7 +59,7 @@ jobs:
         run: cd backend && npm run lint
 
   be-test:
-    name: :test_tube: Run Backend Unit Tests
+    name: ":test_tube: Run Backend Unit Tests"
     needs: [be-build]
     runs-on: ubuntu-latest
     steps:

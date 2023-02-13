@@ -12,7 +12,7 @@ on:
         
 jobs:
   frontend:
-    name: :test_tube: Check Frontend
+    name: ":test_tube: Check Frontend"
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
@@ -27,7 +27,7 @@ jobs:
           npm run smoke  
     
   backend:
-    name: :test_tube: Check Backend
+    name: ":test_tube: Check Backend"
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
