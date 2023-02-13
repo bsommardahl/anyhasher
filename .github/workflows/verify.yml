@@ -39,7 +39,7 @@ jobs:
           ./backend-smoke.sh
           
   trigger-cleanup:
-    if: ${{ always() && (needs.backend.result == 'failed' || needs.frontend.result == 'failed') }}
+    if: ${{ failure() }}
     needs: [backend,frontend]
     runs-on: ubuntu-latest
     permissions: write-all
@@ -51,7 +51,7 @@ jobs:
           inputs: '{ "ref": "${{ github.event.inputs.ref }}" }'
               
   trigger-promotion:
-    if: needs.backend.result == 'success' && needs.frontend.result == 'success'
+    if: ${{ success() }}
     needs: [backend,frontend]
     runs-on: ubuntu-latest
     permissions: write-all
