@@ -38,17 +38,17 @@ jobs:
           chmod +x backend-smoke.sh
           ./backend-smoke.sh
           
-  # trigger-cleanup:
-  #   if: ${{ failure() }}
-  #   needs: [backend,frontend]
-  #   runs-on: ubuntu-latest
-  #   permissions: write-all
-  #   steps:
-  #     - name: Cleanup On Failure
-  #       uses: benc-uk/workflow-dispatch@v1
-  #       with:
-  #         workflow: Cleanup
-  #         inputs: '{ "ref": "${{ github.event.inputs.ref }}" }'
+  trigger-cleanup:
+    if: ${{ failure() }}
+    needs: [backend,frontend]
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - name: Cleanup On Failure
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: Cleanup
+          inputs: '{ "ref": "${{ github.event.inputs.ref }}" }'
               
   trigger-promotion:
     if: ${{ success() }}
