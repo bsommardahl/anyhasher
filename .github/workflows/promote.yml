@@ -12,6 +12,8 @@ jobs:
   old_blue_ref:
     name: Get Previous Blue Ref
     runs-on: ubuntu-latest
+    outputs:
+      ref: ${{ env.old_blue_ref }}
     steps:
       - name: Get Previous Blue Version
         run: echo "old_blue_ref=$(git tag --list --sort=-version:refname "blue*" | head -n 1)" >> $GITHUB_ENV
@@ -75,4 +77,4 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Cleanup
-          inputs: '{ "ref": "${{ env.old_blue_ref }}" }'
+          inputs: '{ "ref": "${{ needs.old_blue_ref.ref }}" }'
