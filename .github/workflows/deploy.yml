@@ -145,7 +145,7 @@ jobs:
         uses: jacobtomlinson/gha-find-replace@v2
         with:
           find: "__BACKEND_URL_PLACEHOLDER__"
-          replace: "${{ needs.provision_backend.outputs.backend_url }}"
+          replace: "http://${{ needs.provision_backend.outputs.backend_url }}"
           regex: false
 
       - name: Configure AWS Credentials
