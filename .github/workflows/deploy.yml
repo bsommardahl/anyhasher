@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       backend_url: http://${{ steps.provision.outputs.ec2_public_url }}
+      backend_host: ${{ steps.provision.outputs.ec2_public_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -116,7 +117,7 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           inventory: |
             [ec2]
-            ${{ needs.provision_backend.outputs.backend_url }} ansible_user=ubuntu
+            ${{ needs.provision_backend.outputs.backend_host }} ansible_user=ubuntu
           options: |
             --verbose            
     
