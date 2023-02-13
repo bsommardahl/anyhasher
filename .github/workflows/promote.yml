@@ -61,7 +61,7 @@ jobs:
 
   Clean up Previous Blue:
     needs: [Promote Green to Blue]
-    if: success()         
+    if: ${{ success() && env.old_blue_ref != '' }}
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
