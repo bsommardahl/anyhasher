@@ -1,17 +1,17 @@
 ---
-- name: "upgrade packages."
+- name: Upgrade packages
   become: true
   apt:
     upgrade: "yes"
 
-- name: "install dependencies."
+- name: Install dependencies
   become: true
   apt:
     name: ["nodejs", "npm"]
     state: latest
     update_cache: yes
 
-- name: "install pm2"
+- name: Install pm2
   become: true
   npm:
     name: pm2
@@ -19,10 +19,14 @@
     production: yes
     state: present
 
-- name: "set server port in /etc/environment"
+- name: Set server port in /etc/environment
   become: true
   ansible.builtin.lineinfile:
     dest: "/etc/environment"
     insertbefore: "BOF"
     line: PORT=80
     state: present    
+  
+- name: Source environment file
+  become: true
+  ansible.builtin.shell: . /etc/environment 
