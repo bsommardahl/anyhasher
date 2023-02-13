@@ -17,7 +17,7 @@ jobs:
         run: echo "old_blue_ref=$(git tag --list --sort=-version:refname "blue*" | head -n 1)" >> $GITHUB_ENV
 
   promote:
-    name: Promote Green to Blue     
+    name: 🚀 Promote Green to Blue     
     needs: [old_blue_ref]
     runs-on: ubuntu-latest
     steps:
@@ -52,7 +52,7 @@ jobs:
           git push origin "blue/${{ github.event.inputs.ref }}"     
 
   cleanup_failing_green:
-    name: Clean up Failing Green
+    name: 🍋 Clean up Failing Green
     needs: [promote]
     if: failure()         
     runs-on: ubuntu-latest
@@ -67,9 +67,7 @@ jobs:
   cleanup_old_blue:
     name: Clean up Previous Blue
     needs: [promote]
-    if: |
-      success() && 
-      env.old_blue_ref != ''
+    if: success()      
     runs-on: ubuntu-latest
     permissions: write-all
     steps:

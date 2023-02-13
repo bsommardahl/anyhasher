@@ -1,5 +1,5 @@
 name: Cleanup
-run-name: Destroy Deployment Environment
+run-name: "❌ Cleanup for ${{ github.event.inputs.ref }}"
 on:  
    workflow_dispatch:
     inputs:
@@ -9,7 +9,7 @@ on:
 jobs:
 
   destroy_frontend:
-    name: Destroy Frontend Infrastructure
+    name: ❌ Destroy Frontend Infrastructure
     runs-on: ubuntu-latest
     steps:      
       - name: Checkout
@@ -36,7 +36,7 @@ jobs:
             bucket_name = "anyhasher-frontend-${{ github.event.inputs.ref }}"
             
   destroy_backend:
-    name: Destroy Backend Infrastructure
+    name: ❌ Destroy Backend Infrastructure
     runs-on: ubuntu-latest
     steps:      
       - name: Checkout

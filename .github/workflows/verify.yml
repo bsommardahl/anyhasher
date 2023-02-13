@@ -1,5 +1,5 @@
 name: Verify
-run-name: 🧪 Verify Deployed Environment (Smoke Tests)git 
+run-name: "🧪 Verify Environment from ${{ github.event.inputs.ref }}"
 on:
   workflow_dispatch:
     inputs:
@@ -42,7 +42,7 @@ jobs:
           ./backend-smoke.sh
           
   trigger_cleanup:
-    name: Cleanup Failing Environment
+    name: 🍋 Cleanup Failing Environment
     if: ${{ failure() }}
     needs: [backend,frontend]
     runs-on: ubuntu-latest
@@ -55,7 +55,7 @@ jobs:
           inputs: '{ "ref": "${{ github.event.inputs.ref }}" }'
               
   trigger_promotion:
-    name: Start Promotion of Verified Environment
+    name: 👍 Start Promotion of Verified Environment
     if: ${{ success() }}
     needs: [backend,frontend]
     runs-on: ubuntu-latest
