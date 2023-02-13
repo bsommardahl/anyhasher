@@ -37,7 +37,7 @@ jobs:
           path: backend/build/
 
   be-lint:
-    name: Lint Backend Code
+    name: 🕵️ Lint Backend Code
     needs: [be-build]
     runs-on: ubuntu-latest
     steps:
@@ -81,7 +81,7 @@ jobs:
         run: cd backend && npm t
 
   be-security-audit:
-    name: Audit Backend Packages for Security Vulnerabilities
+    name: 🛡️ Audit Backend Packages for Security Vulnerabilities
     needs: [be-build]
     runs-on: ubuntu-latest
     steps:
@@ -153,7 +153,7 @@ jobs:
           path: frontend/build
 
   fe-security-audit:
-    name: Audit Frontend Packages for Security Vulnerabilities
+    name: 🛡️ Audit Frontend Packages for Security Vulnerabilities
     needs: [fe-build]
     runs-on: ubuntu-latest
     steps:
