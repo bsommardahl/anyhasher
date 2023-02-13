@@ -7,6 +7,6 @@
       - domain_name: "{{ origin_domain }}"
 
 - name: "Invalidate distro"
-  community.aws.cloudfront_invalidate: 
+  community.aws.cloudfront_invalidation: 
     distribution_id: "{{ distro_id }}"
     path: "/**/*"    
