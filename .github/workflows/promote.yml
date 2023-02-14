@@ -13,7 +13,6 @@ jobs:
   promote:
     name: 🚀 Promote Green to Blue     
     runs-on: ubuntu-latest
-    container: python:3.7
     outputs:
       previous_tag: ${{ steps.previous.outputs.tag }}
     steps:
@@ -22,37 +21,48 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.ref }}
-          depth: 0
-      
-      - name: Setting Safe Directory # work-around for gitconfig in container (https://github.com/actions/checkout/issues/1169)
-        run: git config --system --add safe.directory ./
-        
+          
       - name: Find Previous Blue Version
         id: previous
         uses: jimschubert/query-tag-action@v1
         with:
-          skip-unshallow: true
           include: 'blue/*'
 
+      # - name: Change CloudFront "Router"
+      #   uses: dawidd6/action-ansible-playbook@v2
+      #   with:
+      #     playbook: promote.yml
+      #     directory: ./util/ansible
+      #     options: |
+      #       --verbose
+      #       --extra-vars "distro_id='${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }}' origin_domain='${{ github.event.inputs.frontend_url }}'"
+  
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-
-      - name: Change CloudFront "Router"
-        uses: dawidd6/action-ansible-playbook@v2
-        with:
-          playbook: promote.yml
-          directory: ./util/ansible
-          options: |
-            --verbose
-            --extra-vars "distro_id='${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }}' origin_domain='${{ github.event.inputs.frontend_url }}'"
   
+      - name: Use Production Workspace
+        uses: dflook/terraform-new-workspace@v1
+        with:
+          path: util/terraform/router
+          workspace: anyhasher-production
+
+      - name: Switch the Router
+        id: provision
+        uses: dflook/terraform-apply@v1
+        with:
+          workspace: anyhasher-production
+          auto_approve: true
+          path: util/terraform/router
+          variables: |
+            frontend_url = "${{ github.event.inputs.frontend_url }}"
+      
       - name: Tag Green as New Blue
         if: success()         
         uses: rickstaa/action-create-tag@v1

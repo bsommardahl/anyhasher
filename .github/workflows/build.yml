@@ -120,7 +120,7 @@ jobs:
       #   uses: github/codeql-action/analyze@v1
 
   fe-build:
-    name: 🛠️ Build Backend Artifact
+    name: 🛠️ Build Frontend Artifact
     runs-on: ubuntu-latest
     steps:
       - name: Cache Node Modules
