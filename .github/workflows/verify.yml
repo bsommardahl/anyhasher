@@ -5,11 +5,13 @@ on:
     inputs:
       backend_url:
         required: true
+      s3_bucket_hostname:
+        required: true
       frontend_url:
         required: true
       ref:
         required: true
-        
+
 jobs:
   frontend:
     name: 🧪 Check Frontend
@@ -24,8 +26,8 @@ jobs:
           export TEST_URL=${{ github.event.inputs.frontend_url }}
           cd frontend/e2e
           npm install
-          npm run smoke  
-    
+          npm run smoke
+
   backend:
     name: 🧪 Check Backend
     runs-on: ubuntu-latest
@@ -40,11 +42,11 @@ jobs:
           cd backend/e2e
           chmod +x backend-smoke.sh
           ./backend-smoke.sh
-          
+
   trigger_cleanup:
     name: ❌ Cleanup Failing Environment
     if: ${{ failure() }}
-    needs: [backend,frontend]
+    needs: [backend, frontend]
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
@@ -53,11 +55,11 @@ jobs:
         with:
           workflow: Cleanup
           inputs: '{ "ref": "${{ github.event.inputs.ref }}", "env_name": "Green Env after Verification Failure" }'
-              
+
   trigger_promotion:
     name: 👍 Start Promotion of Verified Environment
     if: ${{ success() }}
-    needs: [backend,frontend]
+    needs: [backend, frontend]
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
@@ -65,4 +67,4 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Promote
-          inputs: '{ "ref": "${{ github.event.inputs.ref }}", "frontend_url": "${{ github.event.inputs.frontend_url }}" }'
+          inputs: '{ "ref": "${{ github.event.inputs.ref }}", "s3_bucket_hostname": "${{ github.event.inputs.s3_bucket_hostname }}" }'

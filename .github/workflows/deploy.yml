@@ -18,17 +18,17 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.ref }}
-          
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
-        
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-  
+
       - name: Use commit workspace
         uses: dflook/terraform-new-workspace@v1
         with:
@@ -44,14 +44,15 @@ jobs:
           path: util/terraform/backend
           variables: |
             instance_name = "anyhasher-backend-${{ github.event.inputs.ref }}"
-        
+
   provision_frontend:
     name: Provision Frontend Infrastructure
     outputs:
       frontend_url: http://${{ steps.provision.outputs.website_endpoint }}
+      s3_bucket_hostname: ${{ steps.provision.outputs.website_endpoint }}
       bucket_name: ${{ steps.provision.outputs.bucket_name }}
     runs-on: ubuntu-latest
-    steps:      
+    steps:
       - name: Checkout
         uses: actions/checkout@v3
 
@@ -61,16 +62,16 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-  
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
-        
+
       - name: Use commit workspace
         uses: dflook/terraform-new-workspace@v1
         with:
           path: util/terraform/frontend
           workspace: anyhasher-frontend-${{ github.event.inputs.ref }}
-      
+
       - name: Provision
         id: provision
         uses: dflook/terraform-apply@v1
@@ -79,26 +80,26 @@ jobs:
           auto_approve: true
           path: util/terraform/frontend
           variables: |
-            bucket_name = "anyhasher-frontend-${{ github.event.inputs.ref }}"          
-    
+            bucket_name = "anyhasher-frontend-${{ github.event.inputs.ref }}"
+
   deploy_backend:
     name: 🚀 Deploy Backend Artifact
     needs: [provision_backend]
     runs-on: ubuntu-latest
-    # environment: 
+    # environment:
     #   name: Green Backend Environment
     #   url: https://${{ needs.provision_backend.outputs.backend_url }}
-    steps:      
+    steps:
       - name: Checkout
         uses: actions/checkout@v3
-        
+
       - name: Get Backend Artifact
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: build.yml
           name: backend-artifact-${{ github.event.inputs.ref }}
           path: backend/build/
-      
+
       - name: Configure Backend Infrastructure
         uses: dawidd6/action-ansible-playbook@v2
         with:
@@ -109,13 +110,13 @@ jobs:
             [ec2]
             ${{ needs.provision_backend.outputs.backend_host }} ansible_user=ubuntu
           options: |
-            --verbose            
-          
+            --verbose
+
   deploy_frontend:
     name: 🚀 Deploy Frontend Artifact
-    needs: [provision_backend,provision_frontend,deploy_backend]
+    needs: [provision_backend, provision_frontend, deploy_backend]
     runs-on: ubuntu-latest
-    environment: 
+    environment:
       name: Production Candidate (Green)
       url: ${{ needs.provision_frontend.outputs.frontend_url }}
     steps:
@@ -125,7 +126,7 @@ jobs:
           workflow: build.yml
           name: frontend-artifact-${{ github.event.inputs.ref }}
           path: frontend/build
-  
+
       - name: Prepare frontend with backend url
         uses: jacobtomlinson/gha-find-replace@v2
         with:
@@ -139,32 +140,34 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-  
+
       - name: Upload frontend to S3 Bucket
         run: |
           aws s3 cp frontend/build s3://${{ needs.provision_frontend.outputs.bucket_name }} --region=us-east-1 --recursive
-      
+
   trigger_verify:
     name: 👍 Start Environment Verification
-    needs: [provision_frontend,deploy_frontend,provision_backend,deploy_backend]
+    needs:
+      [provision_frontend, deploy_frontend, provision_backend, deploy_backend]
     runs-on: ubuntu-latest
-    if: success()         
+    if: success()
     permissions: write-all
     steps:
       - name: Dispatch
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Verify
-          inputs: '{ "backend_url": "${{ needs.provision_backend.outputs.backend_url }}", "frontend_url": "${{ needs.provision_frontend.outputs.frontend_url }}", "ref": "${{ github.event.inputs.ref }}" }'
+          inputs: '{ "backend_url": "${{ needs.provision_backend.outputs.backend_url }}", "frontend_url": "${{ needs.provision_frontend.outputs.frontend_url }}", "s3_bucket_hostname": "${{ needs.provision_frontend.outputs.s3_bucket_hostname }}", "ref": "${{ github.event.inputs.ref }}" }'
 
   trigger_cleanup_on_failure:
     name: ❌ Start Cleanup for Failing Environment
-    needs: [provision_frontend,deploy_frontend,provision_backend,deploy_backend]
-    if: failure()         
+    needs:
+      [provision_frontend, deploy_frontend, provision_backend, deploy_backend]
+    if: failure()
     runs-on: ubuntu-latest
     steps:
       - name: Dispatch
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Cleanup
-          inputs: '{ "ref": "${{ github.event.inputs.ref }}", "env_name": "Green Env after Failed Deploy" }'   
+          inputs: '{ "ref": "${{ github.event.inputs.ref }}", "env_name": "Green Env after Failed Deploy" }'

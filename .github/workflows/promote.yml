@@ -1,46 +1,44 @@
 name: Promote
 run-name: "🤩 CD: Promote Green to Blue (${{ github.event.inputs.ref }})"
-on:  
+on:
   workflow_dispatch:
     inputs:
       ref:
         required: true
-      frontend_url:
+      s3_bucket_hostname:
         required: true
-      
+
 jobs:
-  
   promote:
-    name: 🚀 Promote Green to Blue     
+    name: 🚀 Promote Green to Blue
     runs-on: ubuntu-latest
-    environment: 
+    environment:
       name: Production
       url: ${{ steps.router.outputs.website_url }}
     outputs:
-      previous_tag: ${{ steps.previous.outputs.tag }}      
+      previous_tag: ${{ steps.previous.outputs.tag }}
     steps:
-    
       - name: Checkout
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.ref }}
-          
+
       - name: Find Previous Blue Version
         id: previous
         uses: jimschubert/query-tag-action@v1
         with:
-          include: 'blue/*'
+          include: "blue/*"
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
-        
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-  
+
       - name: Use Production Workspace
         uses: dflook/terraform-new-workspace@v1
         with:
@@ -55,11 +53,11 @@ jobs:
           auto_approve: true
           path: util/terraform/router
           variables: |
-            s3_endpoint = "${{ github.event.inputs.frontend_url }}"
-            origin_id = "${{ github.event.inputs.frontend_url }}"
-      
+            s3_bucket_hostname = "${{ github.event.inputs.s3_bucket_hostname }}"
+            origin_id = "${{ github.event.inputs.frontend_hostname }}"
+
       - name: Tag Green as New Blue
-        if: success()         
+        if: success()
         uses: rickstaa/action-create-tag@v1
         with:
           tag: "blue/${{ github.event.inputs.ref }}"
@@ -67,7 +65,7 @@ jobs:
   cleanup_failing_green:
     name: ❌ Clean up Failing Green
     needs: [promote]
-    if: failure()         
+    if: failure()
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
@@ -80,7 +78,7 @@ jobs:
   cleanup_old_blue:
     name: ❌ Clean up Previous Blue
     needs: [promote]
-    if: success()  
+    if: success()
     runs-on: ubuntu-latest
     permissions: write-all
     steps:

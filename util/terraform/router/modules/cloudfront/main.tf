@@ -1,7 +1,7 @@
 resource "aws_cloudfront_distribution" "production_distribution" {
   
   origin {
-    domain_name = var.s3_endpoint
+    domain_name = var.s3_bucket_hostname
     origin_id = var.origin_id
 
     custom_origin_config {
@@ -26,7 +26,7 @@ resource "aws_cloudfront_distribution" "production_distribution" {
       query_string = false
       cookies {
         forward = "none"
-      }
+      } 
     }
   }
 
@@ -42,7 +42,7 @@ resource "aws_cloudfront_distribution" "production_distribution" {
   }
 }
 
-variable "s3_endpoint" {
+variable "s3_bucket_hostname" {
   description = "specifies the DNS domain name of the origin"
 }
 
@@ -52,8 +52,4 @@ variable "origin_id" {
 
 output domain_name {
   value = aws_cloudfront_distribution.production_distribution.domain_name
-}
-
-output hosted_zone_id {
-  value = aws_cloudfront_distribution.production_distribution.hosted_zone_id
 }
