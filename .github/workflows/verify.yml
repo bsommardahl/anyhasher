@@ -52,7 +52,7 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Cleanup
-          inputs: '{ "ref": "${{ github.event.inputs.ref }}" }'
+          inputs: '{ "ref": "${{ github.event.inputs.ref }}", "env_name": "Green Env after Verification Failure" }'
               
   trigger_promotion:
     name: 👍 Start Promotion of Verified Environment

@@ -1,5 +1,5 @@
 name: Promote
-run-name: "🤩 CD: Promote Green to Blue (And Decommission Previous Blue)"
+run-name: "🤩 CD: Promote Green to Blue (${{ github.event.inputs.ref }})"
 on:  
   workflow_dispatch:
     inputs:
@@ -70,7 +70,7 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Cleanup
-          inputs: '{ "ref": "${{ github.event.inputs.ref }}" }'
+          inputs: '{ "ref": "${{ github.event.inputs.ref }}", , "env_name": "Env after Failed Promotion" }'
 
   cleanup_old_blue:
     name: ❌ Clean up Previous Blue
@@ -88,4 +88,4 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Cleanup
-          inputs: '{ "ref": "${{ github.sha }}" }'
+          inputs: '{ "ref": "${{ github.sha }}", "env_name": "Decomissioned Blue Env" }'
