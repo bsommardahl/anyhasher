@@ -26,6 +26,7 @@ jobs:
         run: |
           git tag --list --sort=-version:refname "blue*" | head -n 1
           echo "old_blue_ref=$(git tag --list --sort=-version:refname "blue*" | head -n 1)" >> $GITHUB_ENV
+          git tag --list --sort=-version:refname
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
