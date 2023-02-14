@@ -16,13 +16,14 @@ jobs:
     outputs:
       previous_ref: ${{ env.old_blue_ref }}
     steps:
-      - name: Get Previous Blue Version
-        run: echo "old_blue_ref=$(git tag --list --sort=-version:refname "blue*" | head -n 1)" >> $GITHUB_ENV
-
+    
       - name: Checkout
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.ref }}
+
+      - name: Get Previous Blue Version
+        run: echo "old_blue_ref=$(git tag --list --sort=-version:refname "blue*" | head -n 1)" >> $GITHUB_ENV
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
