@@ -1,6 +1,6 @@
 ---
 - name: Promote Green to Blue
-  hosts: ec2
+  hosts: localhost
   gather_facts: false
   roles:
     - update-distro
