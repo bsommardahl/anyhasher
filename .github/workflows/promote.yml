@@ -49,9 +49,9 @@ jobs:
   
       - name: Tag Green as New Blue
         if: success()         
-        run: |
-          git tag "blue/${{ github.event.inputs.ref }}"
-          git push origin "blue/${{ github.event.inputs.ref }}"     
+        uses: rickstaa/action-create-tag@v1
+        with:
+          tag: "blue/${{ github.event.inputs.ref }}"
 
   cleanup_failing_green:
     name: 🍋 Clean up Failing Green
@@ -69,7 +69,7 @@ jobs:
   cleanup_old_blue:
     name: Clean up Previous Blue
     needs: [promote]
-    if: success() && needs.promote.previous_ref != ''    
+    if: success()  
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
@@ -77,4 +77,4 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Cleanup
-          inputs: '{ "ref": "${{ needs.promote.previous_ref }}" }'
+          inputs: '{ "ref": "${{ needs.promote.outputs.previous_ref }}" }'
