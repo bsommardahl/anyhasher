@@ -73,7 +73,7 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Cleanup
-          inputs: > 
+          inputs: | 
           '{ 
             "ref": "${{ github.event.inputs.ref }}", 
             "env_name": "Env after Failed Promotion" 
@@ -95,7 +95,7 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Cleanup
-          inputs: > 
+          inputs: | 
           '{ 
             "ref": "${{ github.sha }}", 
             "env_name": "Decomissioned Blue Env" 

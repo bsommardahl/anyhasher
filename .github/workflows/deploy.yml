@@ -157,7 +157,7 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Verify
-          inputs: > 
+          inputs: | 
           '{ 
             "backend_url": "${{ needs.provision_backend.outputs.backend_url }}", 
             "frontend_url": "${{ needs.provision_frontend.outputs.frontend_url }}", 
@@ -176,7 +176,7 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Cleanup
-          inputs: > 
+          inputs: |
           '{ 
             "ref": "${{ github.event.inputs.ref }}", 
             "env_name": "Green Env after Failed Deploy" 
