@@ -24,6 +24,7 @@ jobs:
 
       - name: Get Previous Blue Version
         run: |
+          git fetch --tags origin
           git tag --list --sort=-version:refname "blue*" | head -n 1
           echo "old_blue_ref=$(git tag --list --sort=-version:refname "blue*" | head -n 1)" >> $GITHUB_ENV
           git tag --list --sort=-version:refname
