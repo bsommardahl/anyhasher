@@ -52,7 +52,7 @@ jobs:
           git push origin "blue/${{ github.event.inputs.ref }}"     
 
   cleanup_failing_green:
-    name: 🍋 Clean up Failing Green
+    name: ❌ Clean up Failing Green
     needs: [promote]
     if: failure()         
     runs-on: ubuntu-latest
@@ -65,7 +65,7 @@ jobs:
           inputs: '{ "ref": "${{ github.event.inputs.ref }}" }'
 
   cleanup_old_blue:
-    name: Clean up Previous Blue
+    name: ❌ Clean up Previous Blue
     needs: [promote]
     if: success()      
     runs-on: ubuntu-latest

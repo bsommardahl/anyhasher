@@ -42,7 +42,7 @@ jobs:
           ./backend-smoke.sh
           
   trigger_cleanup:
-    name: 🍋 Cleanup Failing Environment
+    name: ❌ Cleanup Failing Environment
     if: ${{ failure() }}
     needs: [backend,frontend]
     runs-on: ubuntu-latest

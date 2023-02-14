@@ -82,7 +82,7 @@ jobs:
             bucket_name = "anyhasher-frontend-${{ github.event.inputs.ref }}"          
     
   deploy_backend:
-    name: Deploy Backend Artifact
+    name: 🚀 Deploy Backend Artifact
     needs: [provision_backend]
     runs-on: ubuntu-latest
     # environment: 
@@ -112,7 +112,7 @@ jobs:
             --verbose            
           
   deploy_frontend:
-    name: Deploy Frontend Artifact
+    name: 🚀 Deploy Frontend Artifact
     needs: [provision_backend,provision_frontend,deploy_backend]
     runs-on: ubuntu-latest
     environment: 
@@ -158,7 +158,7 @@ jobs:
           inputs: '{ "backend_url": "${{ needs.provision_backend.outputs.backend_url }}", "frontend_url": "${{ needs.provision_frontend.outputs.frontend_url }}", "ref": "${{ github.event.inputs.ref }}" }'
 
   trigger_cleanup_on_failure:
-    name: 🍋 Start Cleanup for Failing Environment
+    name: ❌ Start Cleanup for Failing Environment
     needs: [provision_frontend,deploy_frontend,provision_backend,deploy_backend]
     if: failure()         
     runs-on: ubuntu-latest
