@@ -14,19 +14,19 @@ jobs:
     name: 🚀 Promote Green to Blue     
     runs-on: ubuntu-latest
     outputs:
-      previous_ref: ${{ env.old_blue_ref }}
+      previous_ref: ${{ steps.previous.outputs.tag }}
     steps:
     
       - name: Checkout
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.ref }}
-
-      - name: Get Previous Blue Version
-        run: |
-          git fetch --tags origin
-          echo "old_blue_ref=$(git tag --list --sort=-version:refname "blue*" | head -n 1)" >> $GITHUB_ENV
-          echo $old_blue_ref
+        
+      - name: Find Previous Blue Version
+        id: previous
+        uses: jimschubert/query-tag-action@v1
+        with:
+          include: 'blue/*'
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
