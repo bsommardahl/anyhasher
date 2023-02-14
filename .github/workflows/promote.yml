@@ -73,8 +73,13 @@ jobs:
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
+      - name: Checkout Old Blue
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ needs.promote.outputs.previous_ref }}
+
       - name: Dispatch
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Cleanup
-          inputs: '{ "ref": "${{ needs.promote.outputs.previous_ref }}" }'
+          inputs: '{ "ref": "${{ github.sha }}" }'
