@@ -20,10 +20,11 @@ provider "aws" {
 
 module "router" {
   source = "./modules/cloudfront"
-  s3_endpoint = var.s3_endpoint
+  s3_bucket_hostname = var.s3_bucket_hostname
+  origin_id   = var.origin_id
 }
 
-variable "s3_endpoint" {
+variable "s3_bucket_hostname" {
   description = "specifies the DNS domain name of the origin"
 }
 

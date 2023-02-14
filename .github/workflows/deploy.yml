@@ -157,7 +157,13 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Verify
-          inputs: '{ "backend_url": "${{ needs.provision_backend.outputs.backend_url }}", "frontend_url": "${{ needs.provision_frontend.outputs.frontend_url }}", "s3_bucket_hostname": "${{ needs.provision_frontend.outputs.s3_bucket_hostname }}", "ref": "${{ github.event.inputs.ref }}" }'
+          inputs: > 
+          '{ 
+            "backend_url": "${{ needs.provision_backend.outputs.backend_url }}", 
+            "frontend_url": "${{ needs.provision_frontend.outputs.frontend_url }}", 
+            "s3_bucket_hostname": "${{ needs.provision_frontend.outputs.s3_bucket_hostname }}", 
+            "ref": "${{ github.event.inputs.ref }}" 
+          }'
 
   trigger_cleanup_on_failure:
     name: ❌ Start Cleanup for Failing Environment
@@ -170,4 +176,8 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Cleanup
-          inputs: '{ "ref": "${{ github.event.inputs.ref }}", "env_name": "Green Env after Failed Deploy" }'
+          inputs: > 
+          '{ 
+            "ref": "${{ github.event.inputs.ref }}", 
+            "env_name": "Green Env after Failed Deploy" 
+          }'

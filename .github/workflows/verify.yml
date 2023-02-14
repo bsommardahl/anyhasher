@@ -54,7 +54,11 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Cleanup
-          inputs: '{ "ref": "${{ github.event.inputs.ref }}", "env_name": "Green Env after Verification Failure" }'
+          inputs: > 
+          '{ 
+            "ref": "${{ github.event.inputs.ref }}", 
+            "env_name": "Green Env after Verification Failure" 
+          }'
 
   trigger_promotion:
     name: 👍 Start Promotion of Verified Environment
@@ -67,4 +71,8 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Promote
-          inputs: '{ "ref": "${{ github.event.inputs.ref }}", "s3_bucket_hostname": "${{ github.event.inputs.s3_bucket_hostname }}" }'
+          inputs: > 
+          '{ 
+            "ref": "${{ github.event.inputs.ref }}", 
+            "s3_bucket_hostname": "${{ github.event.inputs.s3_bucket_hostname }}" 
+          }'
