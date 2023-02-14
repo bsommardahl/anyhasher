@@ -23,6 +23,9 @@ jobs:
         with:
           ref: ${{ github.event.inputs.ref }}
           depth: 0
+      
+      - name: Setting Safe Directory # work-around for gitconfig in container (https://github.com/actions/checkout/issues/1169)
+        run: git config --system --add safe.directory ./
         
       - name: Find Previous Blue Version
         id: previous
