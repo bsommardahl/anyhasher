@@ -20,18 +20,17 @@ provider "aws" {
 
 module "router" {
   source = "./modules/cloudfront"
-  frontend_url = var.frontend_url
+  s3_endpoint = var.s3_endpoint
 }
 
-variable "frontend_url" {
-  description = "Bucket URL for production version"
+variable "s3_endpoint" {
+  description = "specifies the DNS domain name of the origin"
 }
 
-# output "website_endpoint" {
-#   value = module.s3.website_endpoint
-# }
+variable "origin_id" {
+  description = "specifies a unique identifier for the origin"
+}
 
-# output "bucket_name" {
-#   value = module.s3.bucket_name
-# }
-
+output "website_url" {
+  value = module.router.domain_name
+}

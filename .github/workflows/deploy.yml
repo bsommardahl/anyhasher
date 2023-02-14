@@ -116,7 +116,7 @@ jobs:
     needs: [provision_backend,provision_frontend,deploy_backend]
     runs-on: ubuntu-latest
     environment: 
-      name: New Production (Green)
+      name: Production Candidate (Green)
       url: ${{ needs.provision_frontend.outputs.frontend_url }}
     steps:
       - name: Get Frontend Artifact
