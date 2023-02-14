@@ -13,6 +13,7 @@ jobs:
   promote:
     name: 🚀 Promote Green to Blue     
     runs-on: ubuntu-latest
+    container: python:3.7
     outputs:
       previous_tag: ${{ steps.previous.outputs.tag }}
     steps:
