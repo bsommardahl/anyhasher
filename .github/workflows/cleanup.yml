@@ -67,6 +67,8 @@ jobs:
         runs-on: ubuntu
         steps:
           - run: |
-            git push --delete origin "blue/${{ github.event.inputs.ref }}"
+            TAG="blue/${{ github.event.inputs.ref }}"
+            git tag -d $TAG
+            git push --delete origin $TAG
 
       - run: echo Need to hook up slack here!
