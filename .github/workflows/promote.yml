@@ -13,7 +13,7 @@ jobs:
     name: 🎟️ Get Previous Blue Ref
     runs-on: ubuntu-latest
     outputs:
-      ref: ${{env.hash}}
+      ref: ${{steps.commit.output.hash}}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -29,9 +29,12 @@ jobs:
         with:
           ref: ${{steps.previous.outputs.tag}}
 
-      - name: Get Hash
+      - name: Get Commit Hash
+        id: commit
         run: |
-          echo "hash=(git rev-parse HEAD)" >> $GITHUB_ENV
+          commit_hash=(git rev-parse HEAD)
+          echo $commit_hash
+          echo "hash=$commit_hash" >> $GITHUB_OUTPUT
 
   promote:
     name: 🚀 Promote Green to Blue
