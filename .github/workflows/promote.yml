@@ -35,7 +35,7 @@ jobs:
           echo "Tag: ${{steps.previous.outputs.tag}}"
           commit=$(git rev-parse HEAD)
           echo "Previous Commit: $commit"
-          echo "hash=${{commit}}" >> $GITHUB_OUTPUT
+          echo "hash=$commit" >> $GITHUB_OUTPUT
           echo $GITHUB_OUTPUT
 
   promote:
