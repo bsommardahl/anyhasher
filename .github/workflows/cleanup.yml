@@ -69,4 +69,9 @@ jobs:
           git tag -d $TAG
           git push --delete origin $TAG
 
+  notify:
+    name: Notify team that environment was removed
+    needs: [destroy_backend, destroy_frontend]
+    runs-on: ubuntu-latest
+    steps:
       - run: echo Need to hook up slack here!
