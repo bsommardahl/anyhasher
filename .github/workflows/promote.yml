@@ -78,9 +78,10 @@ jobs:
 
       - name: Tag Green as New Blue
         if: success()
-        uses: rickstaa/action-create-tag@v1
+        uses: joutvhu/create-tag@v1
         with:
-          tag: "blue/${{ github.event.inputs.ref }}"
+          tag_name: blue/${{ github.event.inputs.ref }}
+          tag_sha: ${{ github.event.inputs.ref }}
 
   cleanup_failing_green:
     name: ❌ Clean up Failing Green
