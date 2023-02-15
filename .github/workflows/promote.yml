@@ -36,7 +36,7 @@ jobs:
           commit=$(git rev-parse HEAD)
           echo "Previous Commit: $commit"
           echo "hash=$commit" >> $GITHUB_OUTPUT
-          echo $GITHUB_OUTPUT
+          cat $GITHUB_OUTPUT
 
   promote:
     name: 🚀 Promote Green to Blue
