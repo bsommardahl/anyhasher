@@ -54,7 +54,7 @@ jobs:
           path: util/terraform/router
           variables: |
             s3_bucket_hostname = "${{ github.event.inputs.s3_bucket_hostname }}"
-            origin_id = "${{ github.event.inputs.frontend_hostname }}"
+            origin_id = "${{ github.event.inputs.s3_bucket_hostname }}"
 
       - name: Tag Green as New Blue
         if: success()
