@@ -10,8 +10,8 @@ on:
 
 jobs:
   previous:
-    name: 🎟️ Find and Remember Previous Blue Ref
-    runs-on: ubuntu
+    name: 🎟️ Get Previous Blue Ref
+    runs-on: ubuntu-latest
     outputs:
       ref: ${{env.hash}}
     steps:
