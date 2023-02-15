@@ -62,13 +62,11 @@ jobs:
           workspace: anyhasher-backend-${{ github.event.inputs.ref }}
           variables: |
             instance_name = "anyhasher-backend-${{ github.event.inputs.ref }}"
-      
+
       - name: Remove old tag
-        runs-on: ubuntu
-        steps:
-          - run: |
-            TAG="blue/${{ github.event.inputs.ref }}"
-            git tag -d $TAG
-            git push --delete origin $TAG
+        run: |
+          TAG="blue/${{ github.event.inputs.ref }}"
+          git tag -d $TAG
+          git push --delete origin $TAG
 
       - run: echo Need to hook up slack here!
