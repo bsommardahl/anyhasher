@@ -1,5 +1,5 @@
 name: Deploy
-run-name: "🚀 CD: Deploy Artifacts from ${{ github.event.inputs.ref }}"
+run-name: "🚛 CD: Deploy Artifacts from ${{ github.event.inputs.ref }}"
 on:
   workflow_dispatch:
     inputs:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   provision_backend:
-    name: Provision Backend Infrastructure
+    name: 🏢 Provision Backend Infrastructure
     runs-on: ubuntu-latest
     outputs:
       backend_url: http://${{ steps.provision.outputs.ec2_public_url }}:5001
@@ -46,7 +46,7 @@ jobs:
             instance_name = "anyhasher-backend-${{ github.event.inputs.ref }}"
 
   provision_frontend:
-    name: Provision Frontend Infrastructure
+    name: 🏛️ Provision Frontend Infrastructure
     outputs:
       frontend_url: http://${{ steps.provision.outputs.website_endpoint }}
       s3_bucket_hostname: ${{ steps.provision.outputs.website_endpoint }}
@@ -83,12 +83,9 @@ jobs:
             bucket_name = "anyhasher-frontend-${{ github.event.inputs.ref }}"
 
   deploy_backend:
-    name: 🚀 Deploy Backend Artifact
+    name: 🚛 Deploy Backend Artifact
     needs: [provision_backend]
     runs-on: ubuntu-latest
-    # environment:
-    #   name: Green Backend Environment
-    #   url: https://${{ needs.provision_backend.outputs.backend_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -113,7 +110,7 @@ jobs:
             --verbose
 
   deploy_frontend:
-    name: 🚀 Deploy Frontend Artifact
+    name: 🚚 Deploy Frontend Artifact
     needs: [provision_backend, provision_frontend, deploy_backend]
     runs-on: ubuntu-latest
     environment:
@@ -146,7 +143,7 @@ jobs:
           aws s3 cp frontend/build s3://${{ needs.provision_frontend.outputs.bucket_name }} --region=us-east-1 --recursive
 
   trigger_verify:
-    name: 👍 Start Environment Verification
+    name: 🧪 Start Environment Verification
     needs:
       [provision_frontend, deploy_frontend, provision_backend, deploy_backend]
     runs-on: ubuntu-latest
@@ -160,7 +157,7 @@ jobs:
           inputs: '{ "backend_url": "${{ needs.provision_backend.outputs.backend_url }}", "frontend_url": "${{ needs.provision_frontend.outputs.frontend_url }}", "s3_bucket_hostname": "${{ needs.provision_frontend.outputs.s3_bucket_hostname }}", "ref": "${{ github.event.inputs.ref }}" }'
 
   trigger_cleanup_on_failure:
-    name: ❌ Start Cleanup for Failing Environment
+    name: ⛔ Start Cleanup for Failing Environment
     needs:
       [provision_frontend, deploy_frontend, provision_backend, deploy_backend]
     if: failure()
@@ -170,4 +167,4 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Cleanup
-          inputs: '{ "ref": "${{ github.event.inputs.ref }}", "env_name": "Green Env after Failed Deploy" }'
+          inputs: '{ "ref": "${{ github.event.inputs.ref }}", "env_name": "⛔ Detroy Green Env after Failed Deployment" }'

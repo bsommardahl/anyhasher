@@ -1,7 +1,7 @@
 name: Cleanup
-run-name: "❌ CD: Cleanup ${{ github.event.inputs.env_name }} from ${{ github.event.inputs.ref }}"
-on:  
-   workflow_dispatch:
+run-name: "${{ github.event.inputs.env_name }} from ${{ github.event.inputs.ref }}"
+on:
+  workflow_dispatch:
     inputs:
       ref:
         required: true
@@ -9,19 +9,18 @@ on:
         required: true
 
 jobs:
-
   destroy_frontend:
     name: ❌ Destroy Frontend Infrastructure
     runs-on: ubuntu-latest
-    steps:      
+    steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.inputs.ref }}          
-      
+          ref: ${{ github.event.inputs.ref }}
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
-        
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -36,26 +35,26 @@ jobs:
           workspace: anyhasher-frontend-${{ github.event.inputs.ref }}
           variables: |
             bucket_name = "anyhasher-frontend-${{ github.event.inputs.ref }}"
-            
+
   destroy_backend:
     name: ❌ Destroy Backend Infrastructure
     runs-on: ubuntu-latest
-    steps:      
+    steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.inputs.ref }}          
-      
+          ref: ${{ github.event.inputs.ref }}
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
-        
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-      
+
       - name: Destroy Backend
         uses: dflook/terraform-destroy@v1
         with:

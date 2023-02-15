@@ -2,7 +2,7 @@ name: Build
 run-name: "🛠️ CI: ${{ github.event.head_commit.message }}"
 on:
   pull_request:
-  push:    
+  push:
 
 jobs:
   be-build:
@@ -93,7 +93,7 @@ jobs:
 
   be-static-analysis:
     name: 🔬 Run Static Analysis on Backend Code
-    needs: [be-build,be-lint,be-test,be-security-audit]
+    needs: [be-build, be-lint, be-test, be-security-audit]
     runs-on: ubuntu-latest
     permissions:
       security-events: write
@@ -103,8 +103,8 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
         with:
-          config-file: ./.github/codeql/codeql.config.yml          
-        
+          config-file: ./.github/codeql/codeql.config.yml
+
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
@@ -162,7 +162,7 @@ jobs:
 
       - name: Check for security issue
         run: cd frontend && npm audit --production --audit-level=critical
-  
+
   fe-static-analysis:
     name: 🔬 Run Static Analysis on Frontend Code
     needs: [fe-security-audit]
@@ -176,7 +176,7 @@ jobs:
         uses: github/codeql-action/init@v2
         with:
           config-file: ./.github/codeql/codeql.config.yml
-          
+
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
@@ -188,7 +188,7 @@ jobs:
         with:
           path: node_modules
           key: node-${{ hashFiles('**/package-lock.json') }}
-          
+
       - name: Install Deps
         run: cd frontend && npm i
 
@@ -196,10 +196,10 @@ jobs:
         run: cd frontend && npm run build
 
       # - name: Perform Analysis
-      #   uses: github/codeql-action/analyze@v2  
+      #   uses: github/codeql-action/analyze@v2
 
   trigger-deploy:
-    name: 🚀 Start Deployment
+    name: 🚚 Start Deployment
     if: github.ref == 'refs/heads/main'
     needs: [be-static-analysis, fe-static-analysis]
     runs-on: ubuntu-latest
@@ -210,5 +210,3 @@ jobs:
         with:
           workflow: Deploy
           inputs: '{ "ref": "${{ github.sha }}" }'
-
-  
