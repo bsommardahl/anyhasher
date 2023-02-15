@@ -9,6 +9,30 @@ on:
         required: true
 
 jobs:
+  previous:
+    name: Find and Remember Previous Blue Ref
+    runs-on: ubuntu
+    outputs:
+      ref: ${{env.hash}}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        
+      - name: Find Previous Blue Version
+        id: previous
+        uses: jimschubert/query-tag-action@v1
+        with:
+          include: "blue/*" 
+          
+      - name: Checkout Tag
+        uses: actions/checkout@v3
+        with:
+          ref: steps.previous.outputs.tag
+        
+      - name: Get Hash
+        run: |
+          echo "hash=(git rev-parse HEAD)" >> $GITHUB_ENV
+          
   promote:
     name: 🚀 Promote Green to Blue
     runs-on: ubuntu-latest
@@ -22,13 +46,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.ref }}
-
-      - name: Find Previous Blue Version
-        id: previous
-        uses: jimschubert/query-tag-action@v1
-        with:
-          include: "blue/*"
-
+      
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
 
@@ -82,13 +100,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
-      - name: Checkout Old Blue
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ needs.promote.outputs.previous_tag }}
-
       - name: Dispatch
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Cleanup
-          inputs: '{ "ref": "${{ github.sha }}", "env_name": "Decomissioned Blue Env" }'
+          inputs: '{ "ref": "${{ needs.previous.outputs.ref }}", "env_name": "Decomissioned Blue Env" }'
