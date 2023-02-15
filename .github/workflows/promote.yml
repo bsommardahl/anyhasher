@@ -86,6 +86,7 @@ jobs:
           workflow: build.yml
           name: backend-artifact-${{ github.event.inputs.ref }}
           path: backend/build/
+          skip_unpack: true
 
       - name: Get Frontend Artifact
         uses: dawidd6/action-download-artifact@v2
@@ -93,6 +94,7 @@ jobs:
           workflow: build.yml
           name: frontend-artifact-${{ github.event.inputs.ref }}
           path: frontend/build
+          skip_unpack: true
 
       - name: Tag Green as New Blue
         if: success()
@@ -102,10 +104,9 @@ jobs:
           automatic_release_tag: "blue/${{ github.event.inputs.ref }}"
           prerelease: false
           title: "Latest Production Release"
-          files: |
-            LICENSE.txt
-            frontend/build
-            backend/build
+          # files: |
+          #   frontend-artifact-${{ github.event.inputs.ref }}.zip
+          #   backend-artifact-${{ github.event.inputs.ref }}.zip
 
   cleanup_failing_green:
     name: ❌ Clean up Failing Green
