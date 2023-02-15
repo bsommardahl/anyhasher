@@ -1,8 +1,9 @@
 name: Build
 run-name: "🛠️ CI: ${{ github.event.head_commit.message }}"
 on:
-  pull_request:
-  push:
+  # pull_request:
+  # push:
+  workflow_dispatch:
 
 jobs:
   be-build:
