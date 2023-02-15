@@ -32,9 +32,10 @@ jobs:
       - name: Get Commit Hash
         id: commit
         run: |
-          echo "Previous: ${{steps.previous.outputs.tag}}"
-          echo "Current: (git rev-parse HEAD)"
-          echo "hash=(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+          echo "Tag: ${{steps.previous.outputs.tag}}"
+          commit=$(git rev-parse HEAD)
+          echo "Previous Commit: $commit"
+          echo "hash=$commit" >> $GITHUB_OUTPUT
 
   promote:
     name: 🚀 Promote Green to Blue
