@@ -40,8 +40,6 @@ jobs:
     environment:
       name: Production
       url: ${{ steps.router.outputs.website_url }}
-    outputs:
-      previous_tag: ${{ steps.previous.outputs.tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -76,6 +74,25 @@ jobs:
             s3_bucket_hostname = "${{ github.event.inputs.s3_bucket_hostname }}"
             origin_id = "${{ github.event.inputs.s3_bucket_hostname }}"
 
+  release:
+    name: 🚛 Create New Blue Release
+    runs-on: ubuntu-latest
+    needs: [promote]
+    steps:
+      - name: Get Backend Artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: build.yml
+          name: backend-artifact-${{ github.event.inputs.ref }}
+          path: backend/build/
+
+      - name: Get Frontend Artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: build.yml
+          name: frontend-artifact-${{ github.event.inputs.ref }}
+          path: frontend/build
+
       - name: Tag Green as New Blue
         if: success()
         uses: "marvinpinto/action-automatic-releases@latest"
@@ -84,6 +101,10 @@ jobs:
           automatic_release_tag: "blue/${{ github.event.inputs.ref }}"
           prerelease: false
           title: "Latest Production Release"
+          files: |
+            LICENSE.txt
+            frontend/build
+            backend/build
 
   cleanup_failing_green:
     name: ❌ Clean up Failing Green
@@ -100,7 +121,7 @@ jobs:
 
   cleanup_old_blue:
     name: 🔥 Clean up Previous Blue
-    needs: [promote]
+    needs: [release]
     if: success()
     runs-on: ubuntu-latest
     permissions: write-all
