@@ -32,6 +32,8 @@ jobs:
       - name: Get Commit Hash
         id: commit
         run: |
+          echo "Previous: ${{steps.previous.outputs.tag}}"
+          echo "Current: (git rev-parse HEAD)"
           echo "hash=(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
   promote:
