@@ -80,21 +80,21 @@ jobs:
     runs-on: ubuntu-latest
     needs: [promote]
     steps:
-      - name: Get Backend Artifact
-        uses: dawidd6/action-download-artifact@v2
-        with:
-          workflow: build.yml
-          name: backend-artifact-${{ github.event.inputs.ref }}
-          path: backend/build/
-          skip_unpack: true
+      #- name: Get Backend Artifact
+      #  uses: dawidd6/action-download-artifact@v2
+      #  with:
+       #   workflow: build.yml
+      #    name: backend-artifact-${{ github.event.inputs.ref }}
+       #   path: backend/build/
+        #  skip_unpack: true
 
-      - name: Get Frontend Artifact
-        uses: dawidd6/action-download-artifact@v2
-        with:
-          workflow: build.yml
-          name: frontend-artifact-${{ github.event.inputs.ref }}
-          path: frontend/build
-          skip_unpack: true
+      #- name: Get Frontend Artifact
+      #  uses: dawidd6/action-download-artifact@v2
+      #  with:
+        #  workflow: build.yml
+        #  name: frontend-artifact-${{ github.event.inputs.ref }}
+       #   path: frontend/build
+        #  skip_unpack: true
 
       - name: Tag Green as New Blue
         if: success()
