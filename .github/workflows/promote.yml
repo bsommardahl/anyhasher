@@ -78,12 +78,12 @@ jobs:
 
       - name: Tag Green as New Blue
         if: success()
-        uses: joutvhu/create-tag@v1
+        uses: "marvinpinto/action-automatic-releases@latest"
         with:
-          tag_name: blue/${{ github.event.inputs.ref }}
-          tag_sha: ${{ github.event.inputs.ref }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "blue/${{ github.event.inputs.ref }}"
+          prerelease: false
+          title: "Latest Production Release"
 
   cleanup_failing_green:
     name: ❌ Clean up Failing Green
