@@ -32,9 +32,7 @@ jobs:
       - name: Get Commit Hash
         id: commit
         run: |
-          commit_hash=(git rev-parse HEAD)
-          echo $commit_hash
-          echo "hash=$commit_hash" >> $GITHUB_OUTPUT
+          echo "hash=(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
   promote:
     name: 🚀 Promote Green to Blue
