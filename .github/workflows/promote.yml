@@ -1,5 +1,5 @@
 name: Promote
-run-name: "🤩 CD: Promote Green to Blue (${{ github.event.inputs.ref }})"
+run-name: "🎉 CD: Promote Green to Blue (${{ github.event.inputs.ref }})"
 on:
   workflow_dispatch:
     inputs:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   previous:
-    name: Find and Remember Previous Blue Ref
+    name: 🎟️ Find and Remember Previous Blue Ref
     runs-on: ubuntu
     outputs:
       ref: ${{env.hash}}
@@ -92,10 +92,10 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Cleanup
-          inputs: '{ "ref": "${{ github.event.inputs.ref }}", "env_name": "Env after Failed Promotion" }'
+          inputs: '{ "ref": "${{ github.event.inputs.ref }}", "env_name": "⛔ Detroy Green Env after Failed Promotion" }'
 
   cleanup_old_blue:
-    name: ❌ Clean up Previous Blue
+    name: 🔥 Clean up Previous Blue
     needs: [promote]
     if: success()
     runs-on: ubuntu-latest
@@ -105,4 +105,4 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Cleanup
-          inputs: '{ "ref": "${{ needs.previous.outputs.ref }}", "env_name": "Decomissioned Blue Env" }'
+          inputs: '{ "ref": "${{ needs.previous.outputs.ref }}", "env_name": "🔥 Cleanup Decomissioned Blue Env" }'
