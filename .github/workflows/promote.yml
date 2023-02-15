@@ -82,6 +82,8 @@ jobs:
         with:
           tag_name: blue/${{ github.event.inputs.ref }}
           tag_sha: ${{ github.event.inputs.ref }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   cleanup_failing_green:
     name: ❌ Clean up Failing Green
