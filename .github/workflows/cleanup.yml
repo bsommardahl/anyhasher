@@ -44,6 +44,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.ref }}
+          depth: 0
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
