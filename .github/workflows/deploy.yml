@@ -142,6 +142,9 @@ jobs:
         run: |
           aws s3 cp frontend/build s3://${{ needs.provision_frontend.outputs.bucket_name }} --region=us-east-1 --recursive
 
+      - name: Simulate an error
+        run: exit 1
+
   trigger_verify:
     name: 🧪 Start Environment Verification
     needs:
