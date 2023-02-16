@@ -109,6 +109,9 @@ jobs:
           options: |
             --verbose
 
+      - name: Simulate an error
+        run: exit 1
+
   deploy_frontend:
     name: 🚚 Deploy Frontend Artifact
     needs: [provision_backend, provision_frontend, deploy_backend]
@@ -141,9 +144,6 @@ jobs:
       - name: Upload frontend to S3 Bucket
         run: |
           aws s3 cp frontend/build s3://${{ needs.provision_frontend.outputs.bucket_name }} --region=us-east-1 --recursive
-
-      - name: Simulate an error
-        run: exit 1
 
   trigger_verify:
     name: 🧪 Start Environment Verification
