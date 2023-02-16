@@ -43,8 +43,8 @@ jobs:
           chmod +x backend-smoke.sh
           ./backend-smoke.sh
 
-      - name: Simulate an error
-        run: exit 1
+      # - name: Simulate an error
+      #   run: exit 1
 
   trigger_cleanup:
     name: ⛔ Cleanup Failing Environment

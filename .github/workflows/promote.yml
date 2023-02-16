@@ -67,6 +67,9 @@ jobs:
           path: util/terraform/router
           workspace: anyhasher-production
 
+      - name: Simulate an error
+        run: exit 1
+
       - name: Switch the Router
         uses: dflook/terraform-apply@v1
         with:
