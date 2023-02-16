@@ -69,7 +69,6 @@ jobs:
           workspace: anyhasher-production
 
       - name: Switch the Router
-        id: router
         uses: dflook/terraform-apply@v1
         with:
           workspace: anyhasher-production
@@ -78,6 +77,12 @@ jobs:
           variables: |
             s3_bucket_hostname = "${{ github.event.inputs.s3_bucket_hostname }}"
             origin_id = "${{ github.event.inputs.s3_bucket_hostname }}"
+
+      - name: Get outputs
+        uses: dflook/terraform-output@v1
+        id: router
+        with:
+          path: util/terraform/router
 
   release:
     name: 🚛 Create New Blue Release
