@@ -126,7 +126,7 @@ jobs:
   cleanup_old_blue:
     name: 🔥 Clean up Previous Blue
     needs: [release, previous]
-    if: success() && previous.outputs.ref != ''
+    if: success() && needs.previous.outputs.ref != ''
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
