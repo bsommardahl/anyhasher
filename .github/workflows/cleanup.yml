@@ -75,7 +75,6 @@ jobs:
         run: |
           TAG="blue/${{ github.event.inputs.ref }}"
           git fetch origin
-          git tag -d $TAG
           git push --delete origin $TAG
 
   notify:

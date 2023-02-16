@@ -1,5 +1,5 @@
 name: Build
-run-name: "🛠️ CI: ${{ github.event.head_commit.message }}"
+run-name: "🛠️ CI: ${{ github.event.head_commit.message }} from ${{ github.event.inputs.ref }}"
 on:
   pull_request:
   push:
