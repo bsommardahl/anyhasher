@@ -1,6 +1,0 @@
----
-- name: Promote Green to Blue
-  hosts: localhost
-  gather_facts: false
-  roles:
-    - update-distro

@@ -16,6 +16,9 @@ data "aws_iam_policy_document" "website_policy" {
 resource "aws_s3_bucket" "frontend" {
   bucket = var.bucket_name  
   force_destroy = true
+  tags = {
+    Environment = "Production"
+  }
 }
 
 resource "aws_s3_bucket_policy" "allow_access_from_another_account" {
