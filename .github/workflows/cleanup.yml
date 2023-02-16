@@ -78,7 +78,7 @@ jobs:
           tag: "blue/${{ github.event.inputs.ref }}"
 
       - name: Remove old tag
-        if: steps.checkTag.outputs.tag != ''
+        if: steps.checkTag.outputs.exists
         run: |
           git fetch origin
           TAG=$(git tag -l "blue/${{ github.event.inputs.ref }}")
