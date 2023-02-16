@@ -71,11 +71,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Check for old blue tag
+        uses: mukunku/tag-exists-action@v1.2.0
+        id: checkTag
+        with:
+          tag: "blue/${{ github.event.inputs.ref }}"
+
       - name: Remove old tag
+        if: steps.checkTag.outputs.tag != ''
         run: |
-          TAG="blue/${{ github.event.inputs.ref }}"
           git fetch origin
-          git push --delete origin $TAG
+          TAG=$(git tag -l "blue/${{ github.event.inputs.ref }}")
+
+          ## THIS DOESN'T WORK LOCALLY
+          if [ $TAG ]; then git push --delete origin $TAG
 
   notify:
     name: Notify team that environment was removed
