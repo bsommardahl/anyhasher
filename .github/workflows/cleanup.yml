@@ -81,10 +81,8 @@ jobs:
         if: steps.checkTag.outputs.exists
         run: |
           git fetch origin
-          TAG=$(git tag -l "blue/${{ github.event.inputs.ref }}")
-
-          ## THIS DOESN'T WORK LOCALLY
-          if [ $TAG ]; then git push --delete origin $TAG
+          TAG="blue/${{ github.event.inputs.ref }}"
+          git push --delete origin $TAG
 
   notify:
     name: Notify team that environment was removed
