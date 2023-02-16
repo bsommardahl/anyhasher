@@ -42,9 +42,8 @@ jobs:
     name: 🚀 Promote Green to Blue
     runs-on: ubuntu-latest
     needs: [previous]
-    environment:
-      name: Production
-      url: ${{ steps.router.outputs.website_url }}
+    outputs:
+      website_url: ${{ steps.router.outputs.website_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -88,6 +87,9 @@ jobs:
     name: 🚛 Create New Blue Release
     runs-on: ubuntu-latest
     needs: [promote]
+    environment:
+      name: Production
+      url: ${{ needs.promote.outputs.website_url }}
     steps:
       - name: Get Backend Artifact
         uses: dawidd6/action-download-artifact@v2
