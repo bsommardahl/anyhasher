@@ -1,5 +1,5 @@
 name: Cleanup
-run-name: "${{ github.event.inputs.env_name }} from ${{ github.event.inputs.ref }}"
+run-name: "${{ github.event.inputs.env_name }} (${{ github.event.inputs.ref }})"
 on:
   workflow_dispatch:
     inputs:
