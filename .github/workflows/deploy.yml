@@ -110,7 +110,7 @@ jobs:
             --verbose
 
       #- name: Simulate an error
-        #run: exit 1
+      #run: exit 1
 
   deploy_frontend:
     name: 🚚 Deploy Frontend Artifact
@@ -133,6 +133,12 @@ jobs:
           find: "__BACKEND_URL_PLACEHOLDER__"
           replace: "${{ needs.provision_backend.outputs.backend_url }}"
           regex: false
+
+      - name: Store Release Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-release-${{ github.sha }}
+          path: frontend/build
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1

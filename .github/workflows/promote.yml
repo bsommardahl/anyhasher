@@ -67,7 +67,7 @@ jobs:
           path: util/terraform/router
           workspace: anyhasher-production
 
-     # - name: Simulate an error
+      # - name: Simulate an error
       #  run: exit 1
 
       - name: Switch the Router
@@ -101,11 +101,11 @@ jobs:
           name: backend-artifact-${{ github.event.inputs.ref }}
           skip_unpack: true
 
-      - name: Get Frontend Artifact
+      - name: Get Frontend Artifact (Release Ver)
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: build.yml
-          name: frontend-artifact-${{ github.event.inputs.ref }}
+          name: frontend-release-${{ github.event.inputs.ref }}
           skip_unpack: true
 
       - name: Tag Green as New Blue
@@ -117,7 +117,7 @@ jobs:
           prerelease: false
           title: "Latest Production Release"
           files: |
-            frontend-artifact-${{ github.event.inputs.ref }}.zip
+            frontend-release-${{ github.event.inputs.ref }}.zip
             backend-artifact-${{ github.event.inputs.ref }}.zip
 
   cleanup_failing_green:
