@@ -109,8 +109,8 @@ jobs:
           options: |
             --verbose
 
-      - name: Simulate an error
-        run: exit 1
+      #- name: Simulate an error
+        #run: exit 1
 
   deploy_frontend:
     name: 🚚 Deploy Frontend Artifact
