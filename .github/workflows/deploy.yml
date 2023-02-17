@@ -116,9 +116,6 @@ jobs:
     name: 🚚 Deploy Frontend Artifact
     needs: [provision_backend, provision_frontend, deploy_backend]
     runs-on: ubuntu-latest
-    environment:
-      name: Production Candidate
-      url: ${{ needs.provision_frontend.outputs.frontend_url }}
     steps:
       - name: Get Frontend Artifact
         uses: dawidd6/action-download-artifact@v2
