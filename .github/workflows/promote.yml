@@ -44,7 +44,7 @@ jobs:
     needs: [previous]
     environment:
       name: Production
-      url: https://${{ steps.router.outputs.website_url }}/?test
+      url: https://${{ steps.router.outputs.website_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -85,6 +85,7 @@ jobs:
         uses: dflook/terraform-output@v1
         id: router
         with:
+          workspace: anyhasher-production
           path: util/terraform/router
       
       - run: echo ${{ steps.router.outputs.website_url }}
