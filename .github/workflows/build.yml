@@ -143,7 +143,6 @@ jobs:
 
       - name: Build
         run: |
-          export REACT_APP_API_HOST=__BACKEND_URL_PLACEHOLDER__
           cd frontend && npm run build
 
       - name: Store Artifact

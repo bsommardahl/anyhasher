@@ -130,14 +130,14 @@ jobs:
       - name: Prepare frontend with backend url
         uses: jacobtomlinson/gha-find-replace@v2
         with:
-          find: "__BACKEND_URL_PLACEHOLDER__"
-          replace: "${{ needs.provision_backend.outputs.backend_url }}"
+          find: "process.env.REACT_APP_API_HOST"
+          replace: '"${{ needs.provision_backend.outputs.backend_url }}"'
           regex: false
 
       - name: Store Release Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: frontend-release-${{ github.sha }}
+          name: frontend-release-${{ github.event.inputs.ref }}
           path: frontend/build
 
       - name: Configure AWS Credentials
