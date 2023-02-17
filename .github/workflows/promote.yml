@@ -104,7 +104,7 @@ jobs:
       - name: Get Frontend Artifact (Release Ver)
         uses: dawidd6/action-download-artifact@v2
         with:
-          workflow: build.yml
+          workflow: deploy.yml
           name: frontend-release-${{ github.event.inputs.ref }}
           skip_unpack: true
 
