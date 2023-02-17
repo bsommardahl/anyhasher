@@ -87,7 +87,7 @@ jobs:
         with:
           workspace: anyhasher-production
           path: util/terraform/router
-      
+
       - run: echo ${{ steps.router.outputs.website_url }}
 
   release:
@@ -148,4 +148,4 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Cleanup
-          inputs: '{ "ref": "${{ needs.previous.outputs.ref }}", "env_name": "🔥 Cleanup Decomissioned Blue Env" }'
+          inputs: '{ "ref": "${{ needs.previous.outputs.ref }}", "env_name": "🔥 Cleanup Decomissioned Prod Env" }'

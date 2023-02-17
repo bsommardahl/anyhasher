@@ -1,8 +1,8 @@
 ---
-  - name: Deploy Backend Artifact
-    synchronize: 
-      src: "../../backend/build"
-      dest: ~/anyhasher
+- name: Deploy Backend Artifact
+  synchronize: # "copy" takes too long!
+    src: "../../backend/build"
+    dest: ~/anyhasher
 
-  - name: Start Server
-    shell: "cd ~/anyhasher/build && pm2 start server.js"
+- name: Start Server
+  shell: "cd ~/anyhasher/build && pm2 start server.js"
