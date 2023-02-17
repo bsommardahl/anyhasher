@@ -130,7 +130,7 @@ jobs:
       - name: Prepare frontend with backend url
         uses: jacobtomlinson/gha-find-replace@v2
         with:
-          find: "process.env.REACT_APP_API_HOST"
+          find: "process.env.REACT_APP_API_HOST || 'localhost:5000'"
           replace: '"${{ needs.provision_backend.outputs.backend_url }}"'
           regex: false
 
