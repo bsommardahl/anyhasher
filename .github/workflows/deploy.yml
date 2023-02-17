@@ -130,7 +130,7 @@ jobs:
       - name: Prepare frontend with backend url
         uses: jacobtomlinson/gha-find-replace@v2
         with:
-          find: "localhost:5000"
+          find: "http://localhost:5000"
           replace: "${{ needs.provision_backend.outputs.backend_url }}"
           regex: false
 
