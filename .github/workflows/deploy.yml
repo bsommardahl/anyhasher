@@ -9,7 +9,7 @@ on:
 jobs:
   provision_backend:
     name: 🏢 Provision Backend Infrastructure
-    runs-on: ubuntu
+    runs-on: ubuntu-latest
     outputs:
       backend_url: http://${{ steps.provision.outputs.ec2_public_url }}:5001
       backend_host: ${{ steps.provision.outputs.ec2_public_url }}
@@ -51,7 +51,7 @@ jobs:
       frontend_url: http://${{ steps.provision.outputs.website_endpoint }}
       s3_bucket_hostname: ${{ steps.provision.outputs.website_endpoint }}
       bucket_name: ${{ steps.provision.outputs.bucket_name }}
-    runs-on: ubuntu
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -85,7 +85,7 @@ jobs:
   deploy_frontend:
     name: 🚚 Deploy Frontend Artifact
     needs: [provision_backend, provision_frontend]
-    runs-on: ubuntu
+    runs-on: ubuntu-latest
     steps:
       - name: Get Frontend Artifact
         uses: dawidd6/action-download-artifact@v2
@@ -121,7 +121,7 @@ jobs:
   trigger_verify:
     name: 🧪 Start Environment Verification
     needs: [provision_frontend, provision_backend,deploy_frontend]
-    runs-on: ubuntu
+    runs-on: ubuntu-latest
     permissions: write-all
     steps:
       - name: Dispatch
