@@ -42,29 +42,3 @@ jobs:
           cd backend/e2e
           chmod +x backend-smoke.sh
           ./backend-smoke.sh
-
-  trigger_cleanup:
-    name: ⛔ Cleanup Failing Environment
-    if: ${{ failure() }}
-    needs: [backend, frontend]
-    runs-on: ubuntu-latest
-    permissions: write-all
-    steps:
-      - name: Cleanup On Failure
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: Cleanup
-          inputs: '{ "ref": "${{ github.event.inputs.ref }}", "env_name": "⛔ Detroy Green Env after Failed Verification" }'
-
-  trigger_promotion:
-    name: 🎉 Start Promotion of Verified Environment
-    if: ${{ success() }}
-    needs: [backend, frontend]
-    runs-on: ubuntu-latest
-    permissions: write-all
-    steps:
-      - name: Dispatch
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: Promote
-          inputs: '{ "ref": "${{ github.event.inputs.ref }}", "s3_bucket_hostname": "${{ github.event.inputs.s3_bucket_hostname }}" }'
