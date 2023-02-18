@@ -120,7 +120,7 @@ jobs:
 
   trigger_verify:
     name: 🧪 Start Environment Verification
-    needs: [provision_frontend, provision_backend]
+    needs: [provision_frontend, provision_backend,deploy_frontend]
     runs-on: ubuntu
     permissions: write-all
     steps:
