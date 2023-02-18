@@ -84,7 +84,7 @@ jobs:
 
   deploy_frontend:
     name: 🚚 Deploy Frontend Artifact
-    needs: [provision_backend, provision_frontend, deploy_backend]
+    needs: [provision_backend, provision_frontend]
     runs-on: ubuntu-latest
     steps:
       - name: Get Frontend Artifact
