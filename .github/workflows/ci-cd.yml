@@ -1,40 +1,72 @@
 name: CI/CD Pipeline
 run-name: "🛠️ ${{ github.event.head_commit.message }} (${{ github.sha }})"
 
-on: 
+on:
   push:
     branches:
       - olt
 
 jobs:
-  build: 
+  build:
     name: 🛠️ Build Frontend Artifact
-    needs: 
+    needs:
       - audit
     runs-on: ubuntu-latest
-    steps: 
+    steps:
       - uses: actions/checkout@v3
 
-      - name: Setup Note 16
+      - name: Setup Node 16
         uses: actions/setup-node@v3
         with:
           node-version: 16.x
-    
+
       - name: Install deps
         run: cd frontend && npm i
-      
+
       - name: Compile code
         run: cd frontend && npm run build
-    
-  audit: 
+
+  audit:
     name: 🛡️ Audit Frontend Packages
     runs-on: ubuntu-latest
-    steps: 
+    steps:
       - uses: actions/checkout@v3
-      
+
       - name: Check for vulnerabilities
-        run: cd frontend && npm audit --production --audit-level=medium
+        run: cd frontend && npm audit --production --audit-level=moderate
 
+  lint:
+    name: 🧼 Ensure Code Style
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v3
 
+      - name: Setup Node 16
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
 
-    
+      - name: Install deps
+        run: cd frontend && npm i
+
+      - name: Lint code
+        run: cd frontend && npm run lint
+
+  tests:
+    name: 🧪 Run Unit Tests
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node 16
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+
+      - name: Install deps
+        run: cd frontend && npm i
+
+      - name: Run the unit tests
+        run: cd frontend && npm run test-ci
