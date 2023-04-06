@@ -7,7 +7,7 @@ on:
 
 jobs:  
   build:
-    name: 🛠️ Build frontend artifact
+    name: 🛠️ Build Frontend Artifact
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -31,13 +31,16 @@ jobs:
         run: |
           cd frontend && npm run build
 
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+      
       - name: Store artifact
         uses: actions/upload-pages-artifact@v1
         with:
           path: frontend/build
 
   audit:
-    name: 🛡️ Audit Frontend Packages for Security Vulnerabilities
+    name: 🛡️ Audit Frontend Packages
     needs: [build]
     runs-on: ubuntu-latest
     steps:
@@ -48,7 +51,7 @@ jobs:
         run: cd frontend && npm audit --production --audit-level=medium
 
   lint:
-    name: 🧼 Ensure code adheres to team standards
+    name: 🧼 Ensure Code Style
     needs: [build]
     runs-on: ubuntu-latest
     steps:
@@ -73,7 +76,7 @@ jobs:
         run: cd frontend && npm audit --production --audit-level=critical
 
   test:
-    name: 🧪 Ensure code is working as engineered
+    name: 🧪 Run Unit Tests
     needs: [build]
     runs-on: ubuntu-latest
     steps:
@@ -98,7 +101,7 @@ jobs:
         run: cd frontend && npm run test-ci
 
   static-analysis:
-    name: 🔬 Run static code analysis for code quality
+    name: 🔬 Run Static Code Analysis
     needs: [build]
     runs-on: ubuntu-latest
     permissions:
@@ -133,7 +136,7 @@ jobs:
         uses: github/codeql-action/analyze@v2
 
   deploy: 
-    name: 🚚 Deploy frontend artifact to server
+    name: 🚚 Deploy Frontend Artifact
     needs: [static-analysis,test,lint,audit]    
     runs-on: ubuntu-latest
     permissions:
@@ -145,11 +148,11 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v2
         # NOTE: Uses the artifact that was stored in the "build" job.
 
   verify:
-    name: 🧪 Verify successful frontend deployment
+    name: 🧪 Verify Successful Deployment
     needs:
       [deploy]
     runs-on: ubuntu-latest
