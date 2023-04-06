@@ -13,14 +13,13 @@ jobs:
     steps: 
       - uses: actions/checkout@v3
 
-      - name: Setup Note 16
+      - name: Setup Node 16
         uses: actions/setup-node@v3
         with:
           node-version: 16.x
-    
+
       - name: Install deps
         run: cd frontend && npm i
-      
+
       - name: Compile code
         run: cd frontend && npm run build
-    
