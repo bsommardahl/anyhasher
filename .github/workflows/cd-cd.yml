@@ -10,20 +10,19 @@ jobs:
     name: 🛠️ Build frontend artifact
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+
       - name: Cache Node Modules
         id: cache
         uses: actions/cache@v3
         with:
           path: node_modules
           key: fe-node-${{ hashFiles('frontend/package-lock.json') }}
-
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16.x
 
       - name: Install Deps
         run: cd frontend && npm i
@@ -49,13 +48,27 @@ jobs:
         run: cd frontend && npm audit --production --audit-level=medium
 
   lint:
-    name: 🩺 Ensure code adheres to team standards
+    name: 🧼 Ensure code adheres to team standards
     needs: [build]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+
+      - name: Cache Node Modules
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: fe-node-${{ hashFiles('frontend/package-lock.json') }}
+
+      - name: Install Deps
+        run: cd frontend && npm i
+      
       - name: Check for security issue
         run: cd frontend && npm audit --production --audit-level=critical
 
@@ -64,9 +77,23 @@ jobs:
     needs: [build]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+
+      - name: Cache Node Modules
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: fe-node-${{ hashFiles('frontend/package-lock.json') }}
+
+      - name: Install Deps
+        run: cd frontend && npm i
+      
       - name: Run unit tests
         run: cd frontend && npm run test-ci
 
@@ -94,7 +121,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: node_modules
-          key: node-${{ hashFiles('**/package-lock.json') }}
+          key: fe-node-${{ hashFiles('frontend/package-lock.json') }}
 
       - name: Install Deps
         run: cd frontend && npm i
