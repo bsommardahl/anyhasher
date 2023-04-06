@@ -2,7 +2,7 @@ name: CI/CD Pipeline
 run-name: "🛠️ ${{ github.event.head_commit.message }} (${{ github.sha }})"
 
 on:
-  pull_request:    
+  pull_request:
   push:
     branches:
       - olt
@@ -34,9 +34,9 @@ jobs:
         run: cd frontend && npm run build
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact
+        uses: actions/upload-pages-artifact@v1
         with:
-          path: frontend/build      
+          path: frontend/build
 
   audit:
     name: 🛡️ Audit Frontend Packages
@@ -147,6 +147,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1       
-
-    
+        uses: actions/deploy-pages@v1
