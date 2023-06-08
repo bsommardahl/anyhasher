@@ -1,103 +1,98 @@
 name: CI/CD Pipeline
 run-name: "🛠️ ${{ github.event.head_commit.message }} (${{ github.sha }})"
+
 on:
+  pull_request:
   push:
     branches:
       - olt
 
-jobs:  
+jobs:
   build:
     name: 🛠️ Build Frontend Artifact
+    needs:
+      - audit
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup Node
+      - name: Setup Node 16
         uses: actions/setup-node@v3
         with:
           node-version: 16.x
 
       - name: Cache Node Modules
-        id: cache
         uses: actions/cache@v3
         with:
-          path: node_modules
+          path: frontend/node_modules
           key: fe-node-${{ hashFiles('frontend/package-lock.json') }}
 
-      - name: Install Deps
+      - name: Install deps
         run: cd frontend && npm i
 
-      - name: Build/Compile
-        run: |
-          cd frontend && npm run build
+      - name: Compile code
+        run: cd frontend && npm run build
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v3
-      
-      - name: Store artifact
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
           path: frontend/build
 
   audit:
     name: 🛡️ Audit Frontend Packages
-    needs: [build]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Check for security issue
-        run: cd frontend && npm audit --production --audit-level=medium
+      - name: Check for vulnerabilities
+        run: cd frontend && npm audit --production --audit-level=moderate
 
   lint:
     name: 🧼 Ensure Code Style
-    needs: [build]
     runs-on: ubuntu-latest
+    needs: build
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup Node
+      - name: Setup Node 16
         uses: actions/setup-node@v3
         with:
           node-version: 16.x
 
       - name: Cache Node Modules
-        id: cache
         uses: actions/cache@v3
         with:
-          path: node_modules
+          path: frontend/node_modules
           key: fe-node-${{ hashFiles('frontend/package-lock.json') }}
 
-      - name: Install Deps
+      - name: Install deps
         run: cd frontend && npm i
-      
-      - name: Check for security issue
-        run: cd frontend && npm audit --production --audit-level=critical
+
+      - name: 😂 Lint code
+        run: cd frontend && npm run lint
 
   test:
     name: 🧪 Run Unit Tests
-    needs: [build]
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup Node
+      - name: Setup Node 16
         uses: actions/setup-node@v3
         with:
           node-version: 16.x
 
       - name: Cache Node Modules
-        id: cache
         uses: actions/cache@v3
         with:
-          path: node_modules
+          path: frontend/node_modules
           key: fe-node-${{ hashFiles('frontend/package-lock.json') }}
 
-      - name: Install Deps
+      - name: Install deps
         run: cd frontend && npm i
-      
-      - name: Run unit tests
+
+      - name: Run the unit tests
         run: cd frontend && npm run test-ci
 
   static-analysis:
@@ -123,7 +118,7 @@ jobs:
         id: cache
         uses: actions/cache@v3
         with:
-          path: node_modules
+          path: frontend/node_modules
           key: fe-node-${{ hashFiles('frontend/package-lock.json') }}
 
       - name: Install Deps
@@ -135,26 +130,29 @@ jobs:
       - name: Perform Analysis
         uses: github/codeql-action/analyze@v2
 
-  deploy: 
+  deploy:
     name: 🚚 Deploy Frontend Artifact
-    needs: [static-analysis,test,lint,audit]    
     runs-on: ubuntu-latest
+    needs:
+      - lint
+      - test
+      - static-analysis
+    if: github.ref == 'refs/heads/olt'
     permissions:
-      pages: write      # to deploy to Pages
-      id-token: write   # to verify the deployment originates from an appropriate source
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
-        # NOTE: Uses the artifact that was stored in the "build" job.
+        uses: actions/deploy-pages@v1
 
   verify:
     name: 🧪 Verify Successful Deployment
     needs:
-      [deploy]
+      - deploy
     runs-on: ubuntu-latest
     if: success()
     permissions: write-all
@@ -166,5 +164,5 @@ jobs:
         run: |
           export TEST_URL=https://bsommardahl.github.io/anyhasher/
           cd frontend/e2e
-          npm install
+          npm i
           npm run smoke
