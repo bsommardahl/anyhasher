@@ -30,6 +30,12 @@ jobs:
       
       - name: Compile code
         run: cd frontend && npm run build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: frontend/build
+
   
   audit: 
     name: Audit the frontend deps
