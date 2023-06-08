@@ -67,3 +67,23 @@ jobs:
       - name: Run the linter
         run: cd frontend && npm run lint
   
+  tests:
+    name: Run the unit tests
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v3
+    
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+      
+      - name: Cache the deps
+        uses: actions/cache@v3
+        with: 
+          path: frontend/node_modules
+          key: fe-node-${{ hashFiles('frontend/package-lock.json')}}
+      
+      - name: Unit tests
+        run: cd frontend && npm run test-ci
+
