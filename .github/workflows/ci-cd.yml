@@ -86,4 +86,39 @@ jobs:
       
       - name: Unit tests
         run: cd frontend && npm run test-ci
+  
+  static-analysis:
+    name: Run Static Code Analysis
+    needs: [build]
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          config-file: ./.github/codeql/codeql.config.yml
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+
+      - name: Cache Node Modules
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: frontend/node_modules
+          key: fe-node-${{ hashFiles('frontend/package-lock.json') }}
+
+      - name: Install Deps
+        run: cd frontend && npm i
+
+      - name: Build
+        run: cd frontend && npm run build
+
+      - name: Perform Analysis
+        uses: github/codeql-action/analyze@v2
 
