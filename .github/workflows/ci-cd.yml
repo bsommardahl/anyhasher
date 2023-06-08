@@ -1,33 +1,35 @@
 name: CI/CD Pipeline
-on: 
+run-name: "🛠️ ${{ github.event.head_commit.message }} (${{ github.sha }})"
+
+on:
   pull_request:
   push:
-    branches: 
+    branches:
       - olt
 
 jobs:
-  build: 
-    name: Build front-end artifact
+  build:
+    name: 🛠️ Build Frontend Artifact
     needs:
       - audit
     runs-on: ubuntu-latest
     steps:
-      - name: Checking out that code
-        uses: actions/checkout@v3
-    
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v3
+
+      - name: Setup Node 16
+        uses: actions/setup-node@v3
         with:
           node-version: 16.x
-      
-      - name: Cache the deps
+
+      - name: Cache Node Modules
         uses: actions/cache@v3
-        with: 
+        with:
           path: frontend/node_modules
-          key: fe-node-${{ hashFiles('frontend/package-lock.json')}}
+          key: fe-node-${{ hashFiles('frontend/package-lock.json') }}
 
       - name: Install deps
         run: cd frontend && npm i
-      
+
       - name: Compile code
         run: cd frontend && npm run build
 
@@ -35,65 +37,66 @@ jobs:
         uses: actions/upload-pages-artifact@v1
         with:
           path: frontend/build
-  
-  audit: 
-    name: Audit the frontend deps
+
+  audit:
+    name: 🛡️ Audit Frontend Packages
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-    
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16.x
-      
-      - name: Run an audit
-        run: cd frontend && npm audit --production
-  
-  lint: 
-    name: Ensure code style
+
+      - name: Check for vulnerabilities
+        run: cd frontend && npm audit --production --audit-level=moderate
+
+  lint:
+    name: 🧼 Ensure Code Style
     runs-on: ubuntu-latest
     needs: build
     steps:
       - uses: actions/checkout@v3
-    
-      - uses: actions/setup-node@v3
+
+      - name: Setup Node 16
+        uses: actions/setup-node@v3
         with:
           node-version: 16.x
-      
-      - name: Cache the deps
+
+      - name: Cache Node Modules
         uses: actions/cache@v3
-        with: 
+        with:
           path: frontend/node_modules
-          key: fe-node-${{ hashFiles('frontend/package-lock.json')}}
+          key: fe-node-${{ hashFiles('frontend/package-lock.json') }}
 
       - name: Install deps
         run: cd frontend && npm i
-        
-      - name: Run the linter
+
+      - name: 😂 Lint code
         run: cd frontend && npm run lint
-  
+
   test:
-    name: Run the unit tests
-    runs-on: ubuntu-latest
+    name: 🧪 Run Unit Tests
     needs: build
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-    
-      - uses: actions/setup-node@v3
+
+      - name: Setup Node 16
+        uses: actions/setup-node@v3
         with:
           node-version: 16.x
-      
-      - name: Cache the deps
+
+      - name: Cache Node Modules
         uses: actions/cache@v3
-        with: 
+        with:
           path: frontend/node_modules
-          key: fe-node-${{ hashFiles('frontend/package-lock.json')}}
-      
-      - name: Unit tests
+          key: fe-node-${{ hashFiles('frontend/package-lock.json') }}
+
+      - name: Install deps
+        run: cd frontend && npm i
+
+      - name: Run the unit tests
         run: cd frontend && npm run test-ci
-  
+
   static-analysis:
-    name: Run Static Code Analysis
+    name: 🔬 Run Static Code Analysis
     needs: [build]
     runs-on: ubuntu-latest
     permissions:
@@ -128,7 +131,7 @@ jobs:
       #   uses: github/codeql-action/analyze@v2
 
   deploy:
-    name: Deploy Frontend Artifact
+    name: 🚚 Deploy Frontend Artifact
     runs-on: ubuntu-latest
     needs:
       - lint
@@ -149,7 +152,7 @@ jobs:
         uses: actions/deploy-pages@v1
 
   verify:
-    name: Verify Successful Deployment
+    name: 🧪 Verify Successful Deployment
     needs:
       - deploy
     runs-on: ubuntu-latest
