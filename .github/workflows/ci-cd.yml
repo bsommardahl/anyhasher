@@ -22,3 +22,16 @@ jobs:
       
       - name: Compile code
         run: cd frontend && npm run build
+  
+  audit: 
+    name: Audit the frontend deps
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+    
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+      
+      - name: Run an audit
+        run: cd frontend && npm audit --production
