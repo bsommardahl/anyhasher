@@ -8,6 +8,8 @@ on:
 jobs:
   build: 
     name: Build front-end artifact
+    needs:
+      - audit
     runs-on: ubuntu-latest
     steps:
       - name: Checking out that code
@@ -35,3 +37,21 @@ jobs:
       
       - name: Run an audit
         run: cd frontend && npm audit --production
+  
+  lint: 
+    name: Ensure code style
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v3
+    
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+      
+      - name: Install deps
+        run: cd frontend && npm i
+        
+      - name: Run the linter
+        run: cd frontend && npm run lint
+  
