@@ -135,8 +135,8 @@ jobs:
       - test
       - static-analysis
     if: github.ref == 'refs/heads/olt'
-    # outputs:
-    #   url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      url: ${{ steps.deployment.outputs.page_url }}
     permissions:
       pages: write
       id-token: write
@@ -160,7 +160,7 @@ jobs:
 
       - name: Run Frontend Smoke Test
         run: |
-          export TEST_URL=https://bsommardahl.github.io/anyhasher/
+          export TEST_URL=${{ needs.deploy.outputs.url}}
           cd frontend/e2e
           npm i
           npm run smoke
