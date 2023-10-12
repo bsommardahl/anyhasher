@@ -1,0 +1,20 @@
+name: CI/CD Pipeline
+run-name: "🛠️ ${{ github.event.head_commit.message }} (${{ github.sha }})"
+
+on:
+  pull_request:
+  push:
+    branches:
+      - olt
+
+jobs:
+  audit:
+    name: Audit Frontend Packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: cd frontend && npm audit --production --audit-level=
+  # build:
+  # lint:
+  # test:
+  # static-analysis:
