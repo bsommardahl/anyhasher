@@ -15,7 +15,28 @@ jobs:
       - uses: actions/checkout@v3
       - run: cd frontend && npm audit --production --audit-level=moderate
 
-  # build:
+  build:
+    name: Build Frontend Artifact
+    needs: 
+      - audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with: 
+          node-version: 16.x
+      
+      - name: Install Dependencies
+        run: cd frontend && npm i
+      
+      - name: Compile code
+        run: cd frontend && npm run build
+
+      - uses: actions/upload-pages-artifact@v1
+        with: 
+          path: frontend/build
+
   # lint:
   # test:
   # static-analysis:
