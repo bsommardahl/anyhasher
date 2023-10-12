@@ -127,8 +127,8 @@ jobs:
       - name: Build
         run: cd frontend && npm run build
 
-      # - name: Perform Analysis
-      #   uses: github/codeql-action/analyze@v2
+      - name: Perform Analysis
+        uses: github/codeql-action/analyze@v2
 
   deploy:
     name: 🚚 Deploy Frontend Artifact
