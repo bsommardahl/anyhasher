@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "prestart": "npm run build",
-    "start": "node dist/server.js",
+    "start": "node build/server.js",
     "test": "jest",
     "build": "tsc",
     "postbuild": "cp package*.json build && cd build && npm ci --production",
@@ -35,7 +35,6 @@
     "nestjs": "^0.0.1",
     "ora": "^6.1.2",
     "q": "^1.5.1",
-    "request": "^2.88.2",
     "rimraf": "^3.0.2",
     "rxjs": "^7.5.7",
     "semver": "^7.3.8",
