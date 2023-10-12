@@ -8,35 +8,61 @@ on:
       - olt
 
 jobs:
-  audit:
-    name: Audit Frontend Packages
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - run: cd frontend && npm audit --production --audit-level=moderate
-
   build:
-    name: Build Frontend Artifact
-    needs: 
+    name: 🛠️ Build Frontend Artifact
+    needs:
       - audit
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/setup-node@v3
-        with: 
+      - name: Setup Node 16
+        uses: actions/setup-node@v3
+        with:
           node-version: 16.x
-      
-      - name: Install Dependencies
+
+      - name: Cache Node Modules
+        uses: actions/cache@v3
+        with:
+          path: frontend/node_modules
+          key: fe-node-${{ hashFiles('frontend/package-lock.json') }}
+
+      - name: Install deps
         run: cd frontend && npm i
-      
+
       - name: Compile code
         run: cd frontend && npm run build
 
-      - uses: actions/upload-pages-artifact@v1
-        with: 
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
           path: frontend/build
 
-  # lint:
+  audit:
+    name: 🛡️ Audit Frontend Packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Check for vulnerabilities
+        run: cd frontend && npm audit --production --audit-level=moderate
+
+  lint:
+    name: 🧼 Ensure Code Style
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node 16
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+
+      - name: Install deps
+        run: cd frontend && npm i
+
+      - name: 😂 Lint code
+        run: cd frontend && npm run lint
   # test:
   # static-analysis:
