@@ -1,7 +1,7 @@
 name: Promote
-run-name: "🎉 CD: Promote Green to Blue (${{ github.event.inputs.ref }})"
+run-name: "🎉 CD: Promoting Green to Production (${{ github.event.inputs.ref }})"
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       ref:
         required: true

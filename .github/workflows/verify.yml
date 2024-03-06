@@ -1,7 +1,7 @@
 name: Verify
-run-name: "🧪 CD: Verify Environment (${{ github.event.inputs.ref }})"
+run-name: "🧪 CD: Verifying Environment (${{ github.event.inputs.ref }})"
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       backend_url:
         required: true

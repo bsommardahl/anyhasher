@@ -1,7 +1,7 @@
 name: Deploy
-run-name: "🚛 CD: Deploy Artifacts (${{ github.event.inputs.ref }})"
+run-name: "🚛 CD: Deploying Artifacts (${{ github.event.inputs.ref }})"
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       ref:
         required: true

@@ -1,0 +1,23 @@
+name: CI/CD Pipeline
+run-name: "🛠️ CI/CD: ${{ github.event.head_commit.message }} (${{ github.sha }})"
+
+on:
+  push: 
+    branches:
+      - blue-green-demo   #normally 'main'
+
+jobs:
+  ci:
+    uses: ./.github/workflows/build.yml
+
+  deploy:
+    needs: [ci]
+    uses: ./.github/workflows/deploy.yml
+
+  verify:
+    needs: [deploy]
+    uses: ./.github/workflows/verify.yml
+
+  promote:
+    needs: [verify]
+    uses: ./.github/workflows/promote.yml

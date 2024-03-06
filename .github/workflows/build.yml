@@ -1,10 +1,7 @@
 name: Build
-run-name: "🛠️ CI: ${{ github.event.head_commit.message }} (${{ github.sha }})"
+run-name: "Building Artifact (${{ github.event.inputs.ref }})"
 on:
-  pull_request:
-  push: 
-    branches:
-      - blue-green-demo
+  workflow_call:
 
 jobs:
   be-build:
@@ -201,7 +198,7 @@ jobs:
 
   trigger-deploy:
     name: 🚚 Start Deployment
-    if: github.ref == 'refs/heads/main'
+    #if: github.ref == 'refs/heads/main' //normally enabled for main branch
     needs: [be-static-analysis, fe-static-analysis]
     runs-on: ubuntu-latest
     permissions: write-all
