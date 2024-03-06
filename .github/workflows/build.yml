@@ -2,8 +2,9 @@ name: Build
 run-name: "🛠️ CI: ${{ github.event.head_commit.message }} (${{ github.sha }})"
 on:
   pull_request:
-  push:
-    - blue-green-demo
+  push: 
+    branches:
+      - blue-green-demo
 
 jobs:
   be-build:
