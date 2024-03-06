@@ -5,8 +5,10 @@ on:
     inputs:
       ref:
         required: true
+        type: string
       env_name:
         required: true
+        type: string
 
 jobs:
   destroy_frontend:

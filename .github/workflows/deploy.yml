@@ -5,6 +5,7 @@ on:
     inputs:
       ref:
         required: true
+        type: string
 
 jobs:
   provision_backend:

@@ -5,12 +5,16 @@ on:
     inputs:
       backend_url:
         required: true
+        type: string
       s3_bucket_hostname:
         required: true
+        type: string
       frontend_url:
         required: true
+        type: string
       ref:
         required: true
+        type: string
 
 jobs:
   frontend:
