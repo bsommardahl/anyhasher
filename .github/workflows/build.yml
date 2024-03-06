@@ -3,8 +3,7 @@ run-name: "🛠️ CI: ${{ github.event.head_commit.message }} (${{ github.sha }
 on:
   pull_request:
   push:
-    branches:
-      - l7-10
+    - blue-green-demo
 
 jobs:
   be-build:
@@ -201,7 +200,7 @@ jobs:
 
   trigger-deploy:
     name: 🚚 Start Deployment
-    #if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     needs: [be-static-analysis, fe-static-analysis]
     runs-on: ubuntu-latest
     permissions: write-all

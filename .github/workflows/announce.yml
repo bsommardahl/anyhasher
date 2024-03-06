@@ -1,0 +1,10 @@
+name: Announce 
+run-name: "💬 CD: Announce a New Production Version Has Been Deployed"
+on:
+  workflow_dispatch:
+
+jobs:
+  announce:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo Need to hook up slack here!

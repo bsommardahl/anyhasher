@@ -1,0 +1,93 @@
+name: Cleanup
+run-name: "${{ github.event.inputs.env_name }} (${{ github.event.inputs.ref }})"
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        required: true
+      env_name:
+        required: true
+
+jobs:
+  destroy_frontend:
+    name: ❌ Destroy Frontend Infrastructure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.ref }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Destroy Frontend
+        uses: dflook/terraform-destroy@v1
+        with:
+          path: util/terraform/frontend
+          workspace: anyhasher-frontend-${{ github.event.inputs.ref }}
+          variables: |
+            bucket_name = "anyhasher-frontend-${{ github.event.inputs.ref }}"
+
+  destroy_backend:
+    name: ❌ Destroy Backend Infrastructure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.ref }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Destroy Backend
+        uses: dflook/terraform-destroy@v1
+        with:
+          path: util/terraform/backend
+          workspace: anyhasher-backend-${{ github.event.inputs.ref }}
+          variables: |
+            instance_name = "anyhasher-backend-${{ github.event.inputs.ref }}"
+
+  cleanup_tag:
+    name: Clean up the old blue tag
+    needs: [destroy_backend, destroy_frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Check for old blue tag
+        uses: mukunku/tag-exists-action@v1.2.0
+        id: checkTag
+        with:
+          tag: "blue/${{ github.event.inputs.ref }}"
+
+      - name: Remove old tag
+        if: steps.checkTag.outputs.exists == 'true'
+
+        run: |
+          git fetch origin
+          TAG="blue/${{ github.event.inputs.ref }}"
+          git push --delete origin $TAG
+
+  notify:
+    name: Notify team that environment was removed
+    needs: [cleanup_tag]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo Need to hook up slack here!
