@@ -25,7 +25,6 @@ jobs:
       
   promote:
     needs: [verify]
-    id: promote
     uses: ./.github/workflows/promote.yml
     with: 
       ref: ${{ github.sha }}
