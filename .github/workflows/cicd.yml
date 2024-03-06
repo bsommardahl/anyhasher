@@ -1,6 +1,5 @@
 name: CI/CD Pipeline
 run-name: "🛠️ CI/CD: ${{ github.event.head_commit.message }} (${{ github.sha }})"
-
 on:
   push: 
     branches:
@@ -13,11 +12,30 @@ jobs:
   deploy:
     needs: [ci]
     uses: ./.github/workflows/deploy.yml
+    with: 
+      ref: ${{ github.sha }}      
 
   verify:
     needs: [deploy]
     uses: ./.github/workflows/verify.yml
-
+    with: 
+      ref: ${{ github.sha }}
+      backend_url: ${{ needs.deploy.outputs.backend_url }}
+      s3_bucket_hostname: ${{ needs.deploy.outputs.s3_bucket_hostname }}
+      frontend_url: ${{ needs.deploy.outputs.frontend_url }}
+      
   promote:
     needs: [verify]
     uses: ./.github/workflows/promote.yml
+    with: 
+      ref: ${{ github.sha }}
+      s3_bucket_hostname: ${{ needs.deploy.outputs.s3_bucket_hostname }}
+
+  failure:
+    needs: [ci, deploy, verify, promote]
+    if: failure()
+    uses: ./.github/workflows/cleanup.yml
+    with: 
+      ref: ${{ github.sha }}
+      env_name: Green
+      reason: failure

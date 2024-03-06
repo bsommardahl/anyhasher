@@ -195,16 +195,3 @@ jobs:
 
       # - name: Perform Analysis
       #   uses: github/codeql-action/analyze@v2
-
-  trigger-deploy:
-    name: 🚚 Start Deployment
-    #if: github.ref == 'refs/heads/main' //normally enabled for main branch
-    needs: [be-static-analysis, fe-static-analysis]
-    runs-on: ubuntu-latest
-    permissions: write-all
-    steps:
-      - name: Dispatch
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: Deploy
-          inputs: '{ "ref": "${{ github.sha }}" }'

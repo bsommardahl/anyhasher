@@ -122,28 +122,15 @@ jobs:
             frontend-release-${{ github.event.inputs.ref }}.zip
             backend-artifact-${{ github.event.inputs.ref }}.zip
 
-  cleanup_failing_green:
-    name: ❌ Clean up Failing Green
-    needs: [promote]
-    if: failure()
-    runs-on: ubuntu-latest
-    permissions: write-all
-    steps:
-      - name: Dispatch
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: Cleanup
-          inputs: '{ "ref": "${{ github.event.inputs.ref }}", "env_name": "⛔ Detroy Green Env after Failed Promotion" }'
-
-  cleanup_old_blue:
-    name: 🔥 Clean up Previous Blue
-    needs: [release, previous]
-    if: success() && needs.previous.outputs.ref != ''
-    runs-on: ubuntu-latest
-    permissions: write-all
-    steps:
-      - name: Dispatch
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: Cleanup
-          inputs: '{ "ref": "${{ needs.previous.outputs.ref }}", "env_name": "🔥 Cleanup Decomissioned Blue Env" }'
+  # cleanup_old_blue:
+  #   name: 🔥 Clean up Previous Blue
+  #   needs: [release, previous]
+  #   if: success() && needs.previous.outputs.ref != ''
+  #   runs-on: ubuntu-latest
+  #   permissions: write-all
+  #   steps:
+  #     - name: Dispatch
+  #       uses: benc-uk/workflow-dispatch@v1
+  #       with:
+  #         workflow: Cleanup
+  #         inputs: '{ "ref": "${{ needs.previous.outputs.ref }}", "env_name": "🔥 Cleanup Decomissioned Blue Env" }'

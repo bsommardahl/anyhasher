@@ -1,5 +1,5 @@
 name: Cleanup
-run-name: "🗑 CD: Cleaning up ${{ github.event.inputs.env_name }} (${{ github.event.inputs.ref }})"
+run-name: "🗑 CD: Cleaning up ${{ github.event.inputs.env_name }} after ${{ github.event.inputs.reason }} (${{ github.event.inputs.ref }})"
 on:
   workflow_call:
     inputs:
@@ -7,6 +7,9 @@ on:
         required: true
         type: string
       env_name:
+        required: true
+        type: string
+      reason:
         required: true
         type: string
 
