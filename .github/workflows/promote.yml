@@ -11,9 +11,8 @@ on:
         type: string
     outputs:
       website_url: 
-        value: ${{ jobs.switch.outputs.website_url }}
+        value: ${{ jobs.promote.outputs.website_url }}
         
-
 jobs:
   previous:
     name: 🎟️ Get Previous Blue Ref
@@ -44,7 +43,7 @@ jobs:
           echo "hash=$commit" >> $GITHUB_OUTPUT
           cat $GITHUB_OUTPUT
 
-  switch:
+  promote:
     name: 🚀 Switch Router from Blue to Green
     runs-on: ubuntu-latest
     needs: [previous]
