@@ -16,7 +16,7 @@ jobs:
       ref: ${{steps.commit.outputs.hash}}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Find Previous Blue Version
         id: previous
@@ -25,7 +25,7 @@ jobs:
           include: "blue/*"
 
       - name: Checkout Tag
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{steps.previous.outputs.tag}}
 
@@ -46,7 +46,7 @@ jobs:
       website_url: ${{ steps.router.outputs.website_url }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.ref }}
           depth: 0
