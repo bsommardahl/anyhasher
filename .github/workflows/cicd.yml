@@ -13,7 +13,8 @@ jobs:
     needs: [ci]
     uses: ./.github/workflows/deploy.yml
     with: 
-      ref: ${{ github.sha }}      
+      ref: ${{ github.sha }}    
+    secrets: inherit      
 
   verify:
     needs: [deploy]

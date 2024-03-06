@@ -6,18 +6,21 @@ on:
       ref:
         required: true
         type: string
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      EC2_PRIVATE_KEY:
+        required: true
     outputs:
       backend_url:
         value: ${{ jobs.provision_backend.outputs.backend_url }}
-      # backend_host:
-      #   value: ${{ jobs.provision_backend.outputs.backend_host }}
       frontend_url: 
         value: ${{ jobs.provision_frontend.outputs.frontend_url }}
       s3_bucket_hostname: 
         value: ${{ jobs.provision_frontend.outputs.s3_bucket_hostname }}
-      # bucket_name: 
-      #   value: ${{ jobs.provision_frontend.outputs.bucket_name }}      
-
+      
 jobs:
   provision_backend:
     name: 🏢 Provision Backend Infrastructure
