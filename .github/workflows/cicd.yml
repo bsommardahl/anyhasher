@@ -7,26 +7,26 @@ on:
 
 jobs:
   ci:
-    uses: ./.github/workflows/build.yml
+    uses: ./.github/workflows/backend/build.yml
 
   deploy:
     needs: [ci]
-    uses: ./.github/workflows/deploy.yml
+    uses: ./.github/workflows/backend/deploy.yml
     with: 
       ref: ${{ github.sha }}      
 
   verify:
     needs: [deploy]
-    uses: ./.github/workflows/verify.yml
+    uses: ./.github/workflows/backend/verify.yml
     with: 
       ref: ${{ github.sha }}
       backend_url: ${{ needs.deploy.outputs.backend_url }}
-      s3_bucket_hostname: ${{ needs.deploy.outputs.s3_bucket_hostname }}
       frontend_url: ${{ needs.deploy.outputs.frontend_url }}
       
   promote:
     needs: [verify]
-    uses: ./.github/workflows/promote.yml
+    id: promote
+    uses: ./.github/workflows/frontend/promote.yml
     with: 
       ref: ${{ github.sha }}
       s3_bucket_hostname: ${{ needs.deploy.outputs.s3_bucket_hostname }}
@@ -34,7 +34,7 @@ jobs:
   failure:
     needs: [ci, deploy, verify, promote]
     if: failure()
-    uses: ./.github/workflows/cleanup.yml
+    uses: ./.github/workflows/backend/cleanup.yml
     with: 
       ref: ${{ github.sha }}
       env_name: Green

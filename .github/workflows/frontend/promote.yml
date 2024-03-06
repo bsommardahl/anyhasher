@@ -9,6 +9,10 @@ on:
       s3_bucket_hostname:
         required: true
         type: string
+    outputs:
+      website_url: 
+        value: ${{ jobs.switch.outputs.website_url }}
+        
 
 jobs:
   previous:
@@ -40,8 +44,8 @@ jobs:
           echo "hash=$commit" >> $GITHUB_OUTPUT
           cat $GITHUB_OUTPUT
 
-  promote:
-    name: 🚀 Promote Green to Blue
+  switch:
+    name: 🚀 Switch Router from Blue to Green
     runs-on: ubuntu-latest
     needs: [previous]
     outputs:
