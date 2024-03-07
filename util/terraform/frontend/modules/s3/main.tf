@@ -32,10 +32,6 @@ resource "aws_s3_bucket_ownership_controls" "s3_bucket_acl_ownership" {
   depends_on = [aws_s3_bucket_public_access_block.frontend]
 }
 
-resource "aws_iam_user" "bucket_name" {
-  name = "prod-media-bucket"
-}
-
 resource "aws_s3_bucket_public_access_block" "frontend" {
   bucket = aws_s3_bucket.frontend.id
 
