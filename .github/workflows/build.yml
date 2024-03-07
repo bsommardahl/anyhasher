@@ -36,7 +36,7 @@ jobs:
       - name: Store Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: backend-artifact-${{ github.sha }}
+          name: backend-artifact-${{ input.ref }}
           path: backend/build/
 
   be-lint:
@@ -135,6 +135,8 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -151,7 +153,7 @@ jobs:
       - name: Store Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: frontend-artifact-${{ github.sha }}
+          name: frontend-artifact-${{ input.ref }}
           path: frontend/build
 
   fe-security-audit:

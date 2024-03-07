@@ -33,12 +33,12 @@ jobs:
       ref: ${{ github.sha }}
       s3_bucket_hostname: ${{ needs.deploy.outputs.s3_bucket_hostname }}
 
-  failure:
-    needs: [deploy, verify, promote]
-    if: failure()
-    uses: ./.github/workflows/cleanup.yml
-    with: 
-      ref: ${{ github.sha }}
-      env_name: Green
-      reason: failure
-    secrets: inherit
+  # failure:
+  #   needs: [deploy, verify, promote]
+  #   if: failure()
+  #   uses: ./.github/workflows/cleanup.yml
+  #   with: 
+  #     ref: ${{ github.sha }}
+  #     env_name: Green
+  #     reason: failure
+  #   secrets: inherit
