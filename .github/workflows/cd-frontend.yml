@@ -100,7 +100,7 @@ jobs:
 
   verify:
     name: 🧪 Check Frontend
-    needs: [deploy]
+    needs: [provision, deploy]
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
