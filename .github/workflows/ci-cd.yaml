@@ -1,5 +1,5 @@
 name: CI/CD Pipeline (Big Bang)
-run-name: "🛠️ ${{ github.event.head_commit.message }} (${{ github.sha }})"
+run-name: "🛠️ Big Bang: ${{ github.event.head_commit.message }} (${{ github.sha }})"
 
 on:
   pull_request:
