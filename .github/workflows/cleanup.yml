@@ -1,5 +1,5 @@
 name: Cleanup
-run-name: "🗑 CD: Cleaning up ${{ github.event.inputs.env_name }} after ${{ github.event.inputs.reason }} (${{ github.event.inputs.ref }})"
+run-name: "🗑 CD: Cleaning up ${{ inputs.env_name }} after ${{ inputs.reason }} (${{ inputs.ref }})"
 on:
   workflow_call:
     inputs:
@@ -26,7 +26,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.ref }}
+          ref: ${{ inputs.ref }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -42,9 +42,9 @@ jobs:
         uses: dflook/terraform-destroy@v1
         with:
           path: util/terraform/frontend
-          workspace: anyhasher-frontend-${{ github.event.inputs.ref }}
+          workspace: anyhasher-frontend-${{ inputs.ref }}
           variables: |
-            bucket_name = "anyhasher-frontend-${{ github.event.inputs.ref }}"
+            bucket_name = "anyhasher-frontend-${{ inputs.ref }}"
 
   destroy_backend:
     name: ❌ Destroy Backend Infrastructure
@@ -53,7 +53,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.ref }}
+          ref: ${{ inputs.ref }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -69,9 +69,9 @@ jobs:
         uses: dflook/terraform-destroy@v1
         with:
           path: util/terraform/backend
-          workspace: anyhasher-backend-${{ github.event.inputs.ref }}
+          workspace: anyhasher-backend-${{ inputs.ref }}
           variables: |
-            instance_name = "anyhasher-backend-${{ github.event.inputs.ref }}"
+            instance_name = "anyhasher-backend-${{ inputs.ref }}"
 
   cleanup_tag:
     name: Clean up the old blue tag
@@ -85,14 +85,14 @@ jobs:
         uses: mukunku/tag-exists-action@v1.2.0
         id: checkTag
         with:
-          tag: "blue/${{ github.event.inputs.ref }}"
+          tag: "blue/${{ inputs.ref }}"
 
       - name: Remove old tag
         if: steps.checkTag.outputs.exists == 'true'
 
         run: |
           git fetch origin
-          TAG="blue/${{ github.event.inputs.ref }}"
+          TAG="blue/${{ inputs.ref }}"
           git push --delete origin $TAG
 
   notify:

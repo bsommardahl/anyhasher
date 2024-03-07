@@ -1,7 +1,11 @@
 name: Build
-run-name: "Building Artifact (${{ github.event.inputs.ref }})"
+run-name: "Building Artifact (${{ inputs.ref }})"
 on:
   workflow_call:
+    inputs:
+      ref:
+        required: true
+        type: string
 
 jobs:
   be-build:

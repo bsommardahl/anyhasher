@@ -1,5 +1,5 @@
 name: Deploy
-run-name: "🚛 CD: Deploying Artifacts (${{ github.event.inputs.ref }})"
+run-name: "🚛 CD: Deploying Artifacts (${{ inputs.ref }})"
 on:
   workflow_call:
     inputs:
@@ -32,7 +32,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.ref }}
+          ref: ${{ inputs.ref }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -48,17 +48,17 @@ jobs:
         uses: dflook/terraform-new-workspace@v1
         with:
           path: util/terraform/backend
-          workspace: anyhasher-backend-${{ github.event.inputs.ref }}
+          workspace: anyhasher-backend-${{ inputs.ref }}
 
       - name: Provision
         id: provision
         uses: dflook/terraform-apply@v1
         with:
-          workspace: anyhasher-backend-${{ github.event.inputs.ref }}
+          workspace: anyhasher-backend-${{ inputs.ref }}
           auto_approve: true
           path: util/terraform/backend
           variables: |
-            instance_name = "anyhasher-backend-${{ github.event.inputs.ref }}"
+            instance_name = "anyhasher-backend-${{ inputs.ref }}"
 
   provision_frontend:
     name: 🏛️ Provision Frontend Infrastructure
@@ -85,17 +85,17 @@ jobs:
         uses: dflook/terraform-new-workspace@v1
         with:
           path: util/terraform/frontend
-          workspace: anyhasher-frontend-${{ github.event.inputs.ref }}
+          workspace: anyhasher-frontend-${{ inputs.ref }}
 
       - name: Provision
         id: provision
         uses: dflook/terraform-apply@v1
         with:
-          workspace: anyhasher-frontend-${{ github.event.inputs.ref }}
+          workspace: anyhasher-frontend-${{ inputs.ref }}
           auto_approve: true
           path: util/terraform/frontend
           variables: |
-            bucket_name = "anyhasher-frontend-${{ github.event.inputs.ref }}"
+            bucket_name = "anyhasher-frontend-${{ inputs.ref }}"
 
   deploy_backend:
     name: 🚛 Deploy Backend Artifact
@@ -109,7 +109,7 @@ jobs:
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: build.yml
-          name: backend-artifact-${{ github.event.inputs.ref }}
+          name: backend-artifact-${{ inputs.ref }}
           path: backend/build/
 
       - name: Configure Backend Infrastructure
@@ -139,7 +139,7 @@ jobs:
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: build.yml
-          name: frontend-artifact-${{ github.event.inputs.ref }}
+          name: frontend-artifact-${{ inputs.ref }}
           path: frontend/build
 
       - name: Prepare frontend with backend url
@@ -152,7 +152,7 @@ jobs:
       - name: Store Release Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: frontend-release-${{ github.event.inputs.ref }}
+          name: frontend-release-${{ inputs.ref }}
           path: frontend/build
 
       - name: Configure AWS Credentials

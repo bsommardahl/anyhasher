@@ -1,5 +1,5 @@
 name: Verify
-run-name: "🧪 CD: Verifying Environment (${{ github.event.inputs.ref }})"
+run-name: "🧪 CD: Verifying Environment (${{ inputs.ref }})"
 on:
   workflow_call:
     inputs:
@@ -24,7 +24,7 @@ jobs:
 
       - name: Run Frontend Smoke Test
         run: |
-          export TEST_URL=${{ github.event.inputs.frontend_url }}
+          export TEST_URL=${{ inputs.frontend_url }}
           cd frontend/e2e
           npm install
           npm run smoke
@@ -39,7 +39,7 @@ jobs:
 
       - name: Run Backend Smoke Test
         run: |
-          export BACKEND_URL=${{ github.event.inputs.backend_url }}
+          export BACKEND_URL=${{ inputs.backend_url }}
           cd backend/e2e
           chmod +x backend-smoke.sh
           ./backend-smoke.sh

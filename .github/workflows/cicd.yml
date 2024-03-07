@@ -6,11 +6,13 @@ on:
       - blue-green-demo   #normally 'main'
 
 jobs:
-  ci:
+  build:
     uses: ./.github/workflows/build.yml
+    with:
+      ref: ${{ github.sha }}    
 
   deploy:
-    needs: [ci]
+    needs: [build]
     uses: ./.github/workflows/deploy.yml
     with: 
       ref: ${{ github.sha }}    
