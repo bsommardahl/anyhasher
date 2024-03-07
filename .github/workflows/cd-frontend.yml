@@ -18,9 +18,9 @@ on:
         required: true
     outputs:
       frontend_url: 
-        value: ${{ jobs.provision_frontend.outputs.frontend_url }}
+        value: ${{ jobs.provision.outputs.frontend_url }}
       s3_bucket_hostname: 
-        value: ${{ jobs.provision_frontend.outputs.s3_bucket_hostname }}
+        value: ${{ jobs.provision.outputs.s3_bucket_hostname }}
       
 jobs:
   provision:
