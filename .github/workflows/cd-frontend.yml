@@ -109,7 +109,7 @@ jobs:
 
       - name: Run Frontend Smoke Test
         run: |
-          export TEST_URL=${{ inputs.frontend_url }}
+          export TEST_URL=${{ needs.provision.outputs.frontend_url }}
           cd frontend/e2e
           npm install
           npm run smoke
