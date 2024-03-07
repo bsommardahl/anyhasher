@@ -75,10 +75,11 @@ jobs:
           path: frontend/build
 
       - name: Prepare frontend with backend url
-        uses: jacobtomlinson/gha-find-replace@v2
+        uses: jacobtomlinson/gha-find-replace@v3
         with:
-          find: "process.env.REACT_APP_API_URL || 'http://localhost:5001'"
+          find: "'http://localhost:5001'"
           replace: '"${{ inputs.backend_url }}"'
+          include: frontend/build/**
           regex: false
 
       - name: Store Release Artifact
