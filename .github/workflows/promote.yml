@@ -12,6 +12,8 @@ on:
     outputs:
       website_url: 
         value: ${{ jobs.promote.outputs.website_url }}
+      previous_ref:
+        value: ${{ jobs.previous.outputs.ref }}
         
 jobs:
   previous:
@@ -49,6 +51,9 @@ jobs:
     name: 🚀 Switch Router from Blue to Green
     runs-on: ubuntu-latest
     needs: [previous]
+    environment:
+      name: New Production Version (Blue)
+      url: ${{ steps.router.outputs.website_url }}
     outputs:
       website_url: ${{ steps.router.outputs.website_url }}
     steps:
@@ -124,16 +129,3 @@ jobs:
           files: |
             frontend-release-${{ inputs.ref }}.zip
             backend-artifact-${{ inputs.ref }}.zip
-
-  # cleanup_old_blue:
-  #   name: 🔥 Clean up Previous Blue
-  #   needs: [release, previous]
-  #   if: success() && needs.previous.outputs.ref != ''
-  #   runs-on: ubuntu-latest
-  #   permissions: write-all
-  #   steps:
-  #     - name: Dispatch
-  #       uses: benc-uk/workflow-dispatch@v1
-  #       with:
-  #         workflow: Cleanup
-  #         inputs: '{ "ref": "${{ needs.previous.outputs.ref }}", "env_name": "🔥 Cleanup Decomissioned Blue Env" }'

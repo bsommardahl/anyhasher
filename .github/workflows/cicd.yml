@@ -41,12 +41,21 @@ jobs:
       s3_bucket_hostname: ${{ needs.cd-frontend.outputs.s3_bucket_hostname }}
     secrets: inherit
 
-  # failure:
-  #   needs: [deploy, verify, promote]
-  #   if: failure()
-  #   uses: ./.github/workflows/cleanup.yml
-  #   with: 
-  #     ref: ${{ github.sha }}
-  #     env_name: Green
-  #     reason: failure
-  #   secrets: inherit
+  cleanup:
+    needs: [promots]
+    uses: ./.github/workflows/cleanup.yml
+    with: 
+      ref: ${{ needs.promote.outputs.previous_ref }}
+      env_name: Previous Blue
+      reason: decommissioning
+    secrets: inherit
+
+  failure:
+    needs: [deploy, verify, promote]
+    if: failure()
+    uses: ./.github/workflows/cleanup.yml
+    with: 
+      ref: ${{ github.sha }}
+      env_name: Green
+      reason: failure
+    secrets: inherit
