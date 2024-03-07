@@ -1,19 +1,3 @@
-# terraform {
-  # required_providers {
-  #   aws = {
-  #     source = "hashicorp/aws"
-  #     version = "~> 4.16"
-  #   }
-  # }
-  # required_version = ">= 1.2.0"
-  
-  # backend "s3" {
-  #   bucket = "anyhasher.terraform.states"
-  #   key    = "anyhasher-be.tfstate"
-  #   region = "us-east-1"
-  # }
-# }
-
 provider "aws" {
   region = "us-east-1"
 }
@@ -36,4 +20,3 @@ output "ec2_public_ip" {
 output "ec2_public_url" {
   value = aws_instance.anyhasher_server.public_dns
 }
-

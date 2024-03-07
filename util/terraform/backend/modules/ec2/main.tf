@@ -1,8 +1,11 @@
 resource "aws_instance" "anyhasher_server" {
-  ami           = "ami-055744c75048d8296" #"ami-0149b2da6ceec4bb0"
+  ami           = "ami-0149b2da6ceec4bb0"
   instance_type = "t2.small"
   key_name      = "anyhasher"
-  tags          = { Name = var.instance_name }
+  tags          = { 
+    Name = var.instance_name 
+    Environment = "Production"
+  }
 }
 
 variable "instance_name" {

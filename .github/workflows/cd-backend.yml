@@ -22,8 +22,8 @@ jobs:
     name: 🏢 Provision Backend Infrastructure
     runs-on: ubuntu-latest
     outputs:
-      backend_url: http://${{ steps.provision.outputs.ec2_public_url }}:5001
-      backend_host: ${{ steps.provision.outputs.ec2_public_url }}
+      backend_url: http://${{ steps.apply_changes.outputs.ec2_public_url }}:5001
+      backend_host: ${{ steps.apply_changes.outputs.ec2_public_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -46,8 +46,8 @@ jobs:
           path: util/terraform/backend
           workspace: anyhasher-backend-${{ inputs.ref }}
 
-      - name: Provision
-        id: provision
+      - name: Apply
+        id: apply_changes
         uses: dflook/terraform-apply@v1
         with:
           workspace: anyhasher-backend-${{ inputs.ref }}
