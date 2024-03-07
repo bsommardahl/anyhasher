@@ -39,6 +39,7 @@ jobs:
     with: 
       ref: ${{ github.sha }}
       s3_bucket_hostname: ${{ needs.cd-frontend.outputs.s3_bucket_hostname }}
+    secrets: inherit
 
   # failure:
   #   needs: [deploy, verify, promote]
