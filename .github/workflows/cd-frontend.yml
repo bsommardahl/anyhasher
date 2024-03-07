@@ -65,7 +65,7 @@ jobs:
     needs: [provision]
     runs-on: ubuntu-latest
     environment:
-      name: Production Candidate (Green)
+      name: Green Frontend
       url: ${{ needs.provision.outputs.frontend_url }}
     steps:
       - name: Get Frontend Artifact
@@ -77,9 +77,8 @@ jobs:
       - name: Prepare frontend with backend url
         uses: jacobtomlinson/gha-find-replace@v3
         with:
-          find: "'http://localhost:5001'"
-          replace: '"${{ inputs.backend_url }}"'
-          include: frontend/build/**
+          find: http://localhost:5001
+          replace: ${{ inputs.backend_url }}
           regex: false
 
       - name: Store Release Artifact
