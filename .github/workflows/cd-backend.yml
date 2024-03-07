@@ -69,6 +69,7 @@ jobs:
         with:
           workflow: ci-backend.yml
           name: backend-artifact-${{ inputs.ref }}
+          path: backend/build/
           skip_unpack: true
 
       - name: Configure Backend Infrastructure
