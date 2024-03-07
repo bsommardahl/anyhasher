@@ -24,7 +24,7 @@ jobs:
     secrets: inherit
 
   cd-frontend:
-    needs: [cd-backend, cd-backend]
+    needs: [cd-backend]
     uses: ./.github/workflows/cd-frontend.yml
     with: 
       ref: ${{ github.sha }}    
@@ -32,7 +32,7 @@ jobs:
     secrets: inherit
 
   promote:
-    needs: [verify]
+    needs: [cd-frontend]
     uses: ./.github/workflows/promote.yml
     with: 
       ref: ${{ github.sha }}
