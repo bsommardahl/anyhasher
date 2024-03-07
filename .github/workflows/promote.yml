@@ -105,7 +105,7 @@ jobs:
         with:
           #workflow: ci-backend.yml
           name: backend-artifact-${{ inputs.ref }}
-          # path: backend/build/
+          path: backend/build/
           # skip_unpack: true
 
       - name: Get Frontend Release Artifact
@@ -114,7 +114,7 @@ jobs:
         with:
           # workflow: cd-frontend.yml
           name: frontend-release-${{ inputs.ref }}
-          # path: frontend/build
+          path: frontend/build
           # skip_unpack: true
 
       - name: Tag Green as New Blue

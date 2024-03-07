@@ -74,7 +74,7 @@ jobs:
         with:
           # workflow: ci-frontend.yml
           name: frontend-artifact-${{ inputs.ref }}
-          # path: frontend/build
+          path: frontend/build
 
       - name: Prepare frontend with backend url
         uses: jacobtomlinson/gha-find-replace@v2
