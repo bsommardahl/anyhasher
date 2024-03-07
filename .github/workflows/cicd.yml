@@ -51,7 +51,7 @@ jobs:
     secrets: inherit
 
   failure:
-    needs: [deploy, verify, promote]
+    needs: [cd-backend, cd-frontend, promote]
     if: failure()
     uses: ./.github/workflows/cleanup.yml
     with: 
