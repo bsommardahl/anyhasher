@@ -137,7 +137,7 @@ jobs:
       - lint
       - test
       - static-analysis
-    if: github.ref == 'refs/heads/olt'
+    #if: github.ref == 'refs/heads/main'
     outputs:
       page_url: ${{ steps.deployment.outputs.page_url }}
     permissions:
