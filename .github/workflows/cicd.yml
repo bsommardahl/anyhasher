@@ -42,7 +42,7 @@ jobs:
     secrets: inherit
 
   cleanup:
-    needs: [promots]
+    needs: [promote]
     uses: ./.github/workflows/cleanup.yml
     with: 
       ref: ${{ needs.promote.outputs.previous_ref }}
