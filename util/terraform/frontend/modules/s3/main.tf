@@ -41,7 +41,7 @@ resource "aws_s3_bucket_public_access_block" "frontend" {
   restrict_public_buckets = false
 }
 
-resource "aws_s3_bucket_policy" "bucket_name" {
+resource "aws_s3_bucket_policy" "allow_public_access" {
     bucket = aws_s3_bucket.frontend.id
     policy = jsonencode({
     Version = "2012-10-17"
