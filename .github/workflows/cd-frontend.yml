@@ -71,7 +71,7 @@ jobs:
       - name: Get Frontend Artifact
         uses: dawidd6/action-download-artifact@v2
         with:
-          workflow: build.yml
+          workflow: ci-frontend.yml
           name: frontend-artifact-${{ inputs.ref }}
           path: frontend/build
 

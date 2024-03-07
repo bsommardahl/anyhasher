@@ -55,7 +55,7 @@ jobs:
 
   fe-static-analysis:
     name: 🔬 Run Static Analysis on Frontend Code
-    needs: [fe-security-audit]
+    needs: [fe-build]
     runs-on: ubuntu-latest
     permissions:
       security-events: write

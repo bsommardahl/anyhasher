@@ -67,9 +67,9 @@ jobs:
       - name: Get Backend Artifact
         uses: dawidd6/action-download-artifact@v2
         with:
-          workflow: build.yml
+          workflow: ci-backend.yml
           name: backend-artifact-${{ inputs.ref }}
-          path: backend/build/
+          skip_unpack: true
 
       - name: Configure Backend Infrastructure
         uses: dawidd6/action-ansible-playbook@v2

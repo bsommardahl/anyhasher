@@ -96,7 +96,7 @@ jobs:
 
   be-static-analysis:
     name: 🔬 Run Static Analysis on Backend Code
-    needs: [be-build, be-lint, be-test, be-security-audit]
+    needs: [be-build]
     runs-on: ubuntu-latest
     permissions:
       security-events: write
