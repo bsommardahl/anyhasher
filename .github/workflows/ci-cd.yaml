@@ -1,11 +1,11 @@
-name: CI/CD Pipeline
+name: CI/CD Pipeline (Big Bang)
 run-name: "🛠️ ${{ github.event.head_commit.message }} (${{ github.sha }})"
 
 on:
   pull_request:
   push:
     branches:
-      - olt
+      - big-bang-demo
 
 jobs:
   build:
