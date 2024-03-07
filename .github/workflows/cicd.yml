@@ -14,7 +14,7 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with: 
       ref: ${{ github.sha }}    
-    secrets: inherit      
+    secrets: inherit
 
   verify:
     needs: [deploy]
@@ -32,10 +32,11 @@ jobs:
       s3_bucket_hostname: ${{ needs.deploy.outputs.s3_bucket_hostname }}
 
   failure:
-    needs: [ci, deploy, verify, promote]
+    needs: [deploy, verify, promote]
     if: failure()
     uses: ./.github/workflows/cleanup.yml
     with: 
       ref: ${{ github.sha }}
       env_name: Green
       reason: failure
+    secrets: inherit
