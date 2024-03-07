@@ -15,6 +15,7 @@ on:
         
 jobs:
   previous:
+    #This one is tricky, since the first time you run it, there is no blue.
     name: 🎟️ Get Previous Blue Ref
     runs-on: ubuntu-latest
     outputs:
@@ -25,10 +26,11 @@ jobs:
 
       - name: Find Previous Blue Version
         id: previous
-        uses: jimschubert/query-tag-action@v1
+        uses: digital-ai/query-tag-action@v2
+        # uses: jimschubert/query-tag-action@v1
         with:
-          include: "blue/*"
-
+          include: 'blue/*'          
+        
       - name: Checkout Tag
         uses: actions/checkout@v4
         with:
