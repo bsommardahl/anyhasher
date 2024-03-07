@@ -17,7 +17,9 @@ jobs:
       ref: ${{ github.sha }}    
 
   cd-backend:
-    needs: [ci-frontend, ci-backend]
+    needs: 
+      #- ci-frontend
+      - ci-backend
     uses: ./.github/workflows/cd-backend.yml
     with: 
       ref: ${{ github.sha }}    
