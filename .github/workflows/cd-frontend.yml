@@ -42,7 +42,7 @@ jobs:
           aws-region: us-east-1
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@3
+        uses: hashicorp/setup-terraform@v3
 
       - name: Use commit workspace
         uses: dflook/terraform-new-workspace@v1
