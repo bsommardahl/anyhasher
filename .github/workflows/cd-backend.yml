@@ -15,7 +15,7 @@ on:
         required: true
     outputs:
       backend_url:
-        value: ${{ jobs.provision_backend.outputs.backend_url }}
+        value: ${{ jobs.provision.outputs.backend_url }}
       
 jobs:
   provision:

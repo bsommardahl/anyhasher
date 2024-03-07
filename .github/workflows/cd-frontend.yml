@@ -74,6 +74,9 @@ jobs:
           name: frontend-artifact-${{ inputs.ref }}
           path: frontend/build
 
+      - name: Proof
+        run: echo inputs.backend_url=${{ inputs.backend_url }}
+
       - name: Prepare frontend with backend url
         uses: jacobtomlinson/gha-find-replace@v3
         with:
