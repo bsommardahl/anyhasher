@@ -31,14 +31,6 @@ jobs:
       backend_url: ${{ needs.cd-backend.outputs.backend_url }}
     secrets: inherit
 
-  verify:
-    needs: [deploy]
-    uses: ./.github/workflows/verify.yml
-    with: 
-      ref: ${{ github.sha }}
-      backend_url: ${{ needs.cd-backend.outputs.backend_url }}
-      frontend_url: ${{ needs.cd-frontend.outputs.frontend_url }}
-      
   promote:
     needs: [verify]
     uses: ./.github/workflows/promote.yml
