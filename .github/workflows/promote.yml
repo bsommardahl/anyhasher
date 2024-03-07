@@ -57,7 +57,7 @@ jobs:
           depth: 0
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -100,23 +100,17 @@ jobs:
       url: ${{ needs.promote.outputs.website_url }}
     steps:
       - name: Get Backend Release Artifact
-        #uses: dawidd6/action-download-artifact@v3
         uses: actions/download-artifact@v4
         with:
-          #workflow: ci-backend.yml
           name: backend-artifact-${{ inputs.ref }}
           path: backend/build/
-          # skip_unpack: true
-
+        
       - name: Get Frontend Release Artifact
-        #uses: dawidd6/action-download-artifact@v3
         uses: actions/download-artifact@v4
         with:
-          # workflow: cd-frontend.yml
           name: frontend-release-${{ inputs.ref }}
           path: frontend/build
-          # skip_unpack: true
-
+        
       - name: Tag Green as New Blue
         if: success()
         uses: "marvinpinto/action-automatic-releases@latest"

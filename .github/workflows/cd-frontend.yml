@@ -42,7 +42,7 @@ jobs:
           aws-region: us-east-1
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@2
+        uses: hashicorp/setup-terraform@3
 
       - name: Use commit workspace
         uses: dflook/terraform-new-workspace@v1
@@ -70,9 +70,7 @@ jobs:
     steps:
       - name: Get Frontend Artifact
         uses: actions/download-artifact@v4
-        #uses: dawidd6/action-download-artifact@v3
         with:
-          # workflow: ci-frontend.yml
           name: frontend-artifact-${{ inputs.ref }}
           path: frontend/build
 
