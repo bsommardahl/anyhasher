@@ -103,7 +103,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [promote]
     environment:
-      name: Production
+      name: New Blue
       url: ${{ needs.promote.outputs.website_url }}
     steps:
       - name: Get Backend Release Artifact
