@@ -16,11 +16,19 @@ jobs:
     with:
       ref: ${{ github.sha }}    
 
-  deploy:
+  cd-backend:
     needs: [ci-frontend, ci-backend]
-    uses: ./.github/workflows/deploy.yml
+    uses: ./.github/workflows/cd-backend.yml
     with: 
       ref: ${{ github.sha }}    
+    secrets: inherit
+
+  cd-frontend:
+    needs: [cd-backend, cd-backend]
+    uses: ./.github/workflows/cd-frontend.yml
+    with: 
+      ref: ${{ github.sha }}    
+      backend_url: ${{ needs.cd-backend.outputs.backend_url }}
     secrets: inherit
 
   verify:
@@ -28,15 +36,15 @@ jobs:
     uses: ./.github/workflows/verify.yml
     with: 
       ref: ${{ github.sha }}
-      backend_url: ${{ needs.deploy.outputs.backend_url }}
-      frontend_url: ${{ needs.deploy.outputs.frontend_url }}
+      backend_url: ${{ needs.cd-backend.outputs.backend_url }}
+      frontend_url: ${{ needs.cd-frontend.outputs.frontend_url }}
       
   promote:
     needs: [verify]
     uses: ./.github/workflows/promote.yml
     with: 
       ref: ${{ github.sha }}
-      s3_bucket_hostname: ${{ needs.deploy.outputs.s3_bucket_hostname }}
+      s3_bucket_hostname: ${{ needs.cd-frontend.outputs.s3_bucket_hostname }}
 
   # failure:
   #   needs: [deploy, verify, promote]

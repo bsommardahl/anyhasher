@@ -1,0 +1,106 @@
+name: Deploy Backend
+run-name: "🚛 CD: Deploying Backend Artifact (${{ inputs.ref }})"
+on:
+  workflow_call:
+    inputs:
+      ref:
+        required: true
+        type: string
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      EC2_PRIVATE_KEY:
+        required: true
+    outputs:
+      backend_url:
+        value: ${{ jobs.provision_backend.outputs.backend_url }}
+      
+jobs:
+  provision:
+    name: 🏢 Provision Backend Infrastructure
+    runs-on: ubuntu-latest
+    outputs:
+      backend_url: http://${{ steps.provision.outputs.ec2_public_url }}:5001
+      backend_host: ${{ steps.provision.outputs.ec2_public_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Use commit workspace
+        uses: dflook/terraform-new-workspace@v1
+        with:
+          path: util/terraform/backend
+          workspace: anyhasher-backend-${{ inputs.ref }}
+
+      - name: Provision
+        id: provision
+        uses: dflook/terraform-apply@v1
+        with:
+          workspace: anyhasher-backend-${{ inputs.ref }}
+          auto_approve: true
+          path: util/terraform/backend
+          variables: |
+            instance_name = "anyhasher-backend-${{ inputs.ref }}"
+
+  deploy:
+    name: 🚛 Deploy Backend Artifact
+    needs: [provision]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get Backend Artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: build.yml
+          name: backend-artifact-${{ inputs.ref }}
+          path: backend/build/
+
+      - name: Configure Backend Infrastructure
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: deploy.yml
+          directory: ./util/ansible
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          inventory: |
+            [ec2]
+            ${{ needs.provision.outputs.backend_host }} ansible_user=ubuntu
+          options: |
+            --verbose
+
+      #- name: Simulate an error
+      #run: exit 1
+
+  verify:
+    name: 🧪 Check Backend
+    runs-on: ubuntu-latest
+    needs: [provision]
+    permissions: write-all
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Backend Smoke Test
+        run: |
+          export BACKEND_URL=${{ needs.provision.outputs.backend_url }}
+          cd backend/e2e
+          chmod +x backend-smoke.sh
+          ./backend-smoke.sh
+
+      #- name: Simulate an error
+      #  run: exit 1  
