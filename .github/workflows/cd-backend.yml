@@ -89,7 +89,7 @@ jobs:
   verify:
     name: 🧪 Check Backend
     runs-on: ubuntu-latest
-    needs: [provision]
+    needs: [deploy]
     permissions: write-all
     steps:
       - name: Checkout
