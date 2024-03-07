@@ -61,7 +61,7 @@ jobs:
     needs: [provision]
     runs-on: ubuntu-latest
     environment:
-      name: Green API
+      name: Green Backend
       url: ${{ needs.provision.outputs.backend_url }}
     steps:
       - name: Checkout
