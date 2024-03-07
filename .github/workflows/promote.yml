@@ -99,16 +99,16 @@ jobs:
       name: Production
       url: ${{ needs.promote.outputs.website_url }}
     steps:
-      - name: Get Backend Artifact
-        uses: dawidd6/action-download-artifact@v2
+      - name: Get Backend Release Artifact
+        uses: dawidd6/action-download-artifact@v3
         with:
-          workflow: ci-backend.yml
+          #workflow: ci-backend.yml
           name: backend-artifact-${{ inputs.ref }}
           path: backend/build/
           skip_unpack: true
 
-      - name: Get Frontend Artifact (Release Ver)
-        uses: dawidd6/action-download-artifact@v2
+      - name: Get Frontend Release Artifact
+        uses: dawidd6/action-download-artifact@v3
         with:
           workflow: cd-frontend.yml
           name: frontend-release-${{ inputs.ref }}

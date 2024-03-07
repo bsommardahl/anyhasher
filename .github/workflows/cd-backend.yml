@@ -65,7 +65,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Get Backend Artifact
-        uses: dawidd6/action-download-artifact@v2
+        uses: dawidd6/action-download-artifact@v3
         with:
           workflow: ci-backend.yml
           name: backend-artifact-${{ inputs.ref }}
