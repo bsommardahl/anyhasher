@@ -1,5 +1,5 @@
-name: CI/CD Pipeline
-run-name: "🛠️ Blue-Green: ${{ github.event.head_commit.message }} (${{ github.sha }})"
+name: Blue-Green CI/CD Pipeline
+run-name: "🛠️ ${{ github.event.head_commit.message }} (${{ github.sha }})"
 on:
   push: 
     branches:
