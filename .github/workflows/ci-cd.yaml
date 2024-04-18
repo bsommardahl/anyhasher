@@ -9,7 +9,8 @@ jobs:
   build:
     name: 🛠️ Build Frontend Artifact
     needs:
-      - audit
+      - lint
+      - test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -68,3 +69,27 @@ jobs:
 
       - name: 😂 Lint code
         run: cd frontend && npm run lint
+  
+  test:
+    name: 🧪 Run Unit Tests
+    needs: audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node 16
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+
+      - name: Cache Node Modules
+        uses: actions/cache@v3
+        with:
+          path: frontend/node_modules
+          key: fe-node-${{ hashFiles('frontend/package-lock.json') }}
+
+      - name: Install deps
+        run: cd frontend && npm i
+
+      - name: Run the unit tests
+        run: cd frontend && npm run test-ci
