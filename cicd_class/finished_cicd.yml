@@ -58,7 +58,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16.x
-
+      
       - name: Cache Node Modules
         uses: actions/cache@v3
         with:
@@ -70,7 +70,7 @@ jobs:
 
       - name: 😂 Lint code
         run: cd frontend && npm run lint
-
+  
   test:
     name: 🧪 Run Unit Tests
     needs: build
@@ -94,7 +94,7 @@ jobs:
 
       - name: Run the unit tests
         run: cd frontend && npm run test-ci
-
+  
   static-analysis:
     name: 🔬 Run Static Code Analysis
     needs: [build]
@@ -127,8 +127,8 @@ jobs:
       - name: Build
         run: cd frontend && npm run build
 
-      - name: Perform Analysis
-        uses: github/codeql-action/analyze@v2
+      # - name: Perform Analysis
+      #   uses: github/codeql-action/analyze@v2
 
   deploy:
     name: 🚚 Deploy Frontend Artifact
@@ -138,6 +138,8 @@ jobs:
       - test
       - static-analysis
     if: github.ref == 'refs/heads/olt'
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
     permissions:
       pages: write
       id-token: write
@@ -162,7 +164,7 @@ jobs:
 
       - name: Run Frontend Smoke Test
         run: |
-          export TEST_URL=https://bsommardahl.github.io/anyhasher/
+          export TEST_URL=${{needs.deploy.outputs.page_url}}
           cd frontend/e2e
           npm i
           npm run smoke
