@@ -128,3 +128,22 @@ jobs:
 
       - name: Perform Analysis
         uses: github/codeql-action/analyze@v2
+
+  deploy:
+    name: 🚚 Deploy Frontend Artifact
+    runs-on: ubuntu-latest
+    needs:
+      - static-analysis
+    if: github.ref == 'refs/heads/olt'
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1      
