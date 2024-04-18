@@ -146,4 +146,22 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1      
+        uses: actions/deploy-pages@v1    
+  
+  verify:
+    name: 🧪 Verify Successful Deployment
+    needs:
+      - deploy
+    runs-on: ubuntu-latest
+    if: success()
+    permissions: write-all
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Run Frontend Smoke Test
+        run: |
+          export TEST_URL=${{needs.deploy.outputs.page_url}}
+          cd frontend/e2e
+          npm i
+          npm run smoke
