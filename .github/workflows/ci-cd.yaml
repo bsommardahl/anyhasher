@@ -8,6 +8,7 @@ on:
 jobs:
   build: 
     name: Build Frontend Artifact
+    needs: audit
     runs-on: ubuntu
     steps:
       - uses: actions/checkout@v4
@@ -29,4 +30,12 @@ jobs:
         uses: actions/upload-pages-artifact@v1
         with: 
           path: frontend/build
+  
+  audit:
+    name: 🛡️ Audit Frontend Packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
+      - name: Check for vulnerabilities
+        run: cd frontend && npm audit --omit=dev
