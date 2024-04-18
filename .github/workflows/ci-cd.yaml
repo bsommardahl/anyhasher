@@ -6,29 +6,34 @@ on:
       - olt
 
 jobs:
-  build: 
-    name: Build Frontend Artifact
-    needs: lint
-    runs-on: ubuntu
+  build:
+    name: 🛠️ Build Frontend Artifact
+    needs:
+      - audit
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
       - name: Setup Node 16
-        uses: action/setup-node@v3
-        with: 
+        uses: actions/setup-node@v3
+        with:
           node-version: 16.x
-      
+
+      - name: Cache Node Modules
+        uses: actions/cache@v3
+        with:
+          path: frontend/node_modules
+          key: fe-node-${{ hashFiles('frontend/package-lock.json') }}
+
       - name: Install deps
-        run: |
-          cd frontend 
-          npm i
-      
-      - name: Build code
+        run: cd frontend && npm i
+
+      - name: Compile code
         run: cd frontend && npm run build
-      
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
-        with: 
+        with:
           path: frontend/build
   
   audit:
