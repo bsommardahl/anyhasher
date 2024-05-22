@@ -20,20 +20,30 @@ jobs:
           node-version: 16.x
           cache: 'npm'
       
-      - run: |
+      - name: Install Dependencies
+        run: |
           cd frontend
           npm i
 
-      - run: |
+      - name: Build artifact
+        run: |
           cd frontend
           npm run build
       
       - uses: actions/upload-pages-artifact@v1
         with: 
           path: frontend/build
-          
+
       # - id: build-publish
       #   uses: bitovi/github-actions-react-to-github-pages@v1.2.2
       #   with:
       #     path: build # change to your build folder
       
+  audit:
+    name: Audit Frontend Deps
+    runs-on: ubuntu-latest
+    steps:
+      - actions/checkout@v4
+
+      - name: Run the audit on production deps only
+        run: npm audit --omit=dev
