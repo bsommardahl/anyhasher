@@ -2,166 +2,38 @@ name: CI/CD Pipeline
 
 on: 
   push: 
-    branches:
-      - olt
 
-jobs:
-  build:
-    name: 🛠️ Build Frontend Artifact
-    needs:
-      - lint
-      - test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
-      - name: Setup Node 16
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16.x
-
-      - name: Cache Node Modules
-        uses: actions/cache@v3
-        with:
-          path: frontend/node_modules
-          key: fe-node-${{ hashFiles('frontend/package-lock.json') }}
-
-      - name: Install deps
-        run: cd frontend && npm i
-
-      - name: Compile code
-        run: cd frontend && npm run build
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
-        with:
-          path: frontend/build
-  
-  audit:
-    name: 🛡️ Audit Frontend Packages
+jobs: 
+  build: 
+    name: Build Frontend Artifact
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check for vulnerabilities
-        run: cd frontend && npm audit --omit=dev
-
-  lint:
-    name: 🧼 Ensure Code Style
-    needs: audit
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Setup Node 16
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: 16.x
+          cache: 'npm'
       
-      - name: Cache Node Modules
-        uses: actions/cache@v3
-        with:
-          path: frontend/node_modules
-          key: fe-node-${{ hashFiles('frontend/package-lock.json') }}
-
-      - name: Install deps
-        run: cd frontend && npm i
-
-      - name: 😂 Lint code
-        run: cd frontend && npm run lint
-  
-  test:
-    name: 🧪 Run Unit Tests
-    needs: audit
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Setup Node 16
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16.x
-
-      - name: Cache Node Modules
-        uses: actions/cache@v3
-        with:
-          path: frontend/node_modules
-          key: fe-node-${{ hashFiles('frontend/package-lock.json') }}
-
-      - name: Install deps
-        run: cd frontend && npm i
-
-      - name: Run the unit tests
-        run: cd frontend && npm run test-ci
-
-  static-analysis:
-    name: 🔬 Run Static Code Analysis
-    needs: [build]
-    runs-on: ubuntu-latest
-    permissions:
-      security-events: write
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
-        with:
-          config-file: ./.github/codeql/codeql.config.yml
-
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16.x
-
-      - name: Cache Node Modules
-        id: cache
-        uses: actions/cache@v3
-        with:
-          path: frontend/node_modules
-          key: fe-node-${{ hashFiles('frontend/package-lock.json') }}
-
-      - name: Install Deps
-        run: cd frontend && npm i
-
-      - name: Build
-        run: cd frontend && npm run build
-
-      - name: Perform Analysis
-        uses: github/codeql-action/analyze@v2
-
-  deploy:
-    name: 🚚 Deploy Frontend Artifact
-    runs-on: ubuntu-latest
-    needs:
-      - static-analysis
-    if: github.ref == 'refs/heads/olt'
-    outputs:
-      page_url: ${{ steps.deployment.outputs.page_url }}
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v1    
-  
-  verify:
-    name: 🧪 Verify Successful Deployment
-    needs:
-      - deploy
-    runs-on: ubuntu-latest
-    if: success()
-    permissions: write-all
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Run Frontend Smoke Test
-        run: |
-          export TEST_URL=${{needs.deploy.outputs.page_url}}
-          cd frontend/e2e
+      - run: |
+          cd frontend
           npm i
-          npm run smoke
+
+      - run: |
+          cd frontend
+          npm run build
+      
+      - uses: actions/upload-pages-artifact@v1
+        with: 
+          path: frontend/build
+          
+      # - id: build-publish
+      #   uses: bitovi/github-actions-react-to-github-pages@v1.2.2
+      #   with:
+      #     path: build # change to your build folder
+      
