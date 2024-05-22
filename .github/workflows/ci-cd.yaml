@@ -1,54 +1,52 @@
 name: CI/CD Pipeline
+run-name: "🛠️ ${{ github.event.head_commit.message }} (${{ github.sha }})"
 
-on: 
-  push: 
+on:
+  pull_request:
+  push:
+    branches:
+      - olt
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-jobs: 
-  build: 
-    name: Build Frontend Artifact
+jobs:
+  build:
+    name: 🛠️ Build Frontend Artifact
+    needs:
+      - audit
     runs-on: ubuntu-latest
-    needs: audit
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
-      - uses: actions/setup-node@v3
+      - name: Setup Node 16
+        uses: actions/setup-node@v3
         with:
           node-version: 16.x
-          cache: 'npm'
-      
-      - name: Install Dependencies
-        run: |
-          cd frontend
-          npm i
 
-      - name: Build artifact
-        run: |
-          cd frontend
-          npm run build
-      
-      - uses: actions/upload-pages-artifact@v1
-        with: 
+      - name: Cache Node Modules
+        uses: actions/cache@v3
+        with:
+          path: frontend/node_modules
+          key: fe-node-${{ hashFiles('frontend/package-lock.json') }}
+
+      - name: Install deps
+        run: cd frontend && npm i
+
+      - name: Compile code
+        run: cd frontend && npm run build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
           path: frontend/build
 
-      # - id: build-publish
-      #   uses: bitovi/github-actions-react-to-github-pages@v1.2.2
-      #   with:
-      #     path: build # change to your build folder
-      
   audit:
-    name: Audit Frontend Deps
+    name: 🛡️ Audit Frontend Packages
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
-      - name: Run the audit on production deps only
-        run: npm audit --omit=dev 
-  
+      - name: Check for vulnerabilities
+        run: cd frontend && npm audit --production --audit-level=moderate
+
   lint:
     name: 🧼 Ensure Code Style
     runs-on: ubuntu-latest
@@ -60,8 +58,13 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16.x
-          cache: 'npm'
       
+      - name: Cache Node Modules
+        uses: actions/cache@v3
+        with:
+          path: frontend/node_modules
+          key: fe-node-${{ hashFiles('frontend/package-lock.json') }}
+
       - name: Install deps
         run: cd frontend && npm i
 
@@ -79,17 +82,22 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16.x
-          cache: 'npm'
+
+      - name: Cache Node Modules
+        uses: actions/cache@v3
+        with:
+          path: frontend/node_modules
+          key: fe-node-${{ hashFiles('frontend/package-lock.json') }}
 
       - name: Install deps
         run: cd frontend && npm i
 
       - name: Run the unit tests
         run: cd frontend && npm run test-ci
-
+  
   static-analysis:
     name: 🔬 Run Static Code Analysis
-    needs: build
+    needs: [build]
     runs-on: ubuntu-latest
     permissions:
       security-events: write
@@ -105,7 +113,13 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16.x
-          cache: 'npm'
+
+      - name: Cache Node Modules
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: frontend/node_modules
+          key: fe-node-${{ hashFiles('frontend/package-lock.json') }}
 
       - name: Install Deps
         run: cd frontend && npm i
@@ -136,12 +150,14 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1
-  
+
   verify:
     name: 🧪 Verify Successful Deployment
-    needs: deploy
+    needs:
+      - deploy
     runs-on: ubuntu-latest
     if: success()
+    permissions: write-all
     steps:
       - name: Checkout
         uses: actions/checkout@v3
