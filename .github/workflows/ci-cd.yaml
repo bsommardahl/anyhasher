@@ -68,3 +68,50 @@ jobs:
       - name: 😂 Lint code
         run: cd frontend && npm run lint
   
+  test:
+    name: 🧪 Run Unit Tests
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node 16
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+          cache: 'npm'
+
+      - name: Install deps
+        run: cd frontend && npm i
+
+      - name: Run the unit tests
+        run: cd frontend && npm run test-ci
+
+  static-analysis:
+    name: 🔬 Run Static Code Analysis
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          config-file: ./.github/codeql/codeql.config.yml
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+          cache: 'npm'
+
+      - name: Install Deps
+        run: cd frontend && npm i
+
+      - name: Build
+        run: cd frontend && npm run build
+
+      # - name: Perform Analysis
+      #   uses: github/codeql-action/analyze@v2
