@@ -43,7 +43,7 @@ jobs:
     name: Audit Frontend Deps
     runs-on: ubuntu-latest
     steps:
-      - actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Run the audit on production deps only
         run: npm audit --omit=dev
