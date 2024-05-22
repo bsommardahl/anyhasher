@@ -12,6 +12,7 @@ jobs:
   build: 
     name: Build Frontend Artifact
     runs-on: ubuntu-latest
+    needs: audit
     steps:
       - uses: actions/checkout@v4
 
