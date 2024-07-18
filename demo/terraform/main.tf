@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 resource "aws_instance" "anyhasher_server" {
-  ami           = "ami-0149b2da6ceec4bb0"
+  ami           = "ami-06f4fa348c295a6f6" //"ami-0149b2da6ceec4bb0"
   instance_type = "t2.micro"
   key_name      = "anyhasher"
   tags          = { Name = var.instance_name }
