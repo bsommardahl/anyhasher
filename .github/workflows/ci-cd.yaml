@@ -2,7 +2,6 @@ name: Big Bang CI/CD Pipeline
 run-name: "🛠️ ${{ github.event.head_commit.message }} (${{ github.sha }})"
 
 on:
-  pull_request:
   push:
     branches:
       - big-bang-demo
