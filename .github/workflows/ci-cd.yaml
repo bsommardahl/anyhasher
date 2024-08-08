@@ -30,7 +30,8 @@ jobs:
           path: frontend/build
   
   security-audit: 
-    name: Check for vulnerabilities in my deps
+    name: Audit Deps
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: checkout code
