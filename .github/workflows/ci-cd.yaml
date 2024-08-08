@@ -25,6 +25,6 @@ jobs:
         run: cd frontend && npm run build
 
       - name: upload the artifact
-        uses: actions/upload-pages-artifact@3
+        uses: actions/upload-pages-artifact@v1
         with: 
           path: frontend/build
