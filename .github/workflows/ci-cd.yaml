@@ -33,6 +33,9 @@ jobs:
     name: Check for vulnerabilities in my deps
     runs-on: ubuntu-latest
     steps:
+      - name: checkout code
+        uses: actions/checkout@v3
+        
       - name: ensure node installed and right version
         uses: actions/setup-node@v3
         with: 
