@@ -44,3 +44,21 @@ jobs:
 
       - name: audit
         run: cd frontend && npm audit --omit=dev
+  
+  lint:
+    name: 🧼 Ensure Code Style
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node 16
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+
+      - name: Install deps
+        run: cd frontend && npm i
+
+      - name: 😂 Lint code
+        run: cd frontend && npm run lint
