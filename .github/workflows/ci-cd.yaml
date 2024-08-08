@@ -28,3 +28,15 @@ jobs:
         uses: actions/upload-pages-artifact@v1
         with: 
           path: frontend/build
+  
+  security-audit: 
+    name: Check for vulnerabilities in my deps
+    runs-on: ubuntu-latest
+    steps:
+      - name: ensure node installed and right version
+        uses: actions/setup-node@v3
+        with: 
+          node-version: 16.x
+
+      - name: audit
+        run: cd frontend && npm audit --omit=dev
