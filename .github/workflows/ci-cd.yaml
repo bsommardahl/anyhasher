@@ -23,8 +23,8 @@ jobs:
 
       - name: compile/build
         run: cd frontend && npm run build
-        
+
       - name: upload the artifact
-        uses: actions/upload-pages-artifact@1
+        uses: actions/upload-pages-artifact@3
         with: 
           path: frontend/build
