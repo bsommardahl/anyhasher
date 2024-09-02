@@ -11,10 +11,10 @@ jobs:
     with:
       ref: ${{ github.sha }}    
 
-  # ci-backend:
-  #   uses: ./.github/workflows/ci-backend.yml
-  #   with:
-  #     ref: ${{ github.sha }}    
+  ci-backend:
+    uses: ./.github/workflows/ci-backend.yml
+    with:
+      ref: ${{ github.sha }}    
 
   # cd-backend:
   #   needs: [ci-frontend, ci-backend]
