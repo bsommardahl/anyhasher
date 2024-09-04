@@ -23,13 +23,13 @@ jobs:
       ref: ${{ github.sha }}    
     secrets: inherit
 
-  # cd-frontend:
-  #   needs: [cd-backend]
-  #   uses: ./.github/workflows/cd-frontend.yml
-  #   with: 
-  #     ref: ${{ github.sha }}    
-  #     backend_url: ${{ needs.cd-backend.outputs.backend_url }}
-  #   secrets: inherit
+  cd-frontend:
+    needs: [cd-backend]
+    uses: ./.github/workflows/cd-frontend.yml
+    with: 
+      ref: ${{ github.sha }}    
+      backend_url: ${{ needs.cd-backend.outputs.backend_url }}
+    secrets: inherit
 
   # cleanup:
   #   needs: [promote]
