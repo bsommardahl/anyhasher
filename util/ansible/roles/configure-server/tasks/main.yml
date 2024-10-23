@@ -21,4 +21,6 @@
 
 - name: Set backend server port
   become: true
-  lineinfile: PORT=80
+  lineinfile: 
+    path: ~/.profile
+    line: PORT=80
