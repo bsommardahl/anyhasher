@@ -9,4 +9,4 @@
 
 - name: Verify Server
   uri:
-    url: http://localhost/hash/123
+    url: http://localhost:5000/hash/123
