@@ -9,7 +9,7 @@ on:
       backend_host:
         required: true
         type: string
-      backend_port:
+      backend_url:
         required: true
         type: string
     secrets:
@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: Backend
-      url: http://${{inputs.backend_host}}:${{inputs.backend_port}}
+      url: ${{inputs.backend_url}}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -60,7 +60,7 @@ jobs:
 
       - name: Run Backend Smoke Test
         run: |
-          export BACKEND_URL=http://${{inputs.backend_host}}:${{inputs.backend_port}}
+          export BACKEND_URL=${{inputs.backend_url}}
           cd backend/e2e
           chmod +x backend-smoke.sh
           ./backend-smoke.sh

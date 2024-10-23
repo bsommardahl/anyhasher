@@ -22,16 +22,16 @@ jobs:
     with:
       ref: ${{ github.sha }}
       backend_host: ec2-98-81-131-31.compute-1.amazonaws.com
-      backend_port: 5001
+      backend_url: http://ec2-98-81-131-31.compute-1.amazonaws.com:5001
     secrets: inherit
 
   cd-frontend:
-    needs: [ci-frontend, ci-backend]
+    needs: [ci-frontend,ci-backend,cd-backend]
     uses: ./.github/workflows/cd-frontend.yml
     with: 
       ref: ${{ github.sha }}  
       bucket_name: anyhasher-big-bang
       frontend_host: anyhasher-big-bang.s3-website-us-east-1.amazonaws.com
       backend_host: ec2-98-81-131-31.compute-1.amazonaws.com
-      backend_port: 5001
+      backend_url: http://ec2-98-81-131-31.compute-1.amazonaws.com:5001
     secrets: inherit

@@ -10,7 +10,7 @@ on:
       backend_host:
         required: true
         type: string
-      backend_port:
+      backend_url:
         required: true
         type: string
       frontend_host:
@@ -50,7 +50,7 @@ jobs:
         uses: jacobtomlinson/gha-find-replace@v3
         with:
           find: http://localhost:5001
-          replace: http://${{ inputs.backend_host }}:${{ inputs.backend_port }}
+          replace: ${{ inputs.backend_url }}
           
       - name: Store Release Artifact
         uses: actions/upload-artifact@v4
