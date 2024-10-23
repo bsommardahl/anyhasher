@@ -1,8 +1,8 @@
 name: Deploy Frontend
 run-name: "🚛 CD: Deploying Frontend Artifact (${{ inputs.ref }})"
 env:
-  frontend_host: fasdfasdf
-  frontend_bucket_name: sadfadss
+  frontend_host: anyhasher-big-bang.s3-website-us-east-1.amazonaws.com
+  frontend_bucket_name: anyhasher-big-bang
 on:
   workflow_call:
     inputs:  
