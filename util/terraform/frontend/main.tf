@@ -8,12 +8,11 @@ terraform {
   required_version = ">= 1.2.0"  
 
   backend "s3" {
-    bucket = "anyhasher.terraform.states"
+    bucket = "anyhasher.terraform.states-01"
     key    = "anyhasher-fe.tfstate"
     region = "us-east-1"
   }
 }
-
 provider "aws" {
   region = "us-east-1"
 }
@@ -34,4 +33,3 @@ output "website_endpoint" {
 output "bucket_name" {
   value = module.s3.bucket_name
 }
-

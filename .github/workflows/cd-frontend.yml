@@ -1,0 +1,115 @@
+name: Deploy Frontend
+run-name: "🚛 CD: Deploying Frontend Artifact (${{ inputs.ref }})"
+on:
+  workflow_call:
+    inputs:  
+      ref:
+        required: true
+        type: string
+      backend_url:
+        required: true
+        type: string
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      EC2_PRIVATE_KEY:
+        required: true
+    outputs:
+      frontend_url: 
+        value: ${{ jobs.provision.outputs.frontend_url }}
+      s3_bucket_hostname: 
+        value: ${{ jobs.provision.outputs.s3_bucket_hostname }}
+      
+jobs:
+  provision:
+    name: 🏛️ Provision Frontend Infrastructure
+    outputs:
+      frontend_url: http://${{ steps.provision.outputs.website_endpoint }}
+      s3_bucket_hostname: ${{ steps.provision.outputs.website_endpoint }}
+      bucket_name: ${{ steps.provision.outputs.bucket_name }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Use commit workspace
+        uses: dflook/terraform-new-workspace@v1
+        with:
+          path: util/terraform/frontend
+          workspace: anyhasher-frontend-${{ inputs.ref }}
+
+      - name: Provision
+        id: provision
+        uses: dflook/terraform-apply@v1
+        with:
+          workspace: anyhasher-frontend-${{ inputs.ref }}
+          auto_approve: true
+          path: util/terraform/frontend
+          variables: |
+            bucket_name = "anyhasher-frontend-${{ inputs.ref }}"
+
+  deploy:
+    name: 🚚 Deploy Frontend Artifact
+    needs: [provision]
+    runs-on: ubuntu-latest
+    environment:
+      name: S3 Bucket Frontend
+      url: ${{ needs.provision.outputs.frontend_url }}
+    steps:
+      - name: Get Frontend Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-artifact-${{ inputs.ref }}
+          path: frontend/build
+
+      - name: Prepare frontend with backend url
+        uses: jacobtomlinson/gha-find-replace@v3
+        with:
+          find: http://localhost:5001
+          replace: ${{ inputs.backend_url }}
+          #regex: false
+
+      - name: Store Release Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-release-${{ inputs.ref }}
+          path: frontend/build
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Upload frontend to S3 Bucket
+        run: |
+          aws s3 cp frontend/build s3://${{ needs.provision.outputs.bucket_name }} --region=us-east-1 --recursive
+
+  verify:
+    name: 🧪 Check Frontend
+    needs: [provision, deploy]
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Frontend Smoke Test
+        run: |
+          export TEST_URL=${{ needs.provision.outputs.frontend_url }}
+          cd frontend/e2e
+          npm install
+          npm run smoke
