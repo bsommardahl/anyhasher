@@ -64,7 +64,7 @@ jobs:
 
       - name: Upload frontend to S3 Bucket
         run: |
-          aws s3 cp frontend/build s3://$frontend_bucket_name --region=us-east-1 --recursive
+          aws s3 cp frontend/build s3://${{ inputs.bucket_name }} --region=us-east-1 --recursive
 
   verify:
     name: 🧪 Check Frontend
