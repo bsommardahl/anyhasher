@@ -25,7 +25,6 @@
     state: present
     regexp: "^PORT="
     line: "PORT=80"
-  with_items: "{{ os_environment }}"
-
+  
 - name: Source the environment file 
   shell: "source /etc/environment"
