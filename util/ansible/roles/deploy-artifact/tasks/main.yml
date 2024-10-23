@@ -4,9 +4,14 @@
     src: "../../backend/build"
     dest: ~/anyhasher
 
+- name: Stop Server, if running
+  pm2:
+    name: server
+    state: stopped
+
 - name: Start Server
-  shell: "cd ~/anyhasher/build && pm2 start server.js -f" #force re-execution
+  shell: "cd ~/anyhasher/build && pm2 start server.js"
 
 - name: Verify Server
   uri:
-    url: http://localhost:5001/hash/123
+    url: http://localhost/hash/123

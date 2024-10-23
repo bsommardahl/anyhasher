@@ -22,7 +22,7 @@ jobs:
     with:
       ref: ${{ github.sha }}
       backend_host: ec2-98-81-131-31.compute-1.amazonaws.com
-      backend_url: http://ec2-98-81-131-31.compute-1.amazonaws.com:5001
+      backend_url: http://ec2-98-81-131-31.compute-1.amazonaws.com
     secrets: inherit
 
   cd-frontend:
@@ -33,5 +33,5 @@ jobs:
       bucket_name: anyhasher-big-bang
       frontend_host: anyhasher-big-bang.s3-website-us-east-1.amazonaws.com
       backend_host: ec2-98-81-131-31.compute-1.amazonaws.com
-      backend_url: http://ec2-98-81-131-31.compute-1.amazonaws.com:5001
+      backend_url: http://ec2-98-81-131-31.compute-1.amazonaws.com
     secrets: inherit

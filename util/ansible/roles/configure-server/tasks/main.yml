@@ -18,3 +18,7 @@
     global: yes
     production: yes
     state: present
+
+- name: Set backend server port
+  become: true
+  lineinfile: PORT=80
