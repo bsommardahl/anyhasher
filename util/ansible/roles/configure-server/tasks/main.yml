@@ -20,6 +20,7 @@
     state: present
 
 - name: Set server PORT in environment
+  become: true
   ansible.builtin.lineinfile:
     dest: "/etc/environment"
     state: present
