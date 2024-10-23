@@ -17,7 +17,7 @@ on:
         required: true
     outputs:
       backend_url:
-        value: $backend_host
+        value: ${{env.backend_host}}
     
 jobs:
   deploy:
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: Backend
-      url: https://$backend_host
+      url: https://${{env.backend_host}}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,7 +44,7 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           inventory: |
             [ec2]
-            $backend_host ansible_user=ubuntu
+            ${{env.backend_host}} ansible_user=ubuntu
           options: |
             --verbose
 
@@ -59,7 +59,7 @@ jobs:
 
       - name: Run Backend Smoke Test
         run: |
-          export BACKEND_URL=http://$backend_host
+          export BACKEND_URL=http://${{env.backend_host}}
           cd backend/e2e
           chmod +x backend-smoke.sh
           ./backend-smoke.sh
