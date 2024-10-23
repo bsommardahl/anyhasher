@@ -9,6 +9,9 @@ on:
       backend_host:
         required: true
         type: string
+      backend_port:
+        required: true
+        type: string
     secrets:
       AWS_ACCESS_KEY_ID:
         required: true
@@ -23,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: Backend
-      url: https://${{inputs.backend_host}}
+      url: http://${{inputs.backend_host}}:${{inputs.backend_port}}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -40,6 +43,8 @@ jobs:
           playbook: deploy.yml
           directory: ./util/ansible
           key: ${{ secrets.EC2_PRIVATE_KEY }}
+          configuration: |
+            deprecation_warnings = false
           inventory: |
             [ec2]
             ${{inputs.backend_host}} ansible_user=ubuntu
@@ -57,7 +62,7 @@ jobs:
 
       - name: Run Backend Smoke Test
         run: |
-          export BACKEND_URL=http://${{inputs.backend_host}}
+          export BACKEND_URL=http://${{inputs.backend_host}}:${{inputs.backend_port}}
           cd backend/e2e
           chmod +x backend-smoke.sh
           ./backend-smoke.sh

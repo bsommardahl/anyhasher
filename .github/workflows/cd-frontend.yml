@@ -10,6 +10,9 @@ on:
       backend_host:
         required: true
         type: string
+      backend_port:
+        required: true
+        type: string
       frontend_host:
         required: true
         type: string
@@ -35,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: S3 Bucket Frontend
-      url: https://${{env.frontend_host}}
+      url: http://${{inputs.frontend_host}}
     steps:
       - name: Get Frontend Artifact
         uses: actions/download-artifact@v4
@@ -46,8 +49,8 @@ jobs:
       - name: Prepare frontend with backend url
         uses: jacobtomlinson/gha-find-replace@v3
         with:
-          find: http://localhost:5000
-          replace: http://${{ inputs.backend_url }}
+          find: http://localhost:5001
+          replace: http://${{ inputs.backend_url }}:${{ inputs.backend_port }}
           
       - name: Store Release Artifact
         uses: actions/upload-artifact@v4
