@@ -25,7 +25,7 @@ jobs:
     secrets: inherit
 
   cd-frontend:
-    needs: [cd-backend]
+    needs: [ci-frontend, ci-backend]
     uses: ./.github/workflows/cd-frontend.yml
     with: 
       ref: ${{ github.sha }}  

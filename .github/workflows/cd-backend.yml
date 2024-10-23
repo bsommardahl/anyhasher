@@ -43,8 +43,8 @@ jobs:
           inventory: |
             [ec2]
             ${{inputs.backend_host}} ansible_user=ubuntu
-          options: |
-            --verbose
+          # options: |
+          #   --verbose
 
   verify:
     name: 🧪 Check Backend
