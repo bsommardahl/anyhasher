@@ -19,8 +19,13 @@
     production: yes
     state: present
 
-- name: Set backend server port
-  become: true
-  lineinfile: 
-    path: ~/.profile
-    line: PORT=80
+- name: Set server PORT in environment
+  ansible.builtin.lineinfile:
+    dest: "/etc/environment"
+    state: present
+    regexp: "^PORT="
+    line: "PORT=80"
+  with_items: "{{ os_environment }}"
+
+- name: Source the environment file 
+  shell: "source /etc/environment"
