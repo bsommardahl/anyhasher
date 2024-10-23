@@ -25,4 +25,4 @@
     dest: "/etc/environment"
     state: present
     regexp: "^PORT="
-    line: "PORT={{ PORT }}"
+    line: "PORT=80"

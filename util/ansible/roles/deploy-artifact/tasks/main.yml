@@ -5,6 +5,8 @@
     dest: ~/anyhasher
 
 - name: Start Server
+  environment:
+    PORT: 80
   shell: "cd ~/anyhasher/build && pm2 restart server.js"
 
 - name: Verify Server

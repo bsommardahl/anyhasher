@@ -2,8 +2,6 @@
 - name: Update web servers
   hosts: ec2
   gather_facts: false
-  environment:
-    PORT: 80
   roles:
     - configure-server
     - deploy-artifact
