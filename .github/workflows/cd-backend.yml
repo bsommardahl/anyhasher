@@ -43,8 +43,6 @@ jobs:
           playbook: deploy.yml
           directory: ./util/ansible
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          configuration: |
-            deprecation_warnings = false
           inventory: |
             [ec2]
             ${{inputs.backend_host}} ansible_user=ubuntu
