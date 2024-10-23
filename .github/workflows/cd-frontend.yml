@@ -7,7 +7,7 @@ on:
       ref:
         required: true
         type: string
-      backend_url:
+      backend_host:
         required: true
         type: string
       frontend_host:
@@ -47,7 +47,7 @@ jobs:
         uses: jacobtomlinson/gha-find-replace@v3
         with:
           find: http://localhost:5000
-          replace: ${{ inputs.backend_url }}
+          replace: http://${{ inputs.backend_url }}
           
       - name: Store Release Artifact
         uses: actions/upload-artifact@v4
