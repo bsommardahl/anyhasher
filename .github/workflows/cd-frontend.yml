@@ -50,7 +50,7 @@ jobs:
         uses: jacobtomlinson/gha-find-replace@v3
         with:
           find: http://localhost:5001
-          replace: http://${{ inputs.backend_url }}:${{ inputs.backend_port }}
+          replace: http://${{ inputs.backend_host }}:${{ inputs.backend_port }}
           
       - name: Store Release Artifact
         uses: actions/upload-artifact@v4
@@ -80,7 +80,7 @@ jobs:
 
       - name: Run Frontend Smoke Test
         run: |
-          export TEST_URL=${{env.frontend_host}}
+          export TEST_URL=${{inputs.frontend_host}}
           cd frontend/e2e
           npm install
           npm run smoke
