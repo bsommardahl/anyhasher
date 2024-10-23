@@ -25,7 +25,4 @@
     dest: "/etc/environment"
     state: present
     regexp: "^PORT="
-    line: "PORT=80"
-  
-- name: Source the environment file 
-  shell: "source /etc/environment"
+    line: "PORT={{ backend_port }}"
