@@ -21,7 +21,7 @@ jobs:
     uses: ./.github/workflows/cd-backend.yml
     with:
       ref: ${{ github.sha }}
-      backend_host: ec2-54-235-16-99.compute-1.amazonaws.com
+      backend_host: ec2-98-81-131-31.compute-1.amazonaws.com
     secrets: inherit
 
   cd-frontend:
@@ -31,5 +31,5 @@ jobs:
       ref: ${{ github.sha }}  
       bucket_name: anyhasher-big-bang
       frontend_host: anyhasher-big-bang.s3-website-us-east-1.amazonaws.com
-      backend_host: ec2-54-235-16-99.compute-1.amazonaws.com
+      backend_host: ec2-98-81-131-31.compute-1.amazonaws.com
     secrets: inherit
