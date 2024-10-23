@@ -8,7 +8,7 @@ terraform {
   required_version = ">= 1.2.0"
   
   backend "s3" {
-    bucket = "anyhasher.terraform.states-01"
+    bucket = "anyhasher.terraform.states"
     key    = "anyhasher-be.tfstate"
     region = "us-east-1"
   }
