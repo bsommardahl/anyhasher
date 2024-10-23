@@ -1,11 +1,12 @@
 name: Deploy Backend
 run-name: "🚛 CD: Deploying Backend Artifact (${{ inputs.ref }})"
-env:
-  backend_host: ec2-18-207-176-189.compute-1.amazonaws.com
 on:
   workflow_call:
     inputs:
       ref:
+        required: true
+        type: string
+      backend_host:
         required: true
         type: string
     secrets:
@@ -15,9 +16,6 @@ on:
         required: true
       EC2_PRIVATE_KEY:
         required: true
-    outputs:
-      backend_url:
-        value: ${{env.backend_host}}
     
 jobs:
   deploy:
@@ -25,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: Backend
-      url: https://${{env.backend_host}}
+      url: https://${{inputs.backend_host}}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,7 +42,7 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           inventory: |
             [ec2]
-            ${{env.backend_host}} ansible_user=ubuntu
+            ${{inputs.backend_host}} ansible_user=ubuntu
           options: |
             --verbose
 
@@ -59,7 +57,7 @@ jobs:
 
       - name: Run Backend Smoke Test
         run: |
-          export BACKEND_URL=http://${{env.backend_host}}
+          export BACKEND_URL=http://${{inputs.backend_host}}
           cd backend/e2e
           chmod +x backend-smoke.sh
           ./backend-smoke.sh

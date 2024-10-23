@@ -1,8 +1,6 @@
 name: Deploy Frontend
 run-name: "🚛 CD: Deploying Frontend Artifact (${{ inputs.ref }})"
-env:
-  frontend_host: anyhasher-big-bang.s3-website-us-east-1.amazonaws.com
-  frontend_bucket_name: anyhasher-big-bang
+
 on:
   workflow_call:
     inputs:  
@@ -10,6 +8,12 @@ on:
         required: true
         type: string
       backend_url:
+        required: true
+        type: string
+      frontend_host:
+        required: true
+        type: string
+      bucket_name:
         required: true
         type: string
     secrets:
@@ -21,9 +25,9 @@ on:
         required: true
     outputs:
       frontend_url: 
-        value: http://${{env.frontend_host}}
+        value: http://${{inputs.frontend_host}}
       s3_bucket_hostname: 
-        value: ${{env.frontend_host}}
+        value: ${{inputs.frontend_host}}
       
 jobs:
   deploy:

@@ -19,14 +19,17 @@ jobs:
   cd-backend:
     needs: [ci-frontend, ci-backend]
     uses: ./.github/workflows/cd-backend.yml
-    with: 
-      ref: ${{ github.sha }}    
+    with:
+      ref: ${{ github.sha }}
+      backend_host: ec2-18-207-176-189.compute-1.amazonaws.com
     secrets: inherit
 
   cd-frontend:
     needs: [cd-backend]
     uses: ./.github/workflows/cd-frontend.yml
     with: 
-      ref: ${{ github.sha }}    
-      backend_url: ${{ needs.cd-backend.outputs.backend_url }}
+      ref: ${{ github.sha }}  
+      bucket_name: anyhasher-big-bang
+      frontend_host: anyhasher-big-bang.s3-website-us-east-1.amazonaws.com
+      backend_url: ec2-18-207-176-189.compute-1.amazonaws.com
     secrets: inherit
