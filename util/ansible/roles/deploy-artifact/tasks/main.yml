@@ -4,13 +4,8 @@
     src: "../../backend/build"
     dest: ~/anyhasher
 
-- name: Stop Server, if running
-  pm2:
-    name: server
-    state: stopped
-
 - name: Start Server
-  shell: "cd ~/anyhasher/build && pm2 start server.js"
+  shell: "cd ~/anyhasher/build && pm2 restart server.js"
 
 - name: Verify Server
   uri:
