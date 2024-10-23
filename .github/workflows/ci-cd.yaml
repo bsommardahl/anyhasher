@@ -30,22 +30,3 @@ jobs:
       ref: ${{ github.sha }}    
       backend_url: ${{ needs.cd-backend.outputs.backend_url }}
     secrets: inherit
-
-  # cleanup:
-  #   needs: [promote]
-  #   uses: ./.github/workflows/cleanup.yml
-  #   with: 
-  #     ref: ${{ needs.promote.outputs.previous_ref }}
-  #     env_name: Previous Blue
-  #     reason: decommissioning
-  #   secrets: inherit
-
-  # failure:
-  #   needs: [cd-backend, cd-frontend]
-  #   if: failure()
-  #   uses: ./.github/workflows/cleanup.yml
-  #   with: 
-  #     ref: ${{ github.sha }}
-  #     env_name: Green
-  #     reason: failure
-  #   secrets: inherit

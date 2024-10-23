@@ -1,5 +1,7 @@
 name: Deploy Backend
 run-name: "🚛 CD: Deploying Backend Artifact (${{ inputs.ref }})"
+env:
+  backend_host: ec2-18-207-176-189.compute-1.amazonaws.com
 on:
   workflow_call:
     inputs:
@@ -15,54 +17,15 @@ on:
         required: true
     outputs:
       backend_url:
-        value: ${{ jobs.provision.outputs.backend_url }}
-      
+        value: $backend_host
+    
 jobs:
-  provision:
-    name: 🏢 Provision Backend Infrastructure
-    runs-on: ubuntu-latest
-    outputs:
-      backend_url: http://${{ steps.apply_changes.outputs.ec2_public_url }}:5001
-      backend_host: ${{ steps.apply_changes.outputs.ec2_public_url }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.ref }}
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Use commit workspace
-        uses: dflook/terraform-new-workspace@v1
-        with:
-          path: util/terraform/backend
-          workspace: anyhasher-backend-${{ inputs.ref }}
-
-      - name: Apply
-        id: apply_changes
-        uses: dflook/terraform-apply@v1
-        with:
-          workspace: anyhasher-backend-${{ inputs.ref }}
-          auto_approve: true
-          path: util/terraform/backend
-          variables: |
-            instance_name = "anyhasher-backend-${{ inputs.ref }}"
-
   deploy:
     name: 🚛 Deploy Backend Artifact
-    needs: [provision]
     runs-on: ubuntu-latest
     environment:
       name: Backend
-      url: ${{ needs.provision.outputs.backend_url }}
+      url: https://$backend_host
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -81,17 +44,14 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           inventory: |
             [ec2]
-            ${{ needs.provision.outputs.backend_host }} ansible_user=ubuntu
+            $backend_host ansible_user=ubuntu
           options: |
             --verbose
-
-      #- name: Simulate an error
-      #run: exit 1
 
   verify:
     name: 🧪 Check Backend
     runs-on: ubuntu-latest
-    needs: [provision, deploy]
+    needs: [deploy]
     permissions: write-all
     steps:
       - name: Checkout
@@ -99,7 +59,7 @@ jobs:
 
       - name: Run Backend Smoke Test
         run: |
-          export BACKEND_URL=${{ needs.provision.outputs.backend_url }}
+          export BACKEND_URL=http://$backend_host
           cd backend/e2e
           chmod +x backend-smoke.sh
           ./backend-smoke.sh
