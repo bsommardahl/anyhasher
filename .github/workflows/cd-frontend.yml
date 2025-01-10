@@ -29,11 +29,6 @@ on:
         required: true
       EC2_PRIVATE_KEY:
         required: true
-    outputs:
-      frontend_url: 
-        value: ${{inputs.frontend_url}}
-      s3_bucket_hostname: 
-        value: ${{inputs.frontend_host}}
       
 jobs:
   deploy:
