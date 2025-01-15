@@ -1,7 +1,24 @@
 ---
-- name: Update web servers
+- name: Update web server
   hosts: ec2
   gather_facts: false
-  roles:
-    - configure-server
-    - deploy-artifact
+  tasks:
+    - name: Upgrade packages
+      become: true
+      apt:
+        upgrade: "yes"
+
+    - name: Install dependencies
+      become: true
+      apt:
+        name: ["nodejs", "npm"]
+        state: latest
+        update_cache: yes
+
+    - name: Install pm2
+      become: true
+      npm:
+        name: pm2
+        global: yes
+        production: yes
+        state: present
