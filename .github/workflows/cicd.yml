@@ -61,18 +61,18 @@ jobs:
       reason: decommissioning
     secrets: inherit
 
-  failure:
-    needs: [cd-backend, cd-frontend, promote]
-    # We need some extra logic to prevent cleanup when a CI failure
-    if: |
-      failure() && (
-        needs.cd-backend.result != 'skipped' ||
-        needs.cd-frontend.result != 'skipped' ||
-        needs.promote.result != 'skipped'
-      ) 
-    uses: ./.github/workflows/cleanup.yml
-    with: 
-      ref: ${{ github.sha }}
-      env_name: Green
-      reason: failure
-    secrets: inherit
+  # failure:
+  #   needs: [cd-backend, cd-frontend, promote]
+  #   # We need some extra logic to prevent cleanup when a CI failure
+  #   if: |
+  #     failure() && (
+  #       needs.cd-backend.result != 'skipped' ||
+  #       needs.cd-frontend.result != 'skipped' ||
+  #       needs.promote.result != 'skipped'
+  #     ) 
+  #   uses: ./.github/workflows/cleanup.yml
+  #   with: 
+  #     ref: ${{ github.sha }}
+  #     env_name: Green
+  #     reason: failure
+  #   secrets: inherit
