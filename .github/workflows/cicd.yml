@@ -63,7 +63,12 @@ jobs:
 
   failure:
     needs: [cd-backend, cd-frontend, promote]
-    if: failure()
+    if: |
+      failure() && (
+        needs.cd-backend.result != 'skipped' ||
+        needs.cd-frontend.result != 'skipped' ||
+        needs.promote.result != 'skipped'
+      )
     uses: ./.github/workflows/cleanup.yml
     with: 
       ref: ${{ github.sha }}
