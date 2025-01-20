@@ -29,7 +29,7 @@ jobs:
       frontend_url: http://${{ steps.provision.outputs.website_endpoint }}
       s3_bucket_hostname: ${{ steps.provision.outputs.website_endpoint }}
       bucket_name: ${{ steps.provision.outputs.bucket_name }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -63,7 +63,7 @@ jobs:
   deploy:
     name: 🚚 Deploy Frontend Artifact
     needs: [provision]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment:
       name: Green Frontend
       url: ${{ needs.provision.outputs.frontend_url }}
@@ -101,7 +101,7 @@ jobs:
   verify:
     name: 🧪 Check Frontend
     needs: [provision, deploy]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions: write-all
     steps:
       - name: Checkout

@@ -19,7 +19,7 @@ jobs:
   previous:
     #This one is tricky, since the first time you run it, there is no blue.
     name: 🎟️ Get Previous Blue Ref
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       ref: ${{steps.commit.outputs.hash}}
     steps:
@@ -48,7 +48,7 @@ jobs:
 
   promote:
     name: 🚀 Switch Router from Blue to Green
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [previous]
     environment:
       name: Blue Frontend
@@ -98,7 +98,7 @@ jobs:
 
   release:
     name: 🚛 Create New Blue Release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [promote]
     steps:
       - name: Get Backend Release Artifact

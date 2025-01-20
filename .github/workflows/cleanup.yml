@@ -21,7 +21,7 @@ on:
 jobs:
   destroy_frontend:
     name: ❌ Destroy Frontend Infrastructure
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -48,7 +48,7 @@ jobs:
 
   destroy_backend:
     name: ❌ Destroy Backend Infrastructure
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -76,7 +76,7 @@ jobs:
   cleanup_tag:
     name: Clean up the old blue tag
     needs: [destroy_backend, destroy_frontend]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -98,6 +98,6 @@ jobs:
   notify:
     name: Notify team that environment was removed
     needs: [cleanup_tag]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - run: echo Need to hook up slack here!

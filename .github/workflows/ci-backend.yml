@@ -10,7 +10,7 @@ on:
 jobs:
   be-build:
     name: 🛠️ Build Backend Artifact
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Cache Node Modules
         id: cache
@@ -42,7 +42,7 @@ jobs:
   be-lint:
     name: 🕵️ Lint Backend Code
     needs: [be-build]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -64,7 +64,7 @@ jobs:
   be-test:
     name: 🧪 Backend Unit Tests
     needs: [be-build]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -86,7 +86,7 @@ jobs:
   be-security-audit:
     name: 🛡️ Audit Backend Packages for Security Vulnerabilities
     needs: [be-build]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -97,7 +97,7 @@ jobs:
   be-static-analysis:
     name: 🔬 Run Static Analysis on Backend Code
     needs: [be-build]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       security-events: write
     steps:

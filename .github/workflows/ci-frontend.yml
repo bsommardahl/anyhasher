@@ -10,7 +10,7 @@ on:
 jobs:
   fe-build:
     name: 🛠️ Build Frontend Artifact
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Cache Node Modules
         id: cache
@@ -45,7 +45,7 @@ jobs:
   fe-security-audit:
     name: 🛡️ Audit Frontend Packages for Security Vulnerabilities
     needs: [fe-build]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -56,7 +56,7 @@ jobs:
   fe-static-analysis:
     name: 🔬 Run Static Analysis on Frontend Code
     needs: [fe-build]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       security-events: write
     steps:
