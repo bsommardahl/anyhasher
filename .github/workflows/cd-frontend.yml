@@ -101,7 +101,7 @@ jobs:
   verify:
     name: 🧪 Check Frontend
     needs: [provision, deploy]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04 #There's a problem with the ubuntu-24.04 image and Puppeteer
     permissions: write-all
     steps:
       - name: Checkout
