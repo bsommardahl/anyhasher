@@ -1,3 +1,15 @@
+# PLANNING STEPS:
+# =====================
+# Discover Changes
+# Build Artifact
+# Deploy Artifact
+  # Create Infrastructure
+  # Apply Configuration
+  # Install App
+  # Test New Version
+  # Promote New Version
+  # Kill Old Version
+  
 name: Blue-Green CI/CD Pipeline
 run-name: "🛠️ ${{ github.event.head_commit.message }} (${{ github.sha }})"
 on:
@@ -6,6 +18,7 @@ on:
       - blue-green-demo   #normally 'main'
 
 jobs:
+  
   ci-frontend:
     uses: ./.github/workflows/ci-frontend.yml
     with:

@@ -22,8 +22,8 @@ jobs:
     name: 🏢 Provision Backend Infrastructure
     runs-on: ubuntu-latest
     outputs:
-      backend_url: http://${{ steps.apply_changes.outputs.ec2_public_url }}:5001
-      backend_host: ${{ steps.apply_changes.outputs.ec2_public_url }}
+      backend_url: http://${{ steps.apply_changes.outputs.ec2_public_host }}:5001
+      backend_host: ${{ steps.apply_changes.outputs.ec2_public_host }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
