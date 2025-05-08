@@ -1,11 +1,20 @@
-name: Deploy Backend
-run-name: "🚛 CD: Deploying Backend Artifact (${{ inputs.ref }})"
+name: Roll Out Backend - Single Batch
+run-name: "🚛 CD: Rolling Out Backend Artifact (Batch: ${{input.batch_id}}, Ref: ${{ inputs.ref }})"
 on:
   workflow_call:
     inputs:
       ref:
+        description: "Commit ref that triggered this deployment"
         required: true
         type: string
+      batch_id:
+        description: "Current batch number (0-9)"
+        required: true
+        default: 0
+      batch_size:
+        description: "Quantity of instances that should be deployed in this batch"
+        required: true
+        default: 1
     secrets:
       AWS_ACCESS_KEY_ID:
         required: true
@@ -16,7 +25,44 @@ on:
     outputs:
       backend_url:
         value: ${{ jobs.provision.outputs.backend_url }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    outputs:
+      commit_sha: ${{ steps.vars.outputs.commit_sha }}
+      batch_id: ${{ github.event.inputs.batch_id }}
+
+    steps:
       
+      - name: Upload Frontend to S3
+        run: |
+          aws s3 sync ./frontend/build s3://frontend-${{ steps.vars.outputs.commit_sha }}-${{ github.event.inputs.batch_id }}
+
+      - name: Shift Traffic
+        run: ./scripts/shift-traffic.sh ${{ github.event.inputs.batch_id }}
+
+      - name: Health Check
+        run: ./scripts/check-health.sh ${{ github.event.inputs.batch_id }}
+
+      - name: Deregister Previous
+        if: ${{ github.event.inputs.batch_id != '0' }}
+        run: ./scripts/deregister.sh $(( ${{ github.event.inputs.batch_id }} - 1 ))
+
+      - name: Sleep Before Triggering Next Batch
+        if: ${{ github.event.inputs.batch_id != '9' }}
+        run: sleep 300
+
+      - name: Trigger Next Batch
+        if: ${{ github.event.inputs.batch_id != '9' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run rolling-deploy-batch.yml \
+            -f batch_id=$(( ${{ github.event.inputs.batch_id }} + 1 ))
+
+  
+
 jobs:
   provision:
     name: 🏢 Provision Backend Infrastructure
@@ -55,14 +101,13 @@ jobs:
           path: util/terraform/backend
           variables: |
             instance_name = "anyhasher-backend-${{ inputs.ref }}"
+            batch_id = "${{ inputs.batch_id }}"
+            batch_size = "${{ inputs.batch_size }}"
 
   deploy:
-    name: 🚛 Deploy Backend Artifact
+    name: 🚛 Deploy Backend Artifact to Instances
     needs: [provision]
     runs-on: ubuntu-24.04
-    environment:
-      name: Green Backend
-      url: ${{ needs.provision.outputs.backend_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -73,7 +118,7 @@ jobs:
           name: backend-artifact-${{ inputs.ref }}
           path: backend/build/
 
-      - name: Configure Backend Infrastructure
+      - name: Configure Backends
         uses: dawidd6/action-ansible-playbook@v2
         with:
           playbook: deploy.yml
@@ -81,15 +126,12 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           inventory: |
             [ec2]
-            ${{ needs.provision.outputs.backend_host }} ansible_user=ubuntu
+            ${{ needs.provision.outputs.backend_hosts }}             
           options: |
             --verbose
 
-      #- name: Simulate an error
-      #run: exit 1
-
   verify:
-    name: 🧪 Check Backend
+    name: 🧪 Check Backends
     runs-on: ubuntu-24.04
     needs: [provision, deploy]
     permissions: write-all
@@ -97,12 +139,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Run Backend Smoke Test
+      - name: Test Each Instance
         run: |
-          export BACKEND_URL=${{ needs.provision.outputs.backend_url }}
+          # loop over instances (move to scr)
+          export BACKEND_URLS=${{ needs.provision.outputs.backend_urls }}
+          for each(BACKEND_URLS)
           cd backend/e2e
           chmod +x backend-smoke.sh
           ./backend-smoke.sh
 
-      #- name: Simulate an error
-      #  run: exit 1  
+  rollback:
+    name: Rollback if cancelled
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: cancelled()
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Roll back
+        run: ./scripts/rollback.sh

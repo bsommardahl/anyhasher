@@ -10,12 +10,12 @@
   # Promote New Version
   # Kill Old Version
   
-name: Blue-Green CI/CD Pipeline
+name: Rolling Deployment CI/CD Pipeline
 run-name: "🛠️ ${{ github.event.head_commit.message }} (${{ github.sha }})"
 on:
   push: 
     branches:
-      - blue-green-demo   #normally 'main'
+      - rolling-deployments   #normally 'main'
 
 jobs:
   
@@ -29,30 +29,37 @@ jobs:
     with:
       ref: ${{ github.sha }}    
 
-  cd-backend:
-    needs: [ci-frontend, ci-backend]
-    uses: ./.github/workflows/cd-backend.yml
-    with: 
-      ref: ${{ github.sha }}    
-    secrets: inherit
-
+# deploy frontend first since it doesn't need multiple instances
   cd-frontend:
-    needs: [cd-backend]
+    needs: [ci-frontend, ci-backend]
     uses: ./.github/workflows/cd-frontend.yml
     with: 
       ref: ${{ github.sha }}    
       backend_url: ${{ needs.cd-backend.outputs.backend_url }}
     secrets: inherit
 
-  promote:
+# Set off chain reaction here, incrementing batch_id each time
+# how will we know what the maximum batch_id is?
+# backend deploy should include a "deregister" step for one instance
+  cd-backend:
     needs: [cd-frontend]
-    uses: ./.github/workflows/promote.yml
+    uses: ./.github/workflows/cd-backend.yml
     with: 
-      ref: ${{ github.sha }}
-      s3_bucket_hostname: ${{ needs.cd-frontend.outputs.s3_bucket_hostname }}
+      ref: ${{ github.sha }}    
     secrets: inherit
 
-  cleanup:
+# Promote no longer needed
+  # promote:
+  #   needs: [cd-frontend]
+  #   uses: ./.github/workflows/promote.yml
+  #   with: 
+  #     ref: ${{ github.sha }}
+  #     s3_bucket_hostname: ${{ needs.cd-frontend.outputs.s3_bucket_hostname }}
+  #   secrets: inherit
+
+# after backend has been completely rolled out and no old instances remain, we can clean up the old frontend
+
+  cleanup-old-frontend:
     needs: [promote]
     uses: ./.github/workflows/cleanup.yml
     with: 
@@ -60,6 +67,8 @@ jobs:
       env_name: Previous Blue
       reason: decommissioning
     secrets: inherit
+
+# now, failure means rollback of any deployed instances and new frontend
 
   failure:
     needs: [cd-backend, cd-frontend, promote]
