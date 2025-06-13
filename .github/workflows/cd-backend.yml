@@ -42,7 +42,7 @@ jobs:
             util/terraform/environments/prod/main.tfvars
           path: util/terraform/modules/asg
           variables: |
-            -var="version=${{ inputs.version }}"
+            -var="ver=${{ inputs.version }}"
 
   configure:
     needs: provision

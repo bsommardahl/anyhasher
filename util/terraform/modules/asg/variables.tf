@@ -7,7 +7,7 @@ variable "vpc_id" {}
 variable "public_subnet_ids" { type = list(string) }
 variable "alb_sg_id" {}
 
-variable "version" {
+variable "ver" {
   description = "Git version or tag for this deployment"
   type        = string
 }
