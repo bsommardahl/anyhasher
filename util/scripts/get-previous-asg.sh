@@ -1,20 +1,18 @@
 #!/bin/bash
-
 set -e
 
-CURRENT_VERSION=$1
-ASG_PREFIX="node-api-"
+ENVIRONMENT=$1
+CURRENT_VERSION=$2
 
-echo "Looking for previous ASG (excluding $ASG_PREFIX$CURRENT_VERSION)..."
-
-PREVIOUS_ASG=$(aws autoscaling describe-auto-scaling-groups \
-  --query "AutoScalingGroups[?starts_with(AutoScalingGroupName, \`${ASG_PREFIX}\`) && AutoScalingGroupName != \`${ASG_PREFIX}${CURRENT_VERSION}\`].AutoScalingGroupName" \
-  --output text | sort | tail -n 1)
-
-if [[ -z "$PREVIOUS_ASG" ]]; then
-  echo "No previous ASG found."
-  exit 0
+if [[ -z "$ENVIRONMENT" || -z "$CURRENT_VERSION" ]]; then
+  echo "Usage: $0 <environment> <current_version>"
+  exit 1
 fi
 
-echo "Found previous ASG: $PREVIOUS_ASG"
-echo "PREVIOUS_ASG_NAME=$PREVIOUS_ASG" >> "$GITHUB_ENV"
+echo "Looking for previous ASG in environment: $ENVIRONMENT (excluding version: $CURRENT_VERSION)"
+
+aws autoscaling describe-auto-scaling-groups \
+  --query "AutoScalingGroups[?starts_with(AutoScalingGroupName, \`${ENVIRONMENT}-anyhasher-\`)]" \
+  --output json |
+jq -r ".[] | select(.AutoScalingGroupName != \"${ENVIRONMENT}-anyhasher-${CURRENT_VERSION}\") | {name: .AutoScalingGroupName, created: .CreatedTime}" |
+jq -s 'sort_by(.created) | reverse | .[0].name'

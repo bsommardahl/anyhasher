@@ -38,7 +38,9 @@ jobs:
         with:
           workspace: anyhasher-backend-${{ inputs.version }}
           auto_approve: true
-          path: util/terraform/asg
+          var_file: |
+            util/terraform/environments/prod/main.tfvars
+          path: util/terraform/modules/asg
           variables: |
             -var="version=${{ inputs.version }}"
 
@@ -92,9 +94,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Get Previous ASG
-        run: ../util/scripts/get-previous-asg.sh $VERSION
+        run: ../util/scripts/get-previous-asg.sh prod $VERSION
       
       - name: Destroy Old ASG
-        run: ../util/scripts/destroy-old-asg.sh $PREVIOUS_ASG_NAME
+        run: ../util/scripts/destroy-old-asg.sh prod $PREVIOUS_ASG_NAME
   
   # rollback: 

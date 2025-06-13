@@ -1,21 +1,28 @@
 #!/bin/bash
-OLD_ASG_NAME=$1
+set -e
 
-if [[ -z "$OLD_ASG_NAME" ]]; then
-  echo "⚠️ No previous ASG name provided. Skipping destroy."
-  exit 0
+ENVIRONMENT=$1
+CURRENT_VERSION=$2
+
+if [[ -z "$ENVIRONMENT" || -z "$CURRENT_VERSION" ]]; then
+  echo "Usage: $0 <environment> <current_version>"
+  exit 1
 fi
 
-echo "Draining and deleting old ASG: $OLD_ASG_NAME"
+echo "Cleaning up ASGs for environment: $ENVIRONMENT (keeping version: $CURRENT_VERSION)"
 
-aws autoscaling update-auto-scaling-group \
-  --auto-scaling-group-name "$OLD_ASG_NAME" \
-  --desired-capacity 0
+# Get all ASGs for the environment
+ALL_ASGS=$(aws autoscaling describe-auto-scaling-groups \
+  --query "AutoScalingGroups[?starts_with(AutoScalingGroupName, \`${ENVIRONMENT}-anyhasher-\`)].AutoScalingGroupName" \
+  --output text)
 
-sleep 30
-
-aws autoscaling delete-auto-scaling-group \
-  --auto-scaling-group-name "$OLD_ASG_NAME" \
-  --force-delete
-
-echo "🧹 Old ASG $OLD_ASG_NAME has been deleted."
+for ASG in $ALL_ASGS; do
+  if [[ "$ASG" != "${ENVIRONMENT}-anyhasher-${CURRENT_VERSION}" ]]; then
+    echo "Deleting old ASG: $ASG"
+    aws autoscaling update-auto-scaling-group --auto-scaling-group-name "$ASG" --min-size 0 --max-size 0 --desired-capacity 0
+    sleep 10  # allow EC2 instances to terminate
+    aws autoscaling delete-auto-scaling-group --auto-scaling-group-name "$ASG" --force-delete
+  else
+    echo "Skipping current ASG: $ASG"
+  fi
+done

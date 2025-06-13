@@ -10,6 +10,7 @@ resource "aws_launch_template" "this" {
     resource_type = "instance"
     tags = {
       Name = "anyhasher-${var.environment}-backend"
+      Version = var.version
     }
   }
 }
