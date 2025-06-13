@@ -1,15 +1,23 @@
 resource "aws_acm_certificate" "cert" {
-  domain_name               = "*.${var.domain_root}"
-  validation_method         = "DNS"  
+  domain_name         = "*.${var.domain_root}"
+  validation_method   = "DNS"
 }
 
-resource "aws_route53_record" "cert_validation" {
-  for_each = {
-    for dvo in aws_acm_certificate.cert.domain_validation_options : dvo.domain_name => {
+# Deduplicate by record name
+locals {
+  unique_validations = distinct([
+    for dvo in aws_acm_certificate.cert.domain_validation_options : {
       name  = dvo.resource_record_name
       type  = dvo.resource_record_type
       value = dvo.resource_record_value
     }
+  ])
+}
+
+resource "aws_route53_record" "cert_validation" {
+  for_each = {
+    for record in local.unique_validations :
+    record.name => record
   }
 
   zone_id = var.route53_zone_id

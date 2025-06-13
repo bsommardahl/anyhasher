@@ -1,5 +1,5 @@
 resource "aws_launch_template" "this" {
-  name_prefix   = "${var.environment}-lt"
+  name_prefix   = "anyhasher-${var.environment}-lt"
   image_id      = var.ami_id
   instance_type = var.instance_type
   key_name      = var.key_name
@@ -9,7 +9,7 @@ resource "aws_launch_template" "this" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      Name = "${var.environment}-node"
+      Name = "anyhasher-${var.environment}-backend"
     }
   }
 }

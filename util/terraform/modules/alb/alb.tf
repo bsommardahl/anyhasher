@@ -1,5 +1,5 @@
 resource "aws_lb" "this" {
-  name               = "${var.environment}-alb"
+  name               = "anyhasher-${var.environment}-alb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb_sg.id]
@@ -7,7 +7,7 @@ resource "aws_lb" "this" {
 }
 
 resource "aws_lb_target_group" "this" {
-  name        = "${var.environment}-tg"
+  name        = "anyhasher-${var.environment}-tg"
   port        = 80
   protocol    = "HTTP"
   vpc_id      = var.vpc_id

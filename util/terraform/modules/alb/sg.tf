@@ -1,5 +1,5 @@
 resource "aws_security_group" "alb_sg" {
-  name        = "${var.environment}-alb-sg"
+  name        = "anyhasher-${var.environment}-alb-sg"
   description = "Allow inbound HTTP and HTTPS"
   vpc_id      = var.vpc_id
 
@@ -27,6 +27,6 @@ resource "aws_security_group" "alb_sg" {
   }
 
   tags = {
-    Name = "${var.environment}-alb-sg"
+    Name = "anyhasher-${var.environment}-alb-sg"
   }
 }
