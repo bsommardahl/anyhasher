@@ -79,7 +79,7 @@ jobs:
     needs: wait_for_health
     runs-on: ubuntu-latest
     env:
-      VERSION: ${{ needs.provision.outputs.version }}
+      VERSION: ${{ inputs.version }}
     steps:
       - name: Run Smoke Tests
         run: ../util/scripts/smoke-test.sh https://api.anyhasher.com $VERSION
