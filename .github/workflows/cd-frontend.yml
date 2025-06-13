@@ -78,7 +78,7 @@ jobs:
         uses: jacobtomlinson/gha-find-replace@v3
         with:
           find: http://localhost:5001
-          replace: ${{ inputs.backend_url }}
+          replace: ${{ inputs.backend_url }} #this will need to be a load balancer url
           #regex: false
 
       - name: Store Release Artifact
@@ -113,3 +113,37 @@ jobs:
           cd frontend/e2e
           npm install
           npm run smoke
+  
+  promote: 
+    name: Promote New Frontend
+    needs: [verify]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Use commit workspace
+        uses: dflook/terraform-new-workspace@v1
+        with:
+          path: util/terraform/frontend
+          workspace: anyhasher-frontend-${{ inputs.ref }}
+
+      - name: Promote in CDN
+        id: promote
+        uses: dflook/terraform-apply@v1
+        with:
+          workspace: anyhasher-frontend-${{ inputs.ref }}
+          auto_approve: true
+          path: util/terraform/promote
+          variables: |
+            bucket_name = "anyhasher-frontend-${{ inputs.ref }}"

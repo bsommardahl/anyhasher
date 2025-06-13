@@ -1,14 +1,17 @@
 # PLANNING STEPS:
 # =====================
 # Discover Changes
-# Build Artifact
-# Deploy Artifact
-  # Create Infrastructure
-  # Apply Configuration
-  # Install App
-  # Test New Version
-  # Promote New Version
-  # Kill Old Version
+# Build Artifacts
+# Deploy Artifacts
+  # Deploy Frontend
+  # Start Rolling Out Backend Instances (chain reaction)
+    # Create Infrastructure
+    # Apply Configuration
+    # Install App
+    # Test New Version
+    # Add to Load Balancer
+    # Kill One Old Instance
+    # Repeat
   
 name: Rolling Deployment CI/CD Pipeline
 run-name: "🛠️ ${{ github.event.head_commit.message }} (${{ github.sha }})"
@@ -28,56 +31,38 @@ jobs:
     uses: ./.github/workflows/ci-backend.yml
     with:
       ref: ${{ github.sha }}    
-
-# deploy frontend first since it doesn't need multiple instances
+  
   cd-frontend:
-    needs: [ci-frontend, ci-backend]
-    uses: ./.github/workflows/cd-frontend.yml
+    needs: ci-frontend
+    uses: ./.github/workflows/cd-deploy-frontend.yml
     with: 
       ref: ${{ github.sha }}    
-      backend_url: ${{ needs.cd-backend.outputs.backend_url }}
+      backend_url: ${{ needs.cd-backend.outputs.backend_url }} #this will need to be a load balancer url
     secrets: inherit
 
+  
 # Set off chain reaction here, incrementing batch_id each time
 # how will we know what the maximum batch_id is?
 # backend deploy should include a "deregister" step for one instance
   cd-backend:
-    needs: [cd-frontend]
+    needs: ci-backend
     uses: ./.github/workflows/cd-backend.yml
     with: 
-      ref: ${{ github.sha }}    
-    secrets: inherit
-
-# Promote no longer needed
-  # promote:
-  #   needs: [cd-frontend]
-  #   uses: ./.github/workflows/promote.yml
-  #   with: 
-  #     ref: ${{ github.sha }}
-  #     s3_bucket_hostname: ${{ needs.cd-frontend.outputs.s3_bucket_hostname }}
-  #   secrets: inherit
-
-# after backend has been completely rolled out and no old instances remain, we can clean up the old frontend
-
-  cleanup-old-frontend:
-    needs: [promote]
-    uses: ./.github/workflows/cleanup.yml
-    with: 
-      ref: ${{ needs.promote.outputs.previous_ref }}
-      env_name: Previous Blue
-      reason: decommissioning
+      ref: ${{ github.sha }}  
+      batch_id: 0
+      batch_size: 1
+      max_batch_id: 10
+      target_loadbalancer: some_elb  
     secrets: inherit
 
 # now, failure means rollback of any deployed instances and new frontend
-
   failure:
-    needs: [cd-backend, cd-frontend, promote]
+    needs: [cd-frontend, cd-backend]
     # We need some extra logic to prevent cleanup when a CI failure
     if: |
       failure() && (
-        needs.cd-backend.result != 'skipped' ||
-        needs.cd-frontend.result != 'skipped' ||
-        needs.promote.result != 'skipped'
+        needs.start-backend-rollout.result != 'skipped' ||
+        needs.deploy-frontend.result != 'skipped'    
       ) 
     uses: ./.github/workflows/cleanup.yml
     with: 

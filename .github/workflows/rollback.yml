@@ -1,0 +1,35 @@
+name: Rollback Anyhasher Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to rollback to (e.g. v93c1c2)'
+        required: true
+
+# Secret Name	Purpose
+# ALB_TARGET_GROUP_ARN	Same as above; used during rollback to validate instance health
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: infra
+
+      - name: Terraform Apply Rollback
+        run: |
+          terraform apply -auto-approve \
+            -var-file="infra/environments/prod/main.tfvars" \
+            -var="version=${{ github.event.inputs.version }}"
+        working-directory: infra
+
+      - name: Wait for ALB Health Checks
+        run: ./scripts/wait-for-alb.sh ${{ secrets.ALB_TARGET_GROUP_ARN }}
+
+      - name: Run Smoke Tests
+        run: ./scripts/smoke-test.sh https://api.anyhasher.com ${{ github.event.inputs.version }}

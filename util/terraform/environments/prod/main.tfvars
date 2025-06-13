@@ -1,0 +1,10 @@
+aws_region             = "us-east-1"
+environment            = "prod"
+vpc_id                 = "vpc-xxxxxxxx"
+public_subnet_ids      = ["subnet-aaa", "subnet-bbb"]
+domain_root            = "anyhasher.com"
+route53_zone_id        = "Z123456ABCDEFG"
+route53_record_name    = "api.anyhasher.com"
+ami_id                 = "ami-0abcd1234efgh5678" ## Replace
+key_name               = "anyhasher-key"
+instance_type          = "t3.micro"

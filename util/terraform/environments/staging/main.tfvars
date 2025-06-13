@@ -1,0 +1,10 @@
+aws_region             = "us-east-1"
+environment            = "staging"
+vpc_id                 = "vpc-yyyyyyyy"
+public_subnet_ids      = ["subnet-ccc", "subnet-ddd"]
+domain_root            = "staging.anyhasher.com"
+route53_zone_id        = "Z7654321HGFEDCBA"
+route53_record_name    = "api.staging.anyhasher.com"
+ami_id                 = "ami-0abcd1234efgh5678" ## Replace
+key_name               = "anyhasher-key"
+instance_type          = "t3.micro"

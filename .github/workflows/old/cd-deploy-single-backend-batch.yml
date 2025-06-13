@@ -1,0 +1,167 @@
+name: Roll Out Backend - Single Batch
+run-name: "🚛 CD: Rolling Out a Batch of Backend Artifacts (Batch: ${{input.batch_id}}, Ref: ${{ inputs.ref }})"
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: "Commit ref that triggered this deployment"
+        required: true
+        type: string
+      batch_id:
+        description: "Current batch number (0-9)"
+        required: true
+        default: 0
+      batch_size:
+        description: "Quantity of instances that should be deployed in this batch"
+        required: true
+        default: 1
+      target_loadbalancer:
+        description: "The load balancer id for the newly provisioned instances"
+        required: true
+        type: string
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      EC2_PRIVATE_KEY:
+        required: true
+    outputs:
+      backend_url:
+        value: ${{ jobs.provision.outputs.backend_url }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    outputs:
+      commit_sha: ${{ steps.vars.outputs.commit_sha }}
+      batch_id: ${{ github.event.inputs.batch_id }}
+
+    steps:
+      
+      - name: Upload Frontend to S3
+        run: |
+          aws s3 sync ./frontend/build s3://frontend-${{ steps.vars.outputs.commit_sha }}-${{ github.event.inputs.batch_id }}
+
+      - name: Shift Traffic
+        run: ./scripts/shift-traffic.sh ${{ github.event.inputs.batch_id }}
+
+      - name: Health Check
+        run: ./scripts/check-health.sh ${{ github.event.inputs.batch_id }}
+
+      - name: Deregister Previous
+        if: ${{ github.event.inputs.batch_id != '0' }}
+        run: ./scripts/deregister.sh $(( ${{ github.event.inputs.batch_id }} - 1 ))
+
+      - name: Sleep Before Triggering Next Batch
+        if: ${{ github.event.inputs.batch_id != '9' }}
+        run: sleep 300
+
+      - name: Trigger Next Batch
+        if: ${{ github.event.inputs.batch_id != '9' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run rolling-deploy-batch.yml \
+            -f batch_id=$(( ${{ github.event.inputs.batch_id }} + 1 ))
+
+  
+
+jobs:
+  provision:
+    name: 🏢 Provision Backend Infrastructure
+    runs-on: ubuntu-24.04
+    outputs:
+    #These would be for configuration later, multuple urls
+      backend_url: http://${{ steps.apply_changes.outputs.ec2_public_host }}:5001
+      backend_host: ${{ steps.apply_changes.outputs.ec2_public_host }}
+      backend_loadbalancer_url: ${{ steps.apply_changes.outputs.elb_public_host }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Use commit workspace
+        uses: dflook/terraform-new-workspace@v1
+        with:
+          path: util/terraform/backend
+          workspace: anyhasher-backend-${{ inputs.ref }}
+
+      - name: Apply
+        id: apply_changes
+        uses: dflook/terraform-apply@v1
+        with:
+          workspace: anyhasher-backend-${{ inputs.ref }}
+          auto_approve: true
+          path: util/terraform/backend
+          variables: |
+            instance_name = "anyhasher-backend-${{ inputs.ref }}"
+            batch_id = "${{ inputs.batch_id }}"
+            batch_size = "${{ inputs.batch_size }}"
+
+  deploy:
+    name: 🚛 Deploy Backend Artifact to Instances
+    needs: [provision]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get Backend Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-artifact-${{ inputs.ref }}
+          path: backend/build/
+
+      - name: Configure Backends
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: deploy.yml
+          directory: ./util/ansible
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          inventory: |
+            [ec2]
+            ${{ needs.provision.outputs.backend_hosts }}             
+          options: |
+            --verbose
+
+  verify:
+    name: 🧪 Check Backends
+    runs-on: ubuntu-24.04
+    needs: [provision, deploy]
+    permissions: write-all
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Test Each Instance
+        run: |
+          # loop over instances (move to scr)
+          export BACKEND_URLS=${{ needs.provision.outputs.backend_urls }}
+          for each(BACKEND_URLS)
+          cd backend/e2e
+          chmod +x backend-smoke.sh
+          ./backend-smoke.sh
+
+  rollback:
+    name: Rollback if cancelled
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: cancelled()
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Roll back
+        run: ./scripts/rollback.sh
