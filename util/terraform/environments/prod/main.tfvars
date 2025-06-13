@@ -1,9 +1,9 @@
 aws_region             = "us-east-1"
 environment            = "prod"
-vpc_id                 = "vpc-xxxxxxxx"
-public_subnet_ids      = ["subnet-aaa", "subnet-bbb"]
+vpc_id                 = "vpc-04a46361"
+public_subnet_ids      = ["subnet-662b714e", "subnet-61724827", "subnet-14140d60", "subnet-b633bcba", "subnet-662b714e", "subnet-aa503ccf"]
 domain_root            = "anyhasher.io"
-route53_zone_id        = "Z123456ABCDEFG"
+route53_zone_id        = "Z02296143ULR56PSBTO31"
 route53_record_name    = "api.anyhasher.io"
 ami_id                 = "ami-020cba7c55df1f615"
 key_name               = "anyhasher"
