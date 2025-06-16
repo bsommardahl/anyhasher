@@ -34,7 +34,7 @@ jobs:
 
       - name: Set version in tfvars
         run: |
-          echo -e "ver=${{ inputs.version }}\n" >> util/terraform/environments/prod/main.tfvars
+          echo -e 'ver="${{ inputs.version }}"\n' >> util/terraform/environments/prod/main.tfvars
           cat util/terraform/environments/prod/main.tfvars
 
       - name: Apply Infra Code
