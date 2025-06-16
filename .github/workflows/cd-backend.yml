@@ -41,8 +41,10 @@ jobs:
           var_file: |
             util/terraform/environments/prod/main.tfvars
           path: util/terraform/modules/asg
+          # Can I have both var file and variables?
           variables: |
-            -var="ver=${{ inputs.version }}"
+            ver=${{ inputs.version }}
+            
 
   configure:
     needs: provision
