@@ -11,7 +11,7 @@ resource "aws_autoscaling_group" "this" {
     version = "$Latest"
   }
 
-  tag = {
+  tag {
     key = "Version"
     value = var.ver
     propagate_at_launch = true
