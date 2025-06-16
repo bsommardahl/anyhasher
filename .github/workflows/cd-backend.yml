@@ -32,20 +32,19 @@ jobs:
           path: util/terraform
           workspace: anyhasher-backend-${{ inputs.version }}
 
+      - name: Set version in tfvars
+        run: |
+          echo "ver=${{ inputs.version }}" >> util/terraform/environments/prod/main.tfvars
+
       - name: Apply
         id: apply_changes
-        uses: dflook/terraform-apply@v1
+        uses: dflook/terraform-apply@v2
         with:
           workspace: anyhasher-backend-${{ inputs.version }}
           auto_approve: true
           var_file: |
             util/terraform/environments/prod/main.tfvars
           path: util/terraform/modules/asg
-          # Can I have both var file and variables?
-          variables: |
-            ver=${{ inputs.version }}
-            
-            
 
   configure:
     needs: provision
