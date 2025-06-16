@@ -34,7 +34,7 @@ jobs:
 
       - name: Set version in tfvars
         run: |
-          echo "ver=${{ inputs.version }}" >> util/terraform/environments/prod/main.tfvars
+          echo -e "ver=${{ inputs.version }}\n" >> util/terraform/environments/prod/main.tfvars
 
       - name: Apply
         id: apply_changes
