@@ -35,8 +35,9 @@ jobs:
       - name: Set version in tfvars
         run: |
           echo -e "ver=${{ inputs.version }}\n" >> util/terraform/environments/prod/main.tfvars
+          cat util/terraform/environments/prod/main.tfvars
 
-      - name: Apply
+      - name: Apply Infra Code
         id: apply_changes
         uses: dflook/terraform-apply@v2
         with:
@@ -44,7 +45,7 @@ jobs:
           auto_approve: true
           var_file: |
             util/terraform/environments/prod/main.tfvars
-          path: util/terraform/modules/asg
+          path: util/terraform/
 
   configure:
     needs: provision
