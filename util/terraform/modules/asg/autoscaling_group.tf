@@ -1,5 +1,5 @@
 resource "aws_autoscaling_group" "this" {
-  // name = "anyhasher-${var.environment}-${var.ver}"
+  name = "anyhasher-${var.environment}-${var.ver}"
   desired_capacity     = 2
   max_size             = 4
   min_size             = 2
@@ -11,16 +11,9 @@ resource "aws_autoscaling_group" "this" {
     version = "$Latest"
   }
 
-  tags = [
-    {
-      key                 = "Version"
-      value               = var.ver
-      propagate_at_launch = true
-    },
-    {
-      key                 = "Name"
-      value               = "anyhasher-${var.environment}-${var.ver}"
-      propagate_at_launch = true
-    }
-  ]
+  tag = {
+    key = "Version"
+    value = var.ver
+    propagate_at_launch = true
+  }
 }
