@@ -1,16 +1,18 @@
 resource "aws_launch_template" "this" {
-  name_prefix   = "anyhasher-${var.environment}-lt"
-  image_id      = var.ami_id
-  instance_type = var.instance_type
-  key_name      = var.key_name
+  name_prefix            = "anyhasher-${var.environment}-lt"
+  image_id               = var.ami_id
+  instance_type          = var.instance_type
+  key_name               = var.key_name
+  vpc_security_group_ids = [aws_security_group.ec2_sg.id]
 
   #user_data = base64encode(file("${path.module}/../../../user_data.sh"))
 
   tag_specifications {
     resource_type = "instance"
     tags = {
-      Name = "anyhasher-${var.environment}-backend"
+      Name    = "anyhasher-${var.environment}-backend"
       Version = var.ver
     }
   }
 }
+

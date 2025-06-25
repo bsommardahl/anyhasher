@@ -3,62 +3,62 @@
 # Discover Changes
 # Build Artifacts
 # Deploy Artifacts
-  # Deploy Frontend
-  # Start Rolling Out Backend Instances (chain reaction)
-    # Create Infrastructure
-    # Apply Configuration
-    # Install App
-    # Test New Version
-    # Add to Load Balancer
-    # Kill One Old Instance
-    # Repeat
-  
+# Deploy Frontend
+# Start Rolling Out Backend Instances (chain reaction)
+# Create Infrastructure
+# Apply Configuration
+# Install App
+# Test New Version
+# Add to Load Balancer
+# Kill One Old Instance
+# Repeat
+
 name: Rolling Deployment CI/CD Pipeline
 run-name: "🛠️ ${{ github.event.head_commit.message }} (${{ github.sha }})"
 on:
-  push: 
+  push:
     branches:
-      - rolling-deployments   #normally 'main'
+      - main #to avoid executions for now
+      # - rolling-deployments   #normally 'main'
 
 jobs:
-  
   ci-frontend:
     uses: ./.github/workflows/ci-frontend.yml
     with:
-      ref: ${{ github.sha }}    
+      ref: ${{ github.sha }}
 
   ci-backend:
     uses: ./.github/workflows/ci-backend.yml
     with:
-      ref: ${{ github.sha }}    
-  
+      ref: ${{ github.sha }}
+
   cd-frontend:
     needs: ci-frontend
     uses: ./.github/workflows/cd-frontend.yml
-    with: 
-      ref: ${{ github.sha }}    
+    with:
+      ref: ${{ github.sha }}
       backend_url: api.anyhasher.io
     secrets: inherit
 
   cd-backend:
     needs: ci-backend
     uses: ./.github/workflows/cd-backend.yml
-    with: 
-      version: ${{ github.sha }}        
+    with:
+      version: ${{ github.sha }}
     secrets: inherit
-
 # now, failure means rollback of any deployed instances and new frontend
-  # failure:
-  #   needs: [cd-frontend, cd-backend]
-  #   # We need some extra logic to prevent cleanup when a CI failure
-  #   if: |
-  #     failure() && (
-  #       needs.start-backend-rollout.result != 'skipped' ||
-  #       needs.deploy-frontend.result != 'skipped'    
-  #     ) 
-  #   uses: ./.github/workflows/cleanup.yml
-  #   with: 
-  #     ref: ${{ github.sha }}
-  #     env_name: Green
-  #     reason: failure
-  #   secrets: inherit
+# failure:
+#   needs: [cd-frontend, cd-backend]
+#   # We need some extra logic to prevent cleanup when a CI failure
+#   if: |
+#     failure() && (
+#       needs.start-backend-rollout.result != 'skipped' ||
+#       needs.deploy-frontend.result != 'skipped'
+#     )
+#   uses: ./.github/workflows/cleanup.yml
+#   with:
+#     ref: ${{ github.sha }}
+#     env_name: Green
+#     reason: failure
+#   secrets: inherit
+
