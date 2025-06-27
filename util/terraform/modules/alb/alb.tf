@@ -8,7 +8,7 @@ resource "aws_lb" "this" {
 
 resource "aws_lb_target_group" "this" {
   name        = "anyhasher-${var.environment}-tg"
-  port        = 80
+  port        = 5001
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
   target_type = "instance"
@@ -16,6 +16,7 @@ resource "aws_lb_target_group" "this" {
   health_check {
     path                = "/health"
     protocol            = "HTTP"
+    port                = "traffic-port"
     interval            = 15
     timeout             = 5
     healthy_threshold   = 2
@@ -50,3 +51,4 @@ resource "aws_lb_listener" "https" {
     target_group_arn = aws_lb_target_group.this.arn
   }
 }
+
