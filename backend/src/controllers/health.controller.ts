@@ -1,7 +1,7 @@
 class HealthController {
   getHealth(request, response) {
     const healthStatus = {
-      status: 'healthy',
+      status: 'healthy new version',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       version: process.env.npm_package_version || '1.0.0'

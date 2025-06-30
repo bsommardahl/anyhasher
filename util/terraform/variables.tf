@@ -12,3 +12,18 @@ variable "ver" {
   description = "Git version or tag for this deployment"
   type        = string
 }
+variable "deployment_phase" {
+  description = "Phase of deployment: scale_up or rolling"
+  type        = string
+  default     = "scale_up"
+  validation {
+    condition     = contains(["scale_up", "rolling"], var.deployment_phase)
+    error_message = "deployment_phase must be either 'scale_up' or 'rolling'"
+  }
+}
+
+variable "desired_capacity" {
+  description = "Normal desired capacity"
+  type        = number
+  default     = 2
+}
