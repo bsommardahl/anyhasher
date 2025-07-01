@@ -54,7 +54,9 @@ jobs:
           path: backend/build/
 
       - name: Fetch EC2 Hosts
-        run: ./util/scripts/fetch-ec2-by-tag.sh ${{ inputs.version }}
+        run: |
+          chmod +x ./util/scripts/fetch-ec2-by-tag.sh
+          ./util/scripts/fetch-ec2-by-tag.sh ${{ inputs.version }}
 
       - name: Configure Backends
         uses: dawidd6/action-ansible-playbook@v2
@@ -71,7 +73,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Wait for ALB Health Checks
-        run: ./util/scripts/wait-for-alb.sh "${{ needs.provision.outputs.target_group_arn }}"
+        run: |
+          chmod +x ./util/scripts/wait-for-alb.sh
+          ./util/scripts/wait-for-alb.sh "${{ needs.provision.outputs.target_group_arn }}"
 
   rolling:
     needs: wait_for_health
@@ -109,7 +113,9 @@ jobs:
       VERSION: ${{ inputs.version }}
     steps:
       - name: Run Smoke Tests
-        run: ./util/scripts/smoke-test.sh https://api.anyhasher.io
+        run: |
+          chmod +x ./util/scripts/smoke-test.sh
+          ./util/scripts/smoke-test.sh https://api.anyhasher.io
   #
   # cleanup:
   #   needs: smoke_test
