@@ -18,22 +18,43 @@ run-name: "🛠️ ${{ github.event.head_commit.message }} (${{ github.sha }})"
 on:
   push:
     branches:
-      - main #to avoid executions for now
-      # - rolling-deployments   #normally 'main'
+      # - main #to avoid executions for now
+      - rolling-deployments #normally 'main'
 
 jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.changes.outputs.frontend }}
+      backend: ${{ steps.changes.outputs.backend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            frontend:
+              - 'frontend/**'
+            backend:
+              - 'backend/**'
+
   ci-frontend:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.frontend == 'true'
     uses: ./.github/workflows/ci-frontend.yml
     with:
       ref: ${{ github.sha }}
 
   ci-backend:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.backend == 'true'
     uses: ./.github/workflows/ci-backend.yml
     with:
       ref: ${{ github.sha }}
 
   cd-frontend:
-    needs: ci-frontend
+    needs: [detect-changes, ci-frontend]
+    if: needs.detect-changes.outputs.frontend == 'true'
     uses: ./.github/workflows/cd-frontend.yml
     with:
       ref: ${{ github.sha }}
@@ -41,7 +62,8 @@ jobs:
     secrets: inherit
 
   cd-backend:
-    needs: ci-backend
+    needs: [detect-changes, ci-backend]
+    if: needs.detect-changes.outputs.backend == 'true'
     uses: ./.github/workflows/cd-backend.yml
     with:
       version: ${{ github.sha }}

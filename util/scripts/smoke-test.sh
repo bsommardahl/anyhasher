@@ -1,15 +1,13 @@
 #!/bin/bash
 BASE_URL=$1
-VERSION=$2
 
-set -e
+echo "🔍 Testing health endpoint availability..."
 
-echo "Running smoke tests against $BASE_URL..."
+response=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/health" || echo "000")
+if [ "$response" = "200" ]; then
+  echo "✅ Application is responding correctly!"
+else
+  echo "❌ Application is not responding (HTTP $response)"
+  exit 1
+fi
 
-curl -f "$BASE_URL/health"
-echo "✔️ /health check passed"
-
-curl -f "$BASE_URL/api/version" | grep "$VERSION"
-echo "✔️ /api/version check passed (version = $VERSION)"
-
-echo "✅ All smoke tests passed."

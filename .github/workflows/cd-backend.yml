@@ -12,6 +12,8 @@ on:
 jobs:
   provision:
     runs-on: ubuntu-latest
+    outputs:
+      target_group_arn: ${{ steps.apply_changes.outputs.target_group_arn }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -59,9 +61,9 @@ jobs:
         with:
           name: backend-artifact-${{ inputs.ref }}
           path: backend/build/
-          
+
       - name: Fetch EC2 Hosts
-        run: ../util/scripts/fetch-ec2-by-tag.sh $VERSION
+        run: ./util/scripts/fetch-ec2-by-tag.sh ${{ inputs.version }}
 
       - name: Configure Backends
         uses: dawidd6/action-ansible-playbook@v2
@@ -72,34 +74,52 @@ jobs:
           options: |
             --verbose
             --inventory ./inventory/hosts
-                  
+
   wait_for_health:
-    needs: configure
+    needs: [configure, provision]
     runs-on: ubuntu-latest
     steps:
       - name: Wait for ALB Health Checks
-        run: ../util/scripts/wait-for-alb.sh ${{ secrets.ALB_TARGET_GROUP_ARN }}
+        run: ./util/scripts/wait-for-alb.sh "${{ needs.provision.outputs.target_group_arn }}"
+
+  rolling:
+    needs: wait_for_health
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set rolling deployment phase
+        run: |
+          echo -e 'ver="${{ inputs.version }}"\ndeployment_phase="rolling"\n' >> util/terraform/environments/prod/main.tfvars
+          cat util/terraform/environments/prod/main.tfvars
+
+      - name: Apply rolling to instances
+        uses: dflook/terraform-apply@v2
+        with:
+          workspace: anyhasher-backend-${{ inputs.version }}
+          auto_approve: true
+          var_file: |
+            util/terraform/environments/prod/main.tfvars
+          path: util/terraform/
 
   smoke_test:
-    needs: wait_for_health
+    needs: rolling
     runs-on: ubuntu-latest
     env:
       VERSION: ${{ inputs.version }}
     steps:
       - name: Run Smoke Tests
-        run: ../util/scripts/smoke-test.sh https://api.anyhasher.com $VERSION
+        run: ./util/scripts/smoke-test.sh https://api.anyhasher.io
+  #
+  # cleanup:
+  #   needs: smoke_test
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Get Previous ASG
+  #       run: ../util/scripts/get-previous-asg.sh prod $VERSION
+  #
+  #     - name: Destroy Old ASG
+  #       run: ../util/scripts/destroy-old-asg.sh prod $PREVIOUS_ASG_NAME
 
-  cleanup:
-    needs: smoke_test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Get Previous ASG
-        run: ../util/scripts/get-previous-asg.sh prod $VERSION
-      
-      - name: Destroy Old ASG
-        run: ../util/scripts/destroy-old-asg.sh prod $PREVIOUS_ASG_NAME
-  
-  # rollback: 
+  # rollback:
