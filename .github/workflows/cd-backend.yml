@@ -63,7 +63,7 @@ jobs:
       - name: Fetch EC2 Hosts
         run: |
           chmod +x ./util/scripts/fetch-ec2-by-tag.sh
-          ./util/scripts/fetch-ec2-by-tag.sh ${{ inputs.version }}
+          ./util/scripts/fetch-ec2-by-tag.sh "prod-${{ inputs.version }}"
 
       - name: Configure Backends
         uses: dawidd6/action-ansible-playbook@v2
@@ -92,7 +92,7 @@ jobs:
       - name: Wait for ALB Health Checks
         run: |
           chmod +x ./util/scripts/wait-for-alb.sh
-          ./util/scripts/wait-for-alb.sh "${{ needs.provision.outputs.target_group_arn }}"
+          ./util/scripts/wait-for-alb.sh "${{ needs.provision.outputs.target_group_arn }}" "${{ inputs.version }}"
 
   rolling:
     needs: wait_for_health
