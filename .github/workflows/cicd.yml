@@ -54,7 +54,7 @@ jobs:
       ref: ${{ github.sha }}
 
   cd-frontend:
-    needs: [detect-changes, ci-frontend]
+    needs: ci-frontend
     if: needs.detect-changes.outputs.frontend == 'true'
     uses: ./.github/workflows/cd-frontend.yml
     with:
@@ -63,7 +63,7 @@ jobs:
     secrets: inherit
 
   cd-backend:
-    needs: [detect-changes, ci-backend]
+    needs: ci-backend
     if: needs.detect-changes.outputs.backend == 'true'
     uses: ./.github/workflows/cd-backend.yml
     with:
