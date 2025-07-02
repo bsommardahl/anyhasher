@@ -16,7 +16,7 @@ jobs:
         id: cache
         uses: actions/cache@v4
         with:
-          path: node_modules
+          path: frontend/node_modules # ← Ruta específica
           key: fe-node-${{ hashFiles('frontend/package-lock.json') }}
 
       - name: Checkout
@@ -30,6 +30,7 @@ jobs:
           node-version: 20.x
 
       - name: Install Deps
+        if: steps.cache.outputs.cache-hit != 'true' # ← Solo si no hay cache
         run: cd frontend && npm i
 
       - name: Build
@@ -50,6 +51,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Cache Node Modules
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: frontend/node_modules
+          key: fe-node-${{ hashFiles('frontend/package-lock.json') }}
+
+      - name: Install Deps
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: cd frontend && npm i
+
       - name: Check for security issue
         run: cd frontend && npm audit --omit=dev --audit-level=critical
 
@@ -59,6 +71,8 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       security-events: write
+      actions: read
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -66,6 +80,7 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           config-file: ./.github/codeql/codeql.config.yml
+          languages: javascript
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -76,14 +91,18 @@ jobs:
         id: cache
         uses: actions/cache@v4
         with:
-          path: node_modules
+          path: frontend/node_modules
           key: fe-node-${{ hashFiles('frontend/package-lock.json') }}
 
       - name: Install Deps
+        if: steps.cache.outputs.cache-hit != 'true'
         run: cd frontend && npm i
 
       - name: Build
         run: cd frontend && npm run build
 
-      # - name: Perform Analysis
-      #   uses: github/codeql-action/analyze@v2
+      - name: Perform Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript"
+

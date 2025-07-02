@@ -1,11 +1,17 @@
 name: "Anyhasher Code Quality"
 
-disable-default-queries: true
+disable-default-queries: false
 
-languages: javascript
+languages: 
+  - javascript
 
 queries:
   - name: Extended Security
     uses: security-extended
   - name: Security and Quality
     uses: security-and-quality
+
+paths-ignore:
+  - "node_modules"
+  - "build"
+  - "dist"

@@ -68,15 +68,15 @@ jobs:
           chmod +x ./util/scripts/fetch-ec2-by-tag.sh
           ./util/scripts/fetch-ec2-by-tag.sh "prod-${{ inputs.version }}"
 
-      # - name: Configure Backends
-      #   uses: dawidd6/action-ansible-playbook@v2
-      #   with:
-      #     playbook: deploy.yml
-      #     directory: ./util/ansible
-      #     key: ${{ secrets.EC2_PRIVATE_KEY }}
-      #     options: |
-      #       --verbose
-      #       --inventory ./inventory/hosts
+      - name: Configure Backends
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: deploy.yml
+          directory: ./util/ansible
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          options: |
+            --verbose
+            --inventory ./inventory/hosts
 
   wait_for_health:
     needs: [configure, provision]
@@ -128,11 +128,19 @@ jobs:
             deployment_phase="rollback"
           path: util/terraform/backend
 
-      - name: Log rollback completion
+      - name: Rollback Summary
+        shell: bash
         run: |
-          echo "🔄 Rollback completed successfully"
-          echo "Rolled back from: ${{ inputs.version }}"
-          echo "Rolled back to: ${{ needs.provision.outputs.previous_version }}"
+          echo "## 🔄 Rollback Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- ❌ Deployment failed and rollback was triggered" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔙 Rolled back from: \`${{ inputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Rolled back to: \`${{ needs.provision.outputs.previous_version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- 🏗️ Infrastructure restored successfully" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Rollback Details" >> $GITHUB_STEP_SUMMARY
+          echo "- **ASG Name**: ${{ needs.provision.outputs.asg_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Desired Capacity**: ${{ needs.provision.outputs.desired_capacity }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Target Group**: ${{ needs.provision.outputs.target_group_arn }}" >> $GITHUB_STEP_SUMMARY
 
   rolling:
     needs: wait_for_health
@@ -176,3 +184,21 @@ jobs:
         run: |
           chmod +x ./util/scripts/smoke-test.sh
           ./util/scripts/smoke-test.sh https://api.anyhasher.io
+
+      - name: Deployment Success Summary
+        shell: bash
+        run: |
+          echo "## 🎉 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Infrastructure provisioned successfully" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Backend configured with Ansible" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Health checks passed" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Rolling deployment completed" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Smoke tests passed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🚀 Deployment Details" >> $GITHUB_STEP_SUMMARY
+          echo "- **New Version**: \`${{ inputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: Production" >> $GITHUB_STEP_SUMMARY
+          echo "- **API Endpoint**: https://api.anyhasher.io" >> $GITHUB_STEP_SUMMARY
+          echo "- **Deployment Type**: Rolling Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🎯 **Deployment completed successfully!**" >> $GITHUB_STEP_SUMMARY

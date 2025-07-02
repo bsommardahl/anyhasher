@@ -100,6 +100,8 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       security-events: write
+      actions: read
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -107,6 +109,7 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           config-file: ./.github/codeql/codeql.config.yml
+          languages: javascript
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -117,14 +120,18 @@ jobs:
         id: cache
         uses: actions/cache@v4
         with:
-          path: node_modules
+          path: backend/node_modules
           key: be-node-${{ hashFiles('backend/package-lock.json') }}
-          
+
       - name: Install Deps
+        if: steps.cache.outputs.cache-hit != 'true'
         run: cd backend && npm i
 
       - name: Build
         run: cd backend && npm run build
 
-      # - name: Perform Analysis
-      #   uses: github/codeql-action/analyze@v1
+      - name: Perform Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript"
+
