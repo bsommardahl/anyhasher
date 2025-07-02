@@ -91,15 +91,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Test Frontend
-        run: |
-          echo "Testing: ${{ needs.provision.outputs.frontend_url }}"
-          curl -f ${{ needs.provision.outputs.frontend_url }} || exit 1
-          echo "✅ Frontend is live!"
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
 
       - name: Run E2E Smoke Test
-        run: |
-          export TEST_URL=${{ needs.provision.outputs.frontend_url }}
-          cd frontend/e2e
-          npm install
-          npm run smoke
+        uses: mujo-code/puppeteer-headful@v2
+        with:
+          args: |
+            cd frontend/e2e
+            npm install
+            TEST_URL=${{ needs.provision.outputs.frontend_url }} npm run smoke
