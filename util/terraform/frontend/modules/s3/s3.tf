@@ -66,5 +66,5 @@ resource "aws_route53_record" "frontend" {
   name    = "app"
   type    = "CNAME"
   ttl     = 300
-  records = [aws_s3_bucket_website_configuration.frontend.website_domain]
+  records = [aws_s3_bucket_website_configuration.frontend.website_endpoint]
 }

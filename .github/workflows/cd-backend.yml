@@ -11,6 +11,7 @@ on:
 
 jobs:
   provision:
+    name: 🏗️ Provision Infrastructure
     runs-on: ubuntu-latest
     outputs:
       target_group_arn: ${{ steps.apply_changes.outputs.target_group_arn }}
@@ -44,6 +45,7 @@ jobs:
           path: util/terraform/backend
 
   configure:
+    name: ⚙️ Configure Backend
     needs: provision
     runs-on: ubuntu-latest
     steps:
@@ -79,6 +81,7 @@ jobs:
             --inventory ./inventory/hosts
 
   wait_for_health:
+    name: 🩺 Health Check
     needs: [configure, provision]
     runs-on: ubuntu-latest
     steps:
@@ -98,6 +101,7 @@ jobs:
           ./util/scripts/wait-for-alb.sh "${{ needs.provision.outputs.target_group_arn }}" "${{ inputs.version }}"
 
   rollback:
+    name: 🔄 Rollback
     needs: [provision, configure, wait_for_health]
     if: failure() && (needs.configure.result == 'failure' || needs.wait_for_health.result == 'failure') && needs.provision.outputs.previous_version != 'first-deployment'
     runs-on: ubuntu-latest
@@ -143,6 +147,7 @@ jobs:
           echo "- **Target Group**: ${{ needs.provision.outputs.target_group_arn }}" >> $GITHUB_STEP_SUMMARY
 
   rolling:
+    name: 🔄 Rolling Deploy
     needs: wait_for_health
     runs-on: ubuntu-latest
     steps:
@@ -172,6 +177,7 @@ jobs:
           path: util/terraform/backend
 
   smoke_test:
+    name: 🧪 Smoke Test
     needs: rolling
     runs-on: ubuntu-latest
     env:
