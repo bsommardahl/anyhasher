@@ -27,6 +27,7 @@ locals {
   should_scale_up            = local.asg_exists && var.deployment_phase == "scale_up"
   should_activate_rolling    = local.asg_exists && var.deployment_phase == "rolling"
   effective_desired_capacity = local.should_scale_up ? var.desired_capacity * 2 : var.desired_capacity
+  termination_policy         = var.deployment_phase == "rolling" ? ["Default"] : ["NewestInstance", "Default"]
 
   previous_version = local.asg_exists && length(data.aws_instance.first) > 0 ? lookup(data.aws_instance.first[0].tags, "Version", "unknown") : "first-deployment"
 }
@@ -38,7 +39,7 @@ resource "aws_autoscaling_group" "this" {
   min_size             = var.desired_capacity
   vpc_zone_identifier  = var.public_subnet_ids
   target_group_arns    = [var.target_group_arn]
-  termination_policies = ["NewestInstance", "Default"]
+  termination_policies = local.termination_policy
 
   launch_template {
     id      = aws_launch_template.this.id
