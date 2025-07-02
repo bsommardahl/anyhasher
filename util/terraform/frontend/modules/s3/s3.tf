@@ -60,3 +60,11 @@ resource "aws_s3_bucket_cors_configuration" "frontend" {
     max_age_seconds = 3000
   }
 }
+
+resource "aws_route53_record" "frontend" {
+  zone_id = var.route53_zone_id
+  name    = "app"
+  type    = "CNAME"
+  ttl     = 300
+  records = [aws_s3_bucket_website_configuration.frontend.website_domain]
+}

@@ -3,5 +3,6 @@ output "bucket_name" {
 }
 
 output "website_endpoint" {
-  value = module.s3.website_endpoint
+  description = "Frontend URL"
+  value       = "http://app.anyhasher.io"
 }
