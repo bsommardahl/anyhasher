@@ -1,5 +1,6 @@
 name: Deploy Frontend
 run-name: "🚛 CD: Deploying Frontend Artifact (${{ inputs.ref }})"
+
 on:
   workflow_call:
     inputs:  
@@ -14,22 +15,17 @@ on:
         required: true
       AWS_SECRET_ACCESS_KEY:
         required: true
-      EC2_PRIVATE_KEY:
-        required: true
     outputs:
       frontend_url: 
         value: ${{ jobs.provision.outputs.frontend_url }}
-      s3_bucket_hostname: 
-        value: ${{ jobs.provision.outputs.s3_bucket_hostname }}
       
 jobs:
   provision:
     name: 🏛️ Provision Frontend Infrastructure
     outputs:
       frontend_url: http://${{ steps.provision.outputs.website_endpoint }}
-      s3_bucket_hostname: ${{ steps.provision.outputs.website_endpoint }}
       bucket_name: ${{ steps.provision.outputs.bucket_name }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,29 +40,22 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: Use commit workspace
-        uses: dflook/terraform-new-workspace@v1
-        with:
-          path: util/terraform/frontend
-          workspace: anyhasher-frontend-${{ inputs.ref }}
-
-      - name: Provision
+      - name: Provision Frontend Infrastructure
         id: provision
-        uses: dflook/terraform-apply@v1
+        uses: dflook/terraform-apply@v2
         with:
-          workspace: anyhasher-frontend-${{ inputs.ref }}
+          workspace: prod
           auto_approve: true
           path: util/terraform/frontend
           variables: |
-            bucket_name = "anyhasher-frontend-${{ inputs.ref }}"
+            aws_region = "us-east-1"
+            environment = "prod"
+            ver = "${{ inputs.ref }}"
 
   deploy:
-    name: 🚚 Deploy Frontend Artifact
+    name: 🚚 Deploy Frontend to S3
     needs: [provision]
-    runs-on: ubuntu-24.04
-    environment:
-      name: Green Frontend
-      url: ${{ needs.provision.outputs.frontend_url }}
+    runs-on: ubuntu-latest
     steps:
       - name: Get Frontend Artifact
         uses: actions/download-artifact@v4
@@ -74,18 +63,12 @@ jobs:
           name: frontend-artifact-${{ inputs.ref }}
           path: frontend/build
 
-      - name: Prepare frontend with backend url
+      - name: Replace Backend URL
         uses: jacobtomlinson/gha-find-replace@v3
         with:
           find: http://localhost:5001
-          replace: ${{ inputs.backend_url }} #this will need to be a load balancer url
-          #regex: false
-
-      - name: Store Release Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-release-${{ inputs.ref }}
-          path: frontend/build
+          replace: ${{ inputs.backend_url }}
+          include: "frontend/build/**/*.js"
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -94,56 +77,28 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Upload frontend to S3 Bucket
+      - name: Deploy to S3
         run: |
-          aws s3 cp frontend/build s3://${{ needs.provision.outputs.bucket_name }} --region=us-east-1 --recursive
+          aws s3 sync frontend/build/ s3://${{ needs.provision.outputs.bucket_name }} --delete
+          aws s3 cp frontend/build/index.html s3://${{ needs.provision.outputs.bucket_name }}/index.html --cache-control "no-cache"
 
   verify:
-    name: 🧪 Check Frontend
+    name: 🧪 Smoke Test Frontend
     needs: [provision, deploy]
-    runs-on: ubuntu-22.04 #There's a problem with the ubuntu-24.04 image and Puppeteer
-    permissions: write-all
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Run Frontend Smoke Test
+      - name: Test Frontend
+        run: |
+          echo "Testing: ${{ needs.provision.outputs.frontend_url }}"
+          curl -f ${{ needs.provision.outputs.frontend_url }} || exit 1
+          echo "✅ Frontend is live!"
+
+      - name: Run E2E Smoke Test
         run: |
           export TEST_URL=${{ needs.provision.outputs.frontend_url }}
           cd frontend/e2e
           npm install
           npm run smoke
-  
-  promote: 
-    name: Promote New Frontend
-    needs: [verify]
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-
-      - name: Use commit workspace
-        uses: dflook/terraform-new-workspace@v1
-        with:
-          path: util/terraform/frontend
-          workspace: anyhasher-frontend-${{ inputs.ref }}
-
-      - name: Promote in CDN
-        id: promote
-        uses: dflook/terraform-apply@v1
-        with:
-          workspace: anyhasher-frontend-${{ inputs.ref }}
-          auto_approve: true
-          path: util/terraform/promote
-          variables: |
-            bucket_name = "anyhasher-frontend-${{ inputs.ref }}"
