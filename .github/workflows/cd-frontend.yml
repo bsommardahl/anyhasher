@@ -46,10 +46,10 @@ jobs:
         with:
           workspace: prod
           auto_approve: true
+          var_file: |
+            util/terraform/environments/prod/frontend.tfvars
           path: util/terraform/frontend
           variables: |
-            aws_region = "us-east-1"
-            environment = "prod"
             ver = "${{ inputs.ref }}"
 
   deploy:
