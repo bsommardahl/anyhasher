@@ -64,7 +64,11 @@ resource "aws_s3_bucket_cors_configuration" "frontend" {
 resource "aws_route53_record" "frontend" {
   zone_id = var.route53_zone_id
   name    = "app"
-  type    = "CNAME"
-  ttl     = 300
-  records = [aws_s3_bucket_website_configuration.frontend.website_endpoint]
+  type    = "A"
+
+  alias {
+    name                   = aws_s3_bucket_website_configuration.frontend.website_domain
+    zone_id                = aws_s3_bucket.frontend.hosted_zone_id
+    evaluate_target_health = false
+  }
 }

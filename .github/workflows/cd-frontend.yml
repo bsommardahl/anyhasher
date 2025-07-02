@@ -98,11 +98,12 @@ jobs:
 
       - name: Run E2E Smoke Test
         uses: mujo-code/puppeteer-headful@v2
+        env:
+          TEST_URL: ${{ needs.provision.outputs.frontend_url }}
         with:
           args: |
             cd frontend/e2e
             npm install
-            TEST_URL=${{ needs.provision.outputs.frontend_url }}
             npm run smoke
 
       - name: Frontend Deployment Success Summary

@@ -34,7 +34,27 @@ async function clickElement(page: puppeteer.Page, selector: string) {
 }
 
 async function main(url: string) {
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({
+    headless: true,  // ← Debe ser true para CI
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-extensions',
+      '--disable-gpu',
+      '--disable-background-timer-throttling',
+      '--disable-backgrounding-occluded-windows',
+      '--disable-renderer-backgrounding',
+      '--disable-features=TranslateUI',
+      '--disable-ipc-flooding-protection',
+      '--no-first-run',
+      '--no-default-browser-check',
+      '--no-pings',
+      '--password-store=basic',
+      '--use-mock-keychain',
+      '--single-process'
+    ]
+  });
   try {
     const page = await browser.newPage();
     await page.goto(url);
