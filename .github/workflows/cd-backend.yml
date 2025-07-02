@@ -35,10 +35,10 @@ jobs:
           workspace: prod
           auto_approve: true
           var_file: |
-            util/terraform/environments/prod/main.tfvars
+            util/terraform/environments/prod/backend.tfvars
           variables: |
             ver="${{ inputs.version }}"
-          path: util/terraform/
+          path: util/terraform/backend
 
   configure:
     needs: provision
@@ -117,11 +117,11 @@ jobs:
           workspace: prod
           auto_approve: true
           var_file: |
-            util/terraform/environments/prod/main.tfvars
+            util/terraform/environments/prod/backend.tfvars
           variables: |
             ver="${{ inputs.version }}"
             deployment_phase="rolling"
-          path: util/terraform/
+          path: util/terraform/backend
 
   smoke_test:
     needs: rolling

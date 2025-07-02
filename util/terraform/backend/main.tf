@@ -22,4 +22,3 @@ module "asg" {
   target_group_arn  = module.alb.target_group_arn
   alb_sg_id         = module.alb.alb_sg_id
 }
-
