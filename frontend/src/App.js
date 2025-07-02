@@ -24,7 +24,7 @@ function App() {
           fullWidth
           color='primary'
           size="medium"
-          label={'Enter value to hash'}
+          label={'Enter value to hash!'}
           variant="outlined"
           value={valeToHash}
           onChange={updateValueToHash} />
