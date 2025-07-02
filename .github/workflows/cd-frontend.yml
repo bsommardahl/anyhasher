@@ -3,7 +3,7 @@ run-name: "🚛 CD: Deploying Frontend Artifact (${{ inputs.ref }})"
 
 on:
   workflow_call:
-    inputs:  
+    inputs:
       ref:
         required: true
         type: string
@@ -16,9 +16,9 @@ on:
       AWS_SECRET_ACCESS_KEY:
         required: true
     outputs:
-      frontend_url: 
+      frontend_url:
         value: ${{ jobs.provision.outputs.frontend_url }}
-      
+
 jobs:
   provision:
     name: 🏛️ Provision Frontend Infrastructure
@@ -67,8 +67,9 @@ jobs:
         uses: jacobtomlinson/gha-find-replace@v3
         with:
           find: http://localhost:5001
-          replace: ${{ inputs.backend_url }}
+          replace: https://${{ inputs.backend_url }}
           include: "frontend/build/**/*.js"
+          regex: false
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
