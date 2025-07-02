@@ -14,6 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       target_group_arn: ${{ steps.apply_changes.outputs.target_group_arn }}
+      previous_version: ${{ steps.apply_changes.outputs.previous_version }}
+      asg_name: ${{ steps.apply_changes.outputs.asg_name }}
+      desired_capacity: ${{ steps.apply_changes.outputs.desired_capacity }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -65,15 +68,15 @@ jobs:
           chmod +x ./util/scripts/fetch-ec2-by-tag.sh
           ./util/scripts/fetch-ec2-by-tag.sh "prod-${{ inputs.version }}"
 
-      - name: Configure Backends
-        uses: dawidd6/action-ansible-playbook@v2
-        with:
-          playbook: deploy.yml
-          directory: ./util/ansible
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          options: |
-            --verbose
-            --inventory ./inventory/hosts
+      # - name: Configure Backends
+      #   uses: dawidd6/action-ansible-playbook@v2
+      #   with:
+      #     playbook: deploy.yml
+      #     directory: ./util/ansible
+      #     key: ${{ secrets.EC2_PRIVATE_KEY }}
+      #     options: |
+      #       --verbose
+      #       --inventory ./inventory/hosts
 
   wait_for_health:
     needs: [configure, provision]
@@ -93,6 +96,43 @@ jobs:
         run: |
           chmod +x ./util/scripts/wait-for-alb.sh
           ./util/scripts/wait-for-alb.sh "${{ needs.provision.outputs.target_group_arn }}" "${{ inputs.version }}"
+
+  rollback:
+    needs: [provision, configure, wait_for_health]
+    if: failure() && (needs.configure.result == 'failure' || needs.wait_for_health.result == 'failure') && needs.provision.outputs.previous_version != 'first-deployment'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Rollback to previous version
+        uses: dflook/terraform-apply@v2
+        with:
+          workspace: prod
+          auto_approve: true
+          var_file: |
+            util/terraform/environments/prod/backend.tfvars
+          variables: |
+            ver="${{ needs.provision.outputs.previous_version }}"
+            desired_capacity=${{ needs.provision.outputs.desired_capacity }}
+            deployment_phase="rollback"
+          path: util/terraform/backend
+
+      - name: Log rollback completion
+        run: |
+          echo "🔄 Rollback completed successfully"
+          echo "Rolled back from: ${{ inputs.version }}"
+          echo "Rolled back to: ${{ needs.provision.outputs.previous_version }}"
 
   rolling:
     needs: wait_for_health
@@ -136,18 +176,3 @@ jobs:
         run: |
           chmod +x ./util/scripts/smoke-test.sh
           ./util/scripts/smoke-test.sh https://api.anyhasher.io
-  #
-  # cleanup:
-  #   needs: smoke_test
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
-  #
-  #     - name: Get Previous ASG
-  #       run: ../util/scripts/get-previous-asg.sh prod $VERSION
-  #
-  #     - name: Destroy Old ASG
-  #       run: ../util/scripts/destroy-old-asg.sh prod $PREVIOUS_ASG_NAME
-
-  # rollback:

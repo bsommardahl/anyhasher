@@ -17,8 +17,8 @@ variable "deployment_phase" {
   type        = string
   default     = "scale_up"
   validation {
-    condition     = contains(["scale_up", "rolling"], var.deployment_phase)
-    error_message = "deployment_phase must be either 'scale_up' or 'rolling'"
+    condition     = contains(["scale_up", "rolling", "rollback"], var.deployment_phase)
+    error_message = "deployment_phase must be either 'scale_up', 'rolling' or 'rollback'"
   }
 }
 
