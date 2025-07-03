@@ -101,10 +101,8 @@ jobs:
         env:
           TEST_URL: ${{ needs.provision.outputs.frontend_url }}
         with:
-          args: |
-            cd frontend/e2e
-            npm install
-            npm run smoke
+          working-directory: frontend/e2e
+          args: bash -c "npm install && npm run smoke"
 
       - name: Frontend Deployment Success Summary
         shell: bash

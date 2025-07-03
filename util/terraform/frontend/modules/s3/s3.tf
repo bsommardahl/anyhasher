@@ -67,7 +67,7 @@ resource "aws_route53_record" "frontend" {
   type    = "A"
 
   alias {
-    name                   = aws_s3_bucket_website_configuration.frontend.website_domain
+    name                   = aws_s3_bucket_website_configuration.frontend.website_endpoint
     zone_id                = aws_s3_bucket.frontend.hosted_zone_id
     evaluate_target_health = false
   }
