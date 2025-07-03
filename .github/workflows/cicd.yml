@@ -18,7 +18,7 @@ run-name: "🛠️ ${{ github.event.head_commit.message }} (${{ github.sha }})"
 on:
   push:
     branches:
-      # - main #to avoid executions for now
+      # - main
       - rolling-deployments #normally 'main'
 
 jobs:
