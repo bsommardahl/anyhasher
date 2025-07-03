@@ -57,6 +57,31 @@ jobs:
     needs: [provision]
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Create Rollback Backup
+        run: |
+          echo "📦 Creating backup of current frontend version..."
+          chmod +x util/scripts/download-front-rollback.sh
+          ./util/scripts/download-front-rollback.sh
+        continue-on-error: true
+
+      - name: Upload Rollback Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rollback-frontend-${{ inputs.ref }}
+          path: rollback-backup/
+          retention-days: 7
+        continue-on-error: true
+
       - name: Get Frontend Artifact
         uses: actions/download-artifact@v4
         with:
@@ -70,13 +95,6 @@ jobs:
           replace: https://${{ inputs.backend_url }}
           include: "frontend/build/**/*.js"
           regex: false
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
 
       - name: Deploy to S3
         run: |
@@ -108,6 +126,7 @@ jobs:
           libgbm-dev
 
       - name: Run E2E Smoke Tests
+        id: smoke-tests
         working-directory: frontend/e2e
         run: |
           npm install
@@ -116,16 +135,10 @@ jobs:
           CI: true
           PUPPETEER_HEADLESS: true
           TEST_URL: ${{ needs.provision.outputs.frontend_url }}
-
-      # - name: Run E2E Smoke Test
-      #   uses: mujo-code/puppeteer-headful@v2
-      #   env:
-      #     TEST_URL: ${{ needs.provision.outputs.frontend_url }}
-      #   with:
-      #     working-directory: frontend/e2e
-      #     args: bash -c "npm install && npm run smoke"
+        continue-on-error: true
 
       - name: Frontend Deployment Success Summary
+        if: steps.smoke-tests.outcome == 'success'
         shell: bash
         run: |
           echo "## 🎉 Frontend Deployment Summary" >> $GITHUB_STEP_SUMMARY
@@ -148,3 +161,77 @@ jobs:
           echo "### 🔗 Quick Links" >> $GITHUB_STEP_SUMMARY
           echo "- [🌐 Visit Frontend](${{ needs.provision.outputs.frontend_url }})" >> $GITHUB_STEP_SUMMARY
           echo "- [🔗 Backend API](https://${{ inputs.backend_url }})" >> $GITHUB_STEP_SUMMARY
+
+      - name: Trigger Rollback on Failure
+        if: steps.smoke-tests.outcome == 'failure'
+        run: |
+          echo "🚨 Smoke tests failed - rollback will be triggered"
+          exit 1
+
+  rollback:
+    name: 🔄 Rollback Frontend
+    needs: [provision, deploy, verify]
+    runs-on: ubuntu-latest
+    if: failure() && needs.verify.result == 'failure'
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Download Rollback Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: rollback-frontend-${{ inputs.ref }}
+          path: rollback-backup/
+
+      - name: Rollback to Previous Version
+        run: |
+          echo "🔄 Rolling back frontend to previous version..."
+          
+          # Check if rollback backup exists and has files
+          if [ -d "rollback-backup" ] && [ "$(ls -A rollback-backup)" ]; then
+            echo "📁 Found rollback backup, proceeding with rollback..."
+            
+            # Restore from rollback backup
+            aws s3 sync rollback-backup/ s3://${{ needs.provision.outputs.bucket_name }} --delete --exclude ".backup-info"
+            aws s3 cp rollback-backup/index.html s3://${{ needs.provision.outputs.bucket_name }}/index.html --cache-control "no-cache"
+            
+            echo "✅ Rollback completed successfully!"
+          else
+            echo "❌ No rollback backup found or backup is empty"
+            echo "🚨 Manual intervention required"
+            exit 1
+          fi
+
+      - name: Verify Rollback
+        run: |
+          echo "🧪 Verifying rollback..."
+          sleep 30  # Wait for S3 changes to propagate
+          
+          # Simple HTTP check
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" ${{ needs.provision.outputs.frontend_url }})
+          
+          if [ "$HTTP_STATUS" = "200" ]; then
+            echo "✅ Rollback verification passed - Frontend is accessible"
+          else
+            echo "❌ Rollback verification failed - HTTP Status: $HTTP_STATUS"
+            exit 1
+          fi
+
+      - name: Rollback Summary
+        shell: bash
+        run: |
+          echo "## 🔄 Frontend Rollback Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- ❌ Deployment of version \`${{ inputs.ref }}\` failed" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Automatic rollback to previous version completed" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Frontend restored to stable state" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔄 Rollback Details" >> $GITHUB_STEP_SUMMARY
+          echo "- **Failed Version**: \`${{ inputs.ref }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Rollback Method**: S3 Sync from backup" >> $GITHUB_STEP_SUMMARY
+          echo "- **Frontend URL**: [${{ needs.provision.outputs.frontend_url }}](${{ needs.provision.outputs.frontend_url }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔍 **Please check the logs and fix the issues before redeploying.**" >> $GITHUB_STEP_SUMMARY

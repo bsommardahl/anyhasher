@@ -18,7 +18,7 @@ data "aws_instances" "current" {
 }
 
 data "aws_instance" "first" {
-  count       = local.asg_exists && length(data.aws_instances.current[0].ids) > 0 ? 1 : 0
+  count       = local.asg_exists ? 1 : 0
   instance_id = data.aws_instances.current[0].ids[0]
 }
 
