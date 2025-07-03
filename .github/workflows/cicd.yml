@@ -69,19 +69,3 @@ jobs:
     with:
       version: ${{ github.sha }}
     secrets: inherit
-# now, failure means rollback of any deployed instances and new frontend
-# failure:
-#   needs: [cd-frontend, cd-backend]
-#   # We need some extra logic to prevent cleanup when a CI failure
-#   if: |
-#     failure() && (
-#       needs.start-backend-rollout.result != 'skipped' ||
-#       needs.deploy-frontend.result != 'skipped'
-#     )
-#   uses: ./.github/workflows/cleanup.yml
-#   with:
-#     ref: ${{ github.sha }}
-#     env_name: Green
-#     reason: failure
-#   secrets: inherit
-
