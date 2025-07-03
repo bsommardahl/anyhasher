@@ -1,9 +1,9 @@
 resource "aws_s3_bucket" "frontend" {
-  bucket        = "anyhasher-${var.environment}-${var.ver}"
+  bucket        = "app.anyhasher.io"
   force_destroy = true
 
   tags = {
-    Name       = "anyhasher-${var.environment}-${var.ver}"
+    Name       = "app.anyhasher.io"
     Version    = var.ver
     Deployment = "${var.environment}-${var.ver}"
   }
@@ -67,7 +67,7 @@ resource "aws_route53_record" "frontend" {
   type    = "A"
 
   alias {
-    name                   = aws_s3_bucket_website_configuration.frontend.website_endpoint
+    name                   = aws_s3_bucket_website_configuration.frontend.website_domain
     zone_id                = aws_s3_bucket.frontend.hosted_zone_id
     evaluate_target_health = false
   }

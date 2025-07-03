@@ -96,13 +96,34 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Run E2E Smoke Test
-        uses: mujo-code/puppeteer-headful@v2
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+          libnss3-dev \
+          libatk-bridge2.0-dev \
+          libdrm2 \
+          libxkbcommon0 \
+          libgtk-3-dev \
+          libgbm-dev
+
+      - name: Run E2E Smoke Tests
+        working-directory: frontend/e2e
+        run: |
+          npm install
+          npm run smoke
         env:
+          CI: true
+          PUPPETEER_HEADLESS: true
           TEST_URL: ${{ needs.provision.outputs.frontend_url }}
-        with:
-          working-directory: frontend/e2e
-          args: bash -c "npm install && npm run smoke"
+
+      # - name: Run E2E Smoke Test
+      #   uses: mujo-code/puppeteer-headful@v2
+      #   env:
+      #     TEST_URL: ${{ needs.provision.outputs.frontend_url }}
+      #   with:
+      #     working-directory: frontend/e2e
+      #     args: bash -c "npm install && npm run smoke"
 
       - name: Frontend Deployment Success Summary
         shell: bash
