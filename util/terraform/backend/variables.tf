@@ -31,7 +31,7 @@ variable "desired_capacity" {
 variable "rollout_duration_seconds" {
   description = "Total duration for the rolling deployment to complete, including all verification pauses"
   type        = number
-  default     = 300
+  default     = 60
 
   validation {
     condition     = var.rollout_duration_seconds >= 30

@@ -165,7 +165,7 @@ jobs:
           variables: |
             ver="${{ inputs.version }}"
             deployment_phase="rolling"
-            rollout_duration_seconds=600
+            rollout_duration_seconds=300
           path: util/terraform/backend
 
   smoke_test:
