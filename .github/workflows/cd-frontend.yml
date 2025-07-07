@@ -70,8 +70,8 @@ jobs:
       - name: Create Rollback Backup
         run: |
           echo "📦 Creating backup of current frontend version..."
-          chmod +x util/scripts/download-front-rollback.sh
-          ./util/scripts/download-front-rollback.sh
+          chmod +x util/scripts/frontend/download-front-rollback.sh
+          ./util/scripts/frontend/download-front-rollback.sh
         continue-on-error: true
 
       - name: Upload Rollback Artifact
@@ -116,14 +116,8 @@ jobs:
 
       - name: Install system dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-          libnss3-dev \
-          libatk-bridge2.0-dev \
-          libdrm2 \
-          libxkbcommon0 \
-          libgtk-3-dev \
-          libgbm-dev
+          chmod +x util/scripts/frontend/install-e2e-dependencies.sh
+          ./util/scripts/frontend/install-e2e-dependencies.sh
 
       - name: Run E2E Smoke Tests
         id: smoke-tests
@@ -139,28 +133,9 @@ jobs:
 
       - name: Frontend Deployment Success Summary
         if: steps.smoke-tests.outcome == 'success'
-        shell: bash
         run: |
-          echo "## 🎉 Frontend Deployment Summary" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Frontend infrastructure provisioned successfully" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Artifact deployed to S3 bucket" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Backend URL replaced successfully" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ E2E smoke tests passed" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Frontend is live and accessible" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🚀 Frontend Deployment Details" >> $GITHUB_STEP_SUMMARY
-          echo "- **Version**: \`${{ inputs.ref }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Environment**: Production" >> $GITHUB_STEP_SUMMARY
-          echo "- **Frontend URL**: [${{ needs.provision.outputs.frontend_url }}](${{ needs.provision.outputs.frontend_url }})" >> $GITHUB_STEP_SUMMARY
-          echo "- **Backend URL**: https://${{ inputs.backend_url }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **S3 Bucket**: ${{ needs.provision.outputs.bucket_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **AWS Region**: us-east-1" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "🎯 **Frontend deployment completed successfully!**" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🔗 Quick Links" >> $GITHUB_STEP_SUMMARY
-          echo "- [🌐 Visit Frontend](${{ needs.provision.outputs.frontend_url }})" >> $GITHUB_STEP_SUMMARY
-          echo "- [🔗 Backend API](https://${{ inputs.backend_url }})" >> $GITHUB_STEP_SUMMARY
+          chmod +x util/scripts/frontend/deployment-success-summary.sh
+          ./util/scripts/frontend/deployment-success-summary.sh "${{ inputs.ref }}" "${{ needs.provision.outputs.frontend_url }}" "${{ inputs.backend_url }}" "${{ needs.provision.outputs.bucket_name }}"
 
       - name: Trigger Rollback on Failure
         if: steps.smoke-tests.outcome == 'failure'
@@ -174,6 +149,9 @@ jobs:
     runs-on: ubuntu-latest
     if: failure() && needs.verify.result == 'failure'
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -189,49 +167,15 @@ jobs:
 
       - name: Rollback to Previous Version
         run: |
-          echo "🔄 Rolling back frontend to previous version..."
-
-          # Check if rollback backup exists and has files
-          if [ -d "rollback-backup" ] && [ "$(ls -A rollback-backup)" ]; then
-            echo "📁 Found rollback backup, proceeding with rollback..."
-            
-            # Restore from rollback backup
-            aws s3 sync rollback-backup/ s3://${{ needs.provision.outputs.bucket_name }} --delete --exclude ".backup-info"
-            aws s3 cp rollback-backup/index.html s3://${{ needs.provision.outputs.bucket_name }}/index.html --cache-control "no-cache"
-            
-            echo "✅ Rollback completed successfully!"
-          else
-            echo "❌ No rollback backup found or backup is empty"
-            echo "🚨 Manual intervention required"
-            exit 1
-          fi
+          chmod +x util/scripts/frontend/rollback-frontend.sh
+          ./util/scripts/frontend/rollback-frontend.sh "${{ needs.provision.outputs.bucket_name }}"
 
       - name: Verify Rollback
         run: |
-          echo "🧪 Verifying rollback..."
-          sleep 30  # Wait for S3 changes to propagate
-
-          # Simple HTTP check
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" ${{ needs.provision.outputs.frontend_url }})
-
-          if [ "$HTTP_STATUS" = "200" ]; then
-            echo "✅ Rollback verification passed - Frontend is accessible"
-          else
-            echo "❌ Rollback verification failed - HTTP Status: $HTTP_STATUS"
-            exit 1
-          fi
+          chmod +x util/scripts/frontend/verify-rollback.sh
+          ./util/scripts/frontend/verify-rollback.sh "${{ needs.provision.outputs.frontend_url }}"
 
       - name: Rollback Summary
-        shell: bash
         run: |
-          echo "## 🔄 Frontend Rollback Summary" >> $GITHUB_STEP_SUMMARY
-          echo "- ❌ Deployment of version \`${{ inputs.ref }}\` failed" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Automatic rollback to previous version completed" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Frontend restored to stable state" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🔄 Rollback Details" >> $GITHUB_STEP_SUMMARY
-          echo "- **Failed Version**: \`${{ inputs.ref }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Rollback Method**: S3 Sync from backup" >> $GITHUB_STEP_SUMMARY
-          echo "- **Frontend URL**: [${{ needs.provision.outputs.frontend_url }}](${{ needs.provision.outputs.frontend_url }})" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "🔍 **Please check the logs and fix the issues before redeploying.**" >> $GITHUB_STEP_SUMMARY
+          chmod +x util/scripts/frontend/rollback-summary.sh
+          ./util/scripts/frontend/rollback-summary.sh "${{ inputs.ref }}" "${{ needs.provision.outputs.frontend_url }}"

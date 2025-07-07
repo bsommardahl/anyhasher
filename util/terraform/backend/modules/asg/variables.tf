@@ -7,6 +7,7 @@ variable "vpc_id" {}
 variable "public_subnet_ids" { type = list(string) }
 variable "alb_sg_id" {}
 variable "desired_capacity" {}
+variable "rollout_duration_seconds" { type = number }
 
 variable "ver" {
   description = "Git version or tag for this deployment"

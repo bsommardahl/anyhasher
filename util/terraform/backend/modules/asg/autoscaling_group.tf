@@ -53,8 +53,9 @@ resource "aws_autoscaling_group" "this" {
 
       preferences {
         min_healthy_percentage       = 75
-        instance_warmup              = 300
         scale_in_protected_instances = "Ignore"
+        checkpoint_delay             = var.rollout_duration_seconds / length([50, 100])
+        checkpoint_percentages       = [50, 100]
       }
 
       triggers = ["tag", "launch_template"]
