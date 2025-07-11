@@ -71,7 +71,7 @@ jobs:
             util/terraform/environments/prod/backend.tfvars
           variables: |
             ver="${{ inputs.version }}"
-            desired_capacity=4
+            desired_capacity=2
             min_healthy_percentage=50
             checkpoint_delay=300
           path: util/terraform/backend
