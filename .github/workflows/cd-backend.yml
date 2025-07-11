@@ -16,6 +16,9 @@ jobs:
     outputs:
       s3_bucket: ${{ steps.upload.outputs.s3_bucket }}
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -32,10 +35,8 @@ jobs:
       - name: Upload to S3
         id: upload
         run: |
-          S3_BUCKET="anyhasher-artifacts-prod"
-          aws s3 cp backend-artifact-${{ inputs.version }}.tar.gz s3://$S3_BUCKET/backend/${{ inputs.version }}/
-          echo "s3_bucket=$S3_BUCKET" >> $GITHUB_OUTPUT
-          echo "✅ Artifact uploaded to s3://$S3_BUCKET/backend/${{ inputs.version }}/"
+          chmod +x ./util/scripts/backend/upload-to-s3.sh
+          ./util/scripts/backend/upload-to-s3.sh "${{ inputs.version }}"
 
   deploy:
     name: 🚀 Rolling Deployment

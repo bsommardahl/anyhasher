@@ -1,12 +1,28 @@
 ---
-- name: Deploy Backend Artifact
-  synchronize: # "copy" takes too long!
-    src: "../../backend/build"
-    dest: ~/anyhasher
+- name: Install application dependencies
+  become: true
+  become_user: ubuntu
+  npm:
+    path: ~/anyhasher/build
+    production: true
+    state: present
+  when: lookup('file', '~/anyhasher/build/package.json', errors='ignore')
 
 - name: Stop existing server (if running)
-  shell: "pm2 delete server || true"
-  ignore_errors: yes
+  become: true
+  become_user: ubuntu
+  ansible.builtin.command: "pm2 delete anyhasher-backend"
+  failed_when: false
 
-- name: Start Server
-  shell: "cd ~/anyhasher/build && pm2 start server.js"
+- name: Start Server with PM2
+  become: true
+  become_user: ubuntu
+  ansible.builtin.shell: "cd ~/anyhasher/build && pm2 start server.js --name anyhasher-backend"
+  args:
+    creates: ~/.pm2/logs/anyhasher-backend-out.log
+
+- name: Save PM2 configuration
+  become: true
+  become_user: ubuntu
+  ansible.builtin.command: "pm2 save"
+  changed_when: false
