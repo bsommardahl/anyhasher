@@ -33,7 +33,7 @@ jobs:
         id: upload
         run: |
           S3_BUCKET="anyhasher-artifacts-prod"
-          aws s3 cp backend/backend-artifact-${{ inputs.version }}.tar.gz s3://$S3_BUCKET/backend/${{ inputs.version }}/
+          aws s3 cp backend-artifact-${{ inputs.version }}.tar.gz s3://$S3_BUCKET/backend/${{ inputs.version }}/
           echo "s3_bucket=$S3_BUCKET" >> $GITHUB_OUTPUT
           echo "✅ Artifact uploaded to s3://$S3_BUCKET/backend/${{ inputs.version }}/"
 
@@ -96,6 +96,26 @@ jobs:
           chmod +x ./util/scripts/backend/wait-for-alb.sh
           ./util/scripts/backend/wait-for-alb.sh "${{ needs.deploy.outputs.target_group_arn }}" "${{ inputs.version }}"
 
+  smoke_test:
+    name: 🧪 Smoke Test
+    needs: wait_for_health
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ inputs.version }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Smoke Tests
+        run: |
+          chmod +x ./util/scripts/backend/smoke-test.sh
+          ./util/scripts/backend/smoke-test.sh https://api.anyhasher.io
+
+      - name: Deployment Success Summary
+        run: |
+          chmod +x util/scripts/backend/deployment-success-summary.sh
+          ./util/scripts/backend/deployment-success-summary.sh "${{ inputs.version }}" "https://api.anyhasher.io"
+
   rollback:
     name: 🔄 Rollback
     needs: [deploy, wait_for_health]
@@ -131,23 +151,3 @@ jobs:
         run: |
           chmod +x util/scripts/backend/rollback-summary.sh
           ./util/scripts/backend/rollback-summary.sh "${{ inputs.version }}" "${{ needs.deploy.outputs.previous_version }}" "${{ needs.deploy.outputs.asg_name }}" "${{ needs.deploy.outputs.desired_capacity }}" "${{ needs.deploy.outputs.target_group_arn }}"
-
-  smoke_test:
-    name: 🧪 Smoke Test
-    needs: wait_for_health
-    runs-on: ubuntu-latest
-    env:
-      VERSION: ${{ inputs.version }}
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Run Smoke Tests
-        run: |
-          chmod +x ./util/scripts/backend/smoke-test.sh
-          ./util/scripts/backend/smoke-test.sh https://api.anyhasher.io
-
-      - name: Deployment Success Summary
-        run: |
-          chmod +x util/scripts/backend/deployment-success-summary.sh
-          ./util/scripts/backend/deployment-success-summary.sh "${{ inputs.version }}" "https://api.anyhasher.io"
