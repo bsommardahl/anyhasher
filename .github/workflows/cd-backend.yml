@@ -98,7 +98,8 @@ jobs:
 
   smoke_test:
     name: 🧪 Smoke Test
-    needs: wait_for_health
+    needs: [deploy, wait_for_health, rollback]
+    if: always() && (needs.wait_for_health.result == 'success' || needs.rollback.result == 'success')
     runs-on: ubuntu-latest
     env:
       VERSION: ${{ inputs.version }}
@@ -112,6 +113,7 @@ jobs:
           ./util/scripts/backend/smoke-test.sh https://api.anyhasher.io
 
       - name: Deployment Success Summary
+        if: needs.rollback.result != 'success'
         run: |
           chmod +x util/scripts/backend/deployment-success-summary.sh
           ./util/scripts/backend/deployment-success-summary.sh "${{ inputs.version }}" "https://api.anyhasher.io"
@@ -150,4 +152,4 @@ jobs:
       - name: Rollback Summary
         run: |
           chmod +x util/scripts/backend/rollback-summary.sh
-          ./util/scripts/backend/rollback-summary.sh "${{ inputs.version }}" "${{ needs.deploy.outputs.previous_version }}" "${{ needs.deploy.outputs.asg_name }}" "${{ needs.deploy.outputs.desired_capacity }}" "${{ needs.deploy.outputs.target_group_arn }}"
+          ./util/scripts/backend/rollback-summary.sh "${{ inputs.version }}" "${{ needs.deploy.outputs.previous_version }}" "${{ needs.deploy.outputs.asg_name }}" "${{ needs.deploy.outputs.previous_desired_capacity }}" "${{ needs.deploy.outputs.target_group_arn }}"

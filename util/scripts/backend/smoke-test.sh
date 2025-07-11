@@ -10,4 +10,3 @@ else
   echo "❌ Application is not responding (HTTP $response)"
   exit 1
 fi
-
