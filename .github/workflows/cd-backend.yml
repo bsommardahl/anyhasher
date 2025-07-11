@@ -10,12 +10,41 @@ on:
         type: string
 
 jobs:
-  provision:
-    name: 🏗️ Provision Infrastructure
+  upload_artifact:
+    name: 📦 Upload Artifact to S3
+    runs-on: ubuntu-latest
+    outputs:
+      s3_bucket: ${{ steps.upload.outputs.s3_bucket }}
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Get Backend Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-artifact-compressed-${{ inputs.version }}
+          path: ./
+
+      - name: Upload to S3
+        id: upload
+        run: |
+          S3_BUCKET="anyhasher-artifacts-prod"
+          aws s3 cp backend/backend-artifact-${{ inputs.version }}.tar.gz s3://$S3_BUCKET/backend/${{ inputs.version }}/
+          echo "s3_bucket=$S3_BUCKET" >> $GITHUB_OUTPUT
+          echo "✅ Artifact uploaded to s3://$S3_BUCKET/backend/${{ inputs.version }}/"
+
+  deploy:
+    name: 🚀 Rolling Deployment
+    needs: upload_artifact
     runs-on: ubuntu-latest
     outputs:
       target_group_arn: ${{ steps.apply_changes.outputs.target_group_arn }}
       previous_version: ${{ steps.apply_changes.outputs.previous_version }}
+      previous_desired_capacity: ${{ steps.apply_changes.outputs.previous_desired_capacity }}
       asg_name: ${{ steps.apply_changes.outputs.asg_name }}
       desired_capacity: ${{ steps.apply_changes.outputs.desired_capacity }}
     steps:
@@ -32,7 +61,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Apply Infra Code
+      - name: Apply Rolling Deployment
         id: apply_changes
         uses: dflook/terraform-apply@v2
         with:
@@ -42,47 +71,14 @@ jobs:
             util/terraform/environments/prod/backend.tfvars
           variables: |
             ver="${{ inputs.version }}"
+            desired_capacity=4
+            min_healthy_percentage=50
+            checkpoint_delay=300
           path: util/terraform/backend
-
-  configure:
-    name: ⚙️ Configure Backend
-    needs: provision
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Get Backend Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-artifact-${{ inputs.version }}
-          path: backend/build/
-
-      - name: Fetch EC2 Hosts
-        run: |
-          chmod +x ./util/scripts/backend/fetch-ec2-by-tag.sh
-          ./util/scripts/backend/fetch-ec2-by-tag.sh "prod-${{ inputs.version }}"
-
-      - name: Configure Backends
-        uses: dawidd6/action-ansible-playbook@v2
-        with:
-          playbook: deploy.yml
-          directory: ./util/ansible
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          options: |
-            --verbose
-            --inventory ./inventory/hosts
 
   wait_for_health:
     name: 🩺 Health Check
-    needs: [configure, provision]
+    needs: deploy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -98,12 +94,12 @@ jobs:
       - name: Wait for ALB Health Checks
         run: |
           chmod +x ./util/scripts/backend/wait-for-alb.sh
-          ./util/scripts/backend/wait-for-alb.sh "${{ needs.provision.outputs.target_group_arn }}" "${{ inputs.version }}"
+          ./util/scripts/backend/wait-for-alb.sh "${{ needs.deploy.outputs.target_group_arn }}" "${{ inputs.version }}"
 
   rollback:
     name: 🔄 Rollback
-    needs: [provision, configure, wait_for_health]
-    if: failure() && (needs.configure.result == 'failure' || needs.wait_for_health.result == 'failure') && needs.provision.outputs.previous_version != 'first-deployment'
+    needs: [deploy, wait_for_health]
+    if: failure() && needs.wait_for_health.result == 'failure' && needs.deploy.outputs.previous_version != 'first-deployment'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -127,50 +123,18 @@ jobs:
           var_file: |
             util/terraform/environments/prod/backend.tfvars
           variables: |
-            ver="${{ needs.provision.outputs.previous_version }}"
-            desired_capacity=${{ needs.provision.outputs.desired_capacity }}
-            deployment_phase="rollback"
+            ver="${{ needs.deploy.outputs.previous_version }}"
+            desired_capacity=${{ needs.deploy.outputs.previous_desired_capacity }}
           path: util/terraform/backend
 
       - name: Rollback Summary
         run: |
           chmod +x util/scripts/backend/rollback-summary.sh
-          ./util/scripts/backend/rollback-summary.sh "${{ inputs.version }}" "${{ needs.provision.outputs.previous_version }}" "${{ needs.provision.outputs.asg_name }}" "${{ needs.provision.outputs.desired_capacity }}" "${{ needs.provision.outputs.target_group_arn }}"
-
-  rolling:
-    name: 🔄 Rolling Deploy
-    needs: wait_for_health
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Apply rolling deployment
-        uses: dflook/terraform-apply@v2
-        with:
-          workspace: prod
-          auto_approve: true
-          var_file: |
-            util/terraform/environments/prod/backend.tfvars
-          variables: |
-            ver="${{ inputs.version }}"
-            deployment_phase="rolling"
-            rollout_duration_seconds=300
-          path: util/terraform/backend
+          ./util/scripts/backend/rollback-summary.sh "${{ inputs.version }}" "${{ needs.deploy.outputs.previous_version }}" "${{ needs.deploy.outputs.asg_name }}" "${{ needs.deploy.outputs.desired_capacity }}" "${{ needs.deploy.outputs.target_group_arn }}"
 
   smoke_test:
     name: 🧪 Smoke Test
-    needs: rolling
+    needs: wait_for_health
     runs-on: ubuntu-latest
     env:
       VERSION: ${{ inputs.version }}

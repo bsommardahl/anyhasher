@@ -7,3 +7,8 @@ output "previous_version" {
   value       = local.previous_version
 }
 
+output "previous_desired_capacity" {
+  description = "Previous desired capacity from existing ASG"
+  value       = local.previous_desired_capacity
+}
+

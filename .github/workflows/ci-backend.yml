@@ -39,6 +39,15 @@ jobs:
           name: backend-artifact-${{ inputs.ref }}
           path: backend/build/
 
+      - name: Create Compressed Artifact
+        run: cd backend && tar -czf backend-artifact-${{ inputs.ref }}.tar.gz -C build .
+
+      - name: Store Compressed Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-artifact-compressed-${{ inputs.ref }}
+          path: backend/backend-artifact-${{ inputs.ref }}.tar.gz
+
   be-lint:
     name: 🕵️ Lint Backend Code
     needs: [be-build]

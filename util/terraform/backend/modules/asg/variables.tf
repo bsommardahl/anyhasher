@@ -8,14 +8,20 @@ variable "public_subnet_ids" { type = list(string) }
 variable "alb_sg_id" {}
 variable "desired_capacity" {}
 variable "rollout_duration_seconds" { type = number }
+variable "checkpoint_delay" {}
+variable "min_healthy_percentage" {}
 
 variable "ver" {
   description = "Git version or tag for this deployment"
   type        = string
 }
 
-variable "deployment_phase" {
-  description = "Phase of deployment: scale_up or rolling"
+variable "s3_bucket" {
+  description = "S3 bucket name for artifacts"
   type        = string
 }
 
+variable "instance_profile_name" {
+  description = "IAM instance profile name for EC2 instances"
+  type        = string
+}

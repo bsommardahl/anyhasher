@@ -5,6 +5,11 @@ data "aws_autoscaling_groups" "existing" {
   }
 }
 
+data "aws_autoscaling_group" "current" {
+  count = local.asg_exists ? 1 : 0
+  name  = "anyhasher-${var.environment}"
+}
+
 data "aws_instances" "current" {
   count = local.asg_exists ? 1 : 0
   filter {
@@ -24,42 +29,34 @@ data "aws_instance" "first" {
 
 locals {
   asg_exists                 = contains(data.aws_autoscaling_groups.existing.names, "anyhasher-${var.environment}")
-  should_scale_up            = local.asg_exists && var.deployment_phase == "scale_up"
-  should_activate_rolling    = local.asg_exists && var.deployment_phase == "rolling"
-  effective_desired_capacity = local.should_scale_up ? var.desired_capacity * 2 : var.desired_capacity
-  termination_policy         = var.deployment_phase == "rolling" ? ["Default"] : ["NewestInstance", "Default"]
-
   previous_version = local.asg_exists && length(data.aws_instance.first) > 0 ? lookup(data.aws_instance.first[0].tags, "Version", "unknown") : "first-deployment"
+  previous_desired_capacity = local.asg_exists && length(data.aws_autoscaling_groups.existing.names) > 0 ? data.aws_autoscaling_group.current[0].desired_capacity : var.desired_capacity
 }
 
 resource "aws_autoscaling_group" "this" {
   name                 = "anyhasher-${var.environment}"
-  desired_capacity     = local.effective_desired_capacity
+  desired_capacity     = var.desired_capacity
   max_size             = var.desired_capacity * 2
   min_size             = var.desired_capacity
   vpc_zone_identifier  = var.public_subnet_ids
   target_group_arns    = [var.target_group_arn]
-  termination_policies = local.termination_policy
 
   launch_template {
     id      = aws_launch_template.this.id
     version = "$Latest"
   }
 
-  dynamic "instance_refresh" {
-    for_each = local.should_activate_rolling ? [1] : []
-    content {
-      strategy = "Rolling"
+  instance_refresh {
+    strategy = "Rolling"
 
-      preferences {
-        min_healthy_percentage       = 75
-        scale_in_protected_instances = "Ignore"
-        checkpoint_delay             = var.rollout_duration_seconds
-        checkpoint_percentages       = [0]
-      }
-
-      triggers = ["tag", "launch_template"]
+    preferences {
+      min_healthy_percentage         = var.min_healthy_percentage
+      checkpoint_delay              = var.checkpoint_delay
+      scale_in_protected_instances  = "Ignore"
+      skip_matching                 = false
     }
+
+    triggers = ["tag", "launch_template"]
   }
 
   tag {

@@ -12,15 +12,6 @@ variable "ver" {
   description = "Git version or tag for this deployment"
   type        = string
 }
-variable "deployment_phase" {
-  description = "Phase of deployment: scale_up or rolling"
-  type        = string
-  default     = "scale_up"
-  validation {
-    condition     = contains(["scale_up", "rolling", "rollback"], var.deployment_phase)
-    error_message = "deployment_phase must be either 'scale_up', 'rolling' or 'rollback'"
-  }
-}
 
 variable "desired_capacity" {
   description = "Normal desired capacity"
@@ -36,5 +27,32 @@ variable "rollout_duration_seconds" {
   validation {
     condition     = var.rollout_duration_seconds >= 30
     error_message = "Rollout duration must be at least 30 seconds."
+  }
+}
+
+variable "checkpoint_delay" {
+  description = "Time to wait between each instance replacement in rolling deployment (in seconds)"
+  type        = number
+  default     = 60
+
+  validation {
+    condition     = var.checkpoint_delay >= 0 && var.checkpoint_delay <= 3600
+    error_message = "Checkpoint delay must be between 0 and 3600 seconds (1 hour)."
+  }
+}
+
+variable "min_healthy_percentage" {
+  description = "Minimum percentage of instances that must remain healthy during rolling deployment. Lower values allow faster deployments but higher risk. Higher values are safer but slower."
+  type        = number
+  default     = 50
+
+  validation {
+    condition     = var.min_healthy_percentage >= 0 && var.min_healthy_percentage <= 100
+    error_message = "Minimum healthy percentage must be between 0 and 100."
+  }
+
+  validation {
+    condition     = var.min_healthy_percentage % 10 == 0
+    error_message = "Minimum healthy percentage should be a multiple of 10 for better predictability (e.g., 50, 60, 90)."
   }
 }
