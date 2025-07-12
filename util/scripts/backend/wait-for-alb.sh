@@ -1,7 +1,7 @@
 #!/bin/bash
 TG_ARN=$1
 VERSION=$2
-MAX_ATTEMPTS=15
+MAX_ATTEMPTS=30
 ATTEMPT=0
 
 while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
