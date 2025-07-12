@@ -74,7 +74,7 @@ jobs:
             ver="${{ inputs.version }}"
             desired_capacity=2
             min_healthy_percentage=50
-            instance_warmup=300
+            checkpoint_wait=300
           path: util/terraform/backend
 
   wait_for_health:

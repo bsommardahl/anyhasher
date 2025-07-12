@@ -23,6 +23,6 @@ module "asg" {
   rollout_duration_seconds = var.rollout_duration_seconds
   s3_bucket               = aws_s3_bucket.artifacts.bucket
   instance_profile_name   = aws_iam_instance_profile.ec2_profile.name
-  instance_warmup         = var.instance_warmup
+  checkpoint_wait         = var.checkpoint_wait
   min_healthy_percentage  = var.min_healthy_percentage
 }
