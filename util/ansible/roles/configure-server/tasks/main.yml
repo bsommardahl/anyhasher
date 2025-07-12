@@ -1,10 +1,10 @@
 ---
-- name: Install Node.js via snap (faster)
+- name: Install Node.js and npm
   become: true
-  community.general.snap:
-    name: node
-    classic: true
-    channel: "18/stable"
+  ansible.builtin.apt:
+    name: ["nodejs", "npm"]
+    state: present
+    update_cache: false
 
 - name: Install pm2
   become: true
