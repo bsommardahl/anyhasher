@@ -30,14 +30,14 @@ variable "rollout_duration_seconds" {
   }
 }
 
-variable "checkpoint_delay" {
-  description = "Time to wait between each instance replacement in rolling deployment (in seconds)"
+variable "instance_warmup" {
+  description = "Time to wait after each instance becomes healthy before proceeding to next instance in rolling deployment (in seconds)"
   type        = number
   default     = 60
 
   validation {
-    condition     = var.checkpoint_delay >= 0 && var.checkpoint_delay <= 3600
-    error_message = "Checkpoint delay must be between 0 and 3600 seconds (1 hour)."
+    condition     = var.instance_warmup >= 0 && var.instance_warmup <= 3600
+    error_message = "Instance warmup must be between 0 and 3600 seconds (1 hour)."
   }
 }
 

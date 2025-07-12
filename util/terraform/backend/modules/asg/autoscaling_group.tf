@@ -51,7 +51,7 @@ resource "aws_autoscaling_group" "this" {
 
     preferences {
       min_healthy_percentage       = var.min_healthy_percentage
-      checkpoint_delay             = var.checkpoint_delay
+      instance_warmup              = var.instance_warmup
       scale_in_protected_instances = "Ignore"
       skip_matching                = false
     }
