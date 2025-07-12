@@ -1,14 +1,14 @@
 ---
-- name: Install Node.js and npm
+- name: Install Node.js via snap (faster)
   become: true
-  apt:
-    name: ["nodejs", "npm"]
-    state: present
-    update_cache: false
+  community.general.snap:
+    name: node
+    classic: true
+    channel: "18/stable"
 
 - name: Install pm2
   become: true
-  npm:
+  community.general.npm:
     name: pm2
     global: true
     production: true
