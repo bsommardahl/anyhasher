@@ -8,6 +8,26 @@ on:
         description: "The version of this deployment (ex: git commit sha)"
         required: true
         type: string
+      canary:
+        description: "Whether to deploy as a canary (default: false)"
+        required: true
+        type: boolean
+        default: false
+      canary_percentage:
+        description: "Final traffic percentage for canary deployment (default: 10)"
+        required: true
+        type: number
+        default: 10
+      canary_desired_capacity:
+        description: "Desired capacity for canary deployment (default: 1)"
+        required: true
+        type: number
+        default: 1
+      production_desired_capacity:
+        description: "Desired capacity for production deployment (default: 2)"
+        required: true
+        type: number
+        default: 2        
 
 jobs:
   upload_artifact:
@@ -39,7 +59,7 @@ jobs:
           ./util/scripts/backend/upload-to-s3.sh "${{ inputs.version }}"
 
   deploy:
-    name: 🚀 Rolling Deployment
+    name: 🚀 Canary/Rolling Deployment
     needs: upload_artifact
     runs-on: ubuntu-latest
     outputs:

@@ -13,46 +13,32 @@ variable "ver" {
   type        = string
 }
 
-variable "desired_capacity" {
-  description = "Normal desired capacity"
+# Canary deployment variables
+variable "canary_enabled" {
+  description = "Enable canary deployment strategy"
+  type        = bool
+  default     = false
+}
+
+variable "canary_traffic_percentage" {
+  description = "Percentage of traffic to route to canary deployment"
+  type        = number
+  default     = 10
+  
+  validation {
+    condition     = var.canary_traffic_percentage >= 0 && var.canary_traffic_percentage <= 50
+    error_message = "Canary traffic percentage must be between 1 and 50."
+  }
+}
+
+variable "production_desired_capacity" {
+  description = "Desired capacity for production ASG"
   type        = number
   default     = 2
 }
 
-variable "rollout_duration_seconds" {
-  description = "Total duration for the rolling deployment to complete, including all verification pauses"
+variable "canary_desired_capacity" {
+  description = "Desired capacity for canary ASG"
   type        = number
-  default     = 60
-
-  validation {
-    condition     = var.rollout_duration_seconds >= 30
-    error_message = "Rollout duration must be at least 30 seconds."
-  }
-}
-
-variable "checkpoint_wait" {
-  description = "Additional time in seconds to wait after each instance is healthy before proceeding to replace the next instance. This creates the desired delay between replacements."
-  type        = number
-  default     = 60
-
-  validation {
-    condition     = var.checkpoint_wait >= 0 && var.checkpoint_wait <= 3600
-    error_message = "Checkpoint wait must be between 0 and 3600 seconds (1 hour)."
-  }
-}
-
-variable "min_healthy_percentage" {
-  description = "Minimum percentage of instances that must remain healthy during rolling deployment. Lower values allow faster deployments but higher risk. Higher values are safer but slower."
-  type        = number
-  default     = 50
-
-  validation {
-    condition     = var.min_healthy_percentage >= 0 && var.min_healthy_percentage <= 100
-    error_message = "Minimum healthy percentage must be between 0 and 100."
-  }
-
-  validation {
-    condition     = var.min_healthy_percentage % 10 == 0
-    error_message = "Minimum healthy percentage should be a multiple of 10 for better predictability (e.g., 50, 60, 90)."
-  }
+  default     = 1
 }

@@ -1,6 +1,6 @@
 resource "aws_security_group" "ec2_sg" {
-  name        = "anyhasher-${var.environment}-ec2-sg"
-  description = "Security group for EC2 instances - restrictive inbound, open outbound"
+  name        = "anyhasher-${var.environment}-${var.deployment_type}-ec2-sg"
+  description = "Security group for EC2 instances (${var.deployment_type}) - restrictive inbound, open outbound"
   vpc_id      = var.vpc_id
 
   ingress {
@@ -28,7 +28,9 @@ resource "aws_security_group" "ec2_sg" {
   }
 
   tags = {
-    Name = "anyhasher-${var.environment}-ec2-sg"
+    Name           = "anyhasher-${var.environment}-${var.deployment_type}-ec2-sg"
+    Environment    = var.environment
+    DeploymentType = var.deployment_type
   }
 }
 

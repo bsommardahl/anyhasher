@@ -2,26 +2,28 @@ output "alb_dns_name" {
   value = module.alb.alb_dns_name
 }
 
-output "target_group_arn" {
-  value = module.alb.target_group_arn
+output "production_target_group_arn" {
+  value = module.alb.production_target_group_arn
 }
 
-output "asg_name" {
-  value = module.asg.asg_name
+output "canary_target_group_arn" {
+  value = module.alb.canary_target_group_arn
 }
 
-output "desired_capacity" {
-  value = var.desired_capacity
+output "production_asg_name" {
+  value = module.production_asg.asg_name
 }
 
-output "previous_version" {
-  description = "Previous version before deployment"
-  value       = module.asg.previous_version
+output "canary_asg_name" {
+  value = var.canary_enabled ? module.canary_asg[0].asg_name : null
 }
 
-output "previous_desired_capacity" {
-  description = "Previous desired capacity before deployment"
-  value       = module.asg.previous_desired_capacity
+output "canary_enabled" {
+  value = var.canary_enabled
+}
+
+output "canary_traffic_percentage" {
+  value = var.canary_traffic_percentage
 }
 
 output "s3_bucket" {

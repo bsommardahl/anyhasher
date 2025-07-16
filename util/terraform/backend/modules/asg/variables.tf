@@ -7,9 +7,17 @@ variable "vpc_id" {}
 variable "public_subnet_ids" { type = list(string) }
 variable "alb_sg_id" {}
 variable "desired_capacity" {}
-variable "rollout_duration_seconds" { type = number }
-variable "checkpoint_wait" {}
-variable "min_healthy_percentage" {}
+
+variable "deployment_type" {
+  description = "Type of deployment: production or canary"
+  type        = string
+  default     = "production"
+
+  validation {
+    condition     = contains(["production", "canary"], var.deployment_type)
+    error_message = "Deployment type must be either 'production' or 'canary'."
+  }
+}
 
 variable "ver" {
   description = "Git version or tag for this deployment"

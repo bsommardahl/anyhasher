@@ -9,6 +9,7 @@ echo "Starting user data script at $(date)"
 VERSION="${version}"
 S3_BUCKET="${s3_bucket}"
 ENVIRONMENT="${environment}"
+DEPLOYMENT_TYPE="${deployment_type}"
 
 # Install only essential tools for Ansible
 echo "Installing essential tools..."
@@ -38,6 +39,11 @@ sudo rm backend-artifact-$VERSION.tar.gz
 
 # Set permissions
 sudo chown -R ubuntu:ubuntu /home/ubuntu/anyhasher
+
+# Create deployment metadata file for monitoring
+echo "Creating deployment metadata..."
+sudo mkdir -p /opt/anyhasher
+echo "{\"version\":\"$VERSION\",\"environment\":\"$ENVIRONMENT\",\"deployment_type\":\"$DEPLOYMENT_TYPE\",\"deployed_at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" | sudo tee /opt/anyhasher/deployment.json
 
 # Download Ansible playbooks from S3
 echo "Downloading Ansible playbooks from S3..."

@@ -1,9 +1,9 @@
 resource "aws_s3_bucket" "frontend" {
-  bucket        = "app.anyhasher.io"
+  bucket        = "canary-app.anyhasher.io"
   force_destroy = true
 
   tags = {
-    Name       = "app.anyhasher.io"
+    Name       = "canary-app.anyhasher.io"
     Version    = var.ver
     Deployment = "${var.environment}-${var.ver}"
   }
@@ -63,7 +63,7 @@ resource "aws_s3_bucket_cors_configuration" "frontend" {
 
 resource "aws_route53_record" "frontend" {
   zone_id = var.route53_zone_id
-  name    = "app"
+  name    = "canary-app"
   type    = "A"
 
   alias {

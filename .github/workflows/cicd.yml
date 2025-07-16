@@ -62,7 +62,7 @@ jobs:
     uses: ./.github/workflows/cd-frontend.yml
     with:
       ref: ${{ github.sha }}
-      backend_url: api.anyhasher.io
+      backend_url: canary-api.anyhasher.io
     secrets: inherit
 
   cd-backend:
