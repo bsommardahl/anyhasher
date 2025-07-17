@@ -95,9 +95,7 @@ jobs:
 
       - name: Promotion Success Summary
         run: |
-          {
-            echo "## ✅ Canary successfully promoted to production!"
-            echo "- **Version:** ${{ steps.get_version.outputs.version }}"
-            echo "- **Production capacity:** ${{ inputs.desired_production_capacity }}"
-            echo "- **Production URL:** https://canary-api.anyhasher.io"
-          } >> $GITHUB_STEP_SUMMARY
+          echo "## ✅ Canary successfully promoted to production!" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version:** ${{ steps.get_version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Production capacity:** ${{ inputs.desired_production_capacity }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Production URL:** https://canary-api.anyhasher.io" >> $GITHUB_STEP_SUMMARY
