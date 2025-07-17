@@ -1,5 +1,5 @@
 name: Promote Canary to Production
-run-name: "🚦 Promoting Canary to Production (canary: ${{ inputs.canary }}, desired capacity: ${{ inputs.desired_production_capacity }})"
+run-name: "🚦 Promoting Canary to Production"
 
 on:
   workflow_dispatch:
@@ -13,7 +13,6 @@ on:
         description: "Desired capacity for production deployment"
         required: true
         type: number
-        default: 2
       use_current_commit:
         description: "Use current commit SHA as version"
         required: true

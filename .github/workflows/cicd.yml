@@ -40,7 +40,6 @@ jobs:
               - 'backend/**'
               - '.github/workflows/ci-backend.yml'
               - '.github/workflows/cd-backend.yml'
-              - '.github/workflows/promote-canary.yml'
               - '.github/workflows/cicd.yml'
 
   ci-frontend:
