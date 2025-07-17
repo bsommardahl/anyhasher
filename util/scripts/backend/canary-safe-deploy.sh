@@ -1,6 +1,8 @@
 #!/bin/bash
 # canary-safe-deploy.sh
 
+terraform init || echo "Terraform is already initialized."
+
 terraform workspace select canary
 
 function deploy_canary_safe() {

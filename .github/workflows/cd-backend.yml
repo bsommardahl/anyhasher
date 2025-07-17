@@ -193,7 +193,7 @@ jobs:
     name: 🚦 Promote Canary to Production
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.canary }}
     runs-on: ubuntu-latest
-    needs: [deploy, wait_for_health]
+    needs: [deploy, smoke_test]
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
