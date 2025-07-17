@@ -63,6 +63,7 @@ jobs:
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Final version to use: $VERSION"
+          echo "Fin"
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
