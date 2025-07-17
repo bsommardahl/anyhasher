@@ -2,26 +2,29 @@ name: Promote Canary to Production
 run-name: "🚦 Promoting Canary to Production"
 
 on:
-  workflow_dispatch:
-    inputs:
-      canary:
-        description: "Is this a canary deployment to promote?"
-        required: true
-        type: boolean
-        default: true
-      desired_production_capacity:
-        description: "Desired capacity for production deployment"
-        required: true
-        type: number
-      use_current_commit:
-        description: "Use current commit SHA as version"
-        required: true
-        type: boolean
-        default: true
-      custom_version:
-        description: "Custom version (only used if 'use_current_commit' is false)"
-        required: false
-        type: string
+  push:
+    branches:
+      # - main
+      - canary-deployment
+    # inputs:
+    #   canary:
+    #     description: "Is this a canary deployment to promote?"
+    #     required: true
+    #     type: boolean
+    #     default: true
+    #   desired_production_capacity:
+    #     description: "Desired capacity for production deployment"
+    #     required: true
+    #     type: number
+    #   use_current_commit:
+    #     description: "Use current commit SHA as version"
+    #     required: true
+    #     type: boolean
+    #     default: true
+    #   custom_version:
+    #     description: "Custom version (only used if 'use_current_commit' is false)"
+    #     required: false
+    #     type: string
 
 jobs:
   skip_non_canary:
