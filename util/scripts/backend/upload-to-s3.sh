@@ -2,7 +2,7 @@
 set -e
 
 VERSION=$1
-S3_BUCKET="anyhasher-artifacts-prod"
+S3_BUCKET="anyhasher-artifacts-prod-canary"
 
 # Debug: List files to see what we have
 echo "📁 Files in current directory:"

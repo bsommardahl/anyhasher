@@ -1,25 +1,23 @@
-# PLANNING STEPS:
+# PIPELINE FLOW:
 # =====================
-# Discover Changes
-# Build Artifacts
-# Deploy Artifacts
-# Deploy Frontend
-# Start Rolling Out Backend Instances (chain reaction)
-# Create Infrastructure
-# Apply Configuration
-# Install App
-# Test New Version
-# Add to Load Balancer
-# Kill One Old Instance
-# Repeat
+# 1. Detect changes in frontend/backend code or workflows
+# 2. Build frontend and backend artifacts (CI)
+# 3. Upload backend artifact to S3
+# 4. Deploy backend (canary or rolling) with Terraform
+# 5. Deploy frontend to S3 and update backend URL
+# 6. Wait for backend health checks (ALB)
+# 7. Run smoke tests for backend and frontend
+# 8. Rollback automatically if health/smoke tests fail
+# 9. Optionally promote canary to production manually
+# 10. Summarize deployment or rollback results
 
-name: Rolling Deployment CI/CD Pipeline
+name: Canary Deployment CI/CD Pipeline
 run-name: "🛠️ ${{ github.event.head_commit.message }} (${{ github.sha }})"
 on:
   push:
     branches:
       # - main
-      - rolling-deployments #normally 'main'
+      - canary-deployment #normally 'main'
 
 jobs:
   detect-changes:
@@ -71,7 +69,7 @@ jobs:
     with:
       version: ${{ github.sha }}
       canary: true
-      canary_percentage: 50
+      canary_percentage: 20
       canary_desired_capacity: 2
       production_desired_capacity: 2
     secrets: inherit

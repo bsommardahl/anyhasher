@@ -31,27 +31,27 @@ output "s3_bucket" {
   value       = aws_s3_bucket.artifacts.bucket
 }
 
-output "current_production_version" {
-  description = "Current version running in production (before apply)"
-  value       = module.version_detection.current_production_version
+output "previous_production_version" {
+  description = "Previous version running in production (before apply)"
+  value       = module.version_detection.previous_production_version
 }
 
-output "current_canary_version" {
-  description = "Current version running in canary (before apply)"
-  value       = module.version_detection.current_canary_version
+output "previous_canary_version" {
+  description = "Previous version running in canary (before apply)"
+  value       = module.version_detection.previous_canary_version
 }
 
-output "current_production_desired_capacity" {
-  description = "Current desired capacity for production ASG (before apply)"
-  value       = module.version_detection.current_production_desired_capacity
+output "previous_production_desired_capacity" {
+  description = "Previous desired capacity for production ASG (before apply)"
+  value       = module.version_detection.previous_production_desired_capacity
 }
 
-output "current_canary_desired_capacity" {
-  description = "Current desired capacity for canary ASG (before apply)"
-  value       = module.version_detection.current_canary_desired_capacity
+output "previous_canary_desired_capacity" {
+  description = "Previous desired capacity for canary ASG (before apply)"
+  value       = module.version_detection.previous_canary_desired_capacity
 }
 
-output "current_canary_percentage" {
-  description = "Current canary traffic percentage (before apply)"
-  value       = module.version_detection.current_canary_percentage
+output "previous_canary_percentage" {
+  description = "Previous canary traffic percentage (before apply)"
+  value       = module.version_detection.previous_canary_percentage
 }

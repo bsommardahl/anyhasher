@@ -2,7 +2,7 @@ module "version_detection" {
   source = "./modules/version_detection"
   environment                = var.environment
   ver                       = var.ver
-  canary_traffic_percentage = var.canary_traffic_percentage
+  alb_arn                   = module.alb.alb_arn
 }
 
 module "alb" {
@@ -25,7 +25,7 @@ module "production_asg" {
   instance_type            = var.instance_type
   vpc_id                   = var.vpc_id
   public_subnet_ids        = var.public_subnet_ids
-  ver                      = var.canary_enabled ? module.version_detection.current_production_version : var.ver
+  ver                      = var.canary_enabled ? module.version_detection.previous_production_version : var.ver
   desired_capacity         = var.production_desired_capacity
   target_group_arn         = module.alb.production_target_group_arn
   alb_sg_id                = module.alb.alb_sg_id

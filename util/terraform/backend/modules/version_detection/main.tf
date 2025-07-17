@@ -10,7 +10,6 @@ data "aws_autoscaling_groups" "production_existing" {
   }
 }
 
-# Get current canary ASG information
 data "aws_autoscaling_groups" "canary_existing" {
   filter {
     name   = "tag:Environment"
@@ -20,6 +19,12 @@ data "aws_autoscaling_groups" "canary_existing" {
     name   = "tag:DeploymentType"
     values = ["canary"]
   }
+}
+
+data "aws_lb_listener" "https" {
+  count = local.production_asg_exists ? 1 : 0
+  load_balancer_arn = var.alb_arn
+  port              = 443
 }
 
 data "aws_autoscaling_group" "production_current" {
@@ -77,9 +82,16 @@ data "aws_instance" "canary_first" {
 locals {
   production_asg_exists = contains(data.aws_autoscaling_groups.production_existing.names, "anyhasher-${var.environment}-production")
   canary_asg_exists = contains(data.aws_autoscaling_groups.canary_existing.names, "anyhasher-${var.environment}-canary")
-  current_production_version = local.production_asg_exists && length(data.aws_instance.production_first) > 0 ? lookup(data.aws_instance.production_first[0].tags, "Version", var.ver) : "first-deployment"
-  current_canary_version = local.canary_asg_exists && length(data.aws_instance.canary_first) > 0 ? lookup(data.aws_instance.canary_first[0].tags, "Version", var.ver) : "first-deployment"
-  current_production_desired_capacity = local.production_asg_exists && length(data.aws_autoscaling_group.production_current) > 0 ? data.aws_autoscaling_group.production_current[0].desired_capacity : 0
-  current_canary_desired_capacity = local.canary_asg_exists && length(data.aws_autoscaling_group.canary_current) > 0 ? data.aws_autoscaling_group.canary_current[0].desired_capacity : 0
-  current_canary_percentage = local.canary_asg_exists ? var.canary_traffic_percentage : 0
+  previous_production_version = local.production_asg_exists && length(data.aws_instance.production_first) > 0 ? lookup(data.aws_instance.production_first[0].tags, "Version", var.ver) : "first-deployment"
+  previous_canary_version = local.canary_asg_exists && length(data.aws_instance.canary_first) > 0 ? lookup(data.aws_instance.canary_first[0].tags, "Version", var.ver) : "first-deployment"
+  previous_production_desired_capacity = local.production_asg_exists && length(data.aws_autoscaling_group.production_current) > 0 ? data.aws_autoscaling_group.production_current[0].desired_capacity : 0
+  previous_canary_desired_capacity = local.canary_asg_exists && length(data.aws_autoscaling_group.canary_current) > 0 ? data.aws_autoscaling_group.canary_current[0].desired_capacity : 0
+  previous_canary_percentage = try(
+    [for action in data.aws_lb_listener.https[0].default_action :
+      length(action.forward) > 0 && length(tolist(action.forward[0].target_group)) > 1 ?
+      tolist(action.forward[0].target_group)[0].weight : 0
+      if action.type == "forward"
+    ][0],
+    0
+  )
 }

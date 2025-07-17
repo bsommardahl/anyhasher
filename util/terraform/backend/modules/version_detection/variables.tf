@@ -8,8 +8,7 @@ variable "ver" {
   type        = string
 }
 
-variable "canary_traffic_percentage" {
-  description = "Current canary traffic percentage"
-  type        = number
-  default     = 0
+variable "alb_arn" {
+  description = "ARN del Application Load Balancer"
+  type        = string
 }
