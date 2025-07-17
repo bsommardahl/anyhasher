@@ -20,4 +20,4 @@ echo "- **Deployment Strategy**: Canary/Rolling deployment" >> $GITHUB_STEP_SUMM
 echo "- **Artifact Source**: S3 bucket with automated retrieval" >> $GITHUB_STEP_SUMMARY
 echo "- **Instance Automation**: user_data scripts + Ansible configuration" >> $GITHUB_STEP_SUMMARY
 echo "" >> $GITHUB_STEP_SUMMARY
-echo "🎯 **Rolling deployment with Ansible completed successfully!**" >> $GITHUB_STEP_SUMMARY
+echo "🎯 **Canary/Rolling deployment with Ansible completed successfully!**" >> $GITHUB_STEP_SUMMARY

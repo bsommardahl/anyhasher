@@ -1,0 +1,63 @@
+name: Promote Canary to Production
+run-name: "🚦 Promoting Canary to Production (desired capacity: ${{ inputs.desired_production_capacity }})"
+
+on:
+  workflow_dispatch:
+    inputs:
+      desired_production_capacity:
+        description: "Desired capacity for production deployment"
+        required: true
+        type: number
+        default: 2
+      version:
+        description: "Version to promote (leave empty to use current canary version)"
+        required: false
+        type: string
+      canary:
+        description: "Is this a canary deployment to promote?"
+        required: true
+        type: boolean
+        default: false        
+
+jobs:
+  promote_canary_to_production:
+    name: 🚦 Promote Canary to Production
+    runs-on: ubuntu-latest
+    if: ${{ inputs.canary == true }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Promote Canary Version
+        uses: dflook/terraform-apply@v2
+        with:
+          workspace: canary
+          auto_approve: true
+          var_file: |
+            util/terraform/environments/prod/backend.tfvars
+          variables: |
+            ver="${{ inputs.version }}"
+            production_desired_capacity=${{ inputs.desired_production_capacity }}
+          path: util/terraform/backend
+
+      - name: Run Smoke Tests on Production
+        run: |
+          chmod +x ./util/scripts/backend/smoke-test.sh
+          ./util/scripts/backend/smoke-test.sh https://canary-api.anyhasher.io
+
+      - name: Promotion Success Summary
+        run: |
+          echo "✅ Canary successfully promoted to production!" >> $GITHUB_STEP_SUMMARY
+          echo "Version: ${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "Production capacity: ${{ inputs.desired_production_capacity }}" >> $GITHUB_STEP_SUMMARY
+          echo "Production URL: https://canary-api.anyhasher.io" >> $GITHUB_STEP_SUMMARY

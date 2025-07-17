@@ -40,6 +40,7 @@ jobs:
               - 'backend/**'
               - '.github/workflows/ci-backend.yml'
               - '.github/workflows/cd-backend.yml'
+              - '.github/workflows/promote-canary.yml'
 
   ci-frontend:
     needs: detect-changes
@@ -69,7 +70,15 @@ jobs:
     with:
       version: ${{ github.sha }}
       canary: true
-      canary_percentage: 20
+      canary_percentage: 30
       canary_desired_capacity: 2
       production_desired_capacity: 2
+    secrets: inherit
+
+  promote-canary:
+    needs: cd-backend
+    uses: ./.github/workflows/promote-canary.yml
+    with:
+      version: ${{ github.sha }}
+      canary: true
     secrets: inherit
