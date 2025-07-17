@@ -44,7 +44,7 @@ jobs:
         id: provision
         uses: dflook/terraform-apply@v2
         with:
-          workspace: prod
+          workspace: canary
           auto_approve: true
           var_file: |
             util/terraform/environments/prod/frontend.tfvars

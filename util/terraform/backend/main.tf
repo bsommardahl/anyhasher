@@ -1,7 +1,8 @@
 module "version_detection" {
   source = "./modules/version_detection"
-  environment    = var.environment
-  ver            = var.ver
+  environment                = var.environment
+  ver                       = var.ver
+  canary_traffic_percentage = var.canary_traffic_percentage
 }
 
 module "alb" {

@@ -10,13 +10,30 @@ data "aws_autoscaling_groups" "production_existing" {
   }
 }
 
+# Get current canary ASG information
+data "aws_autoscaling_groups" "canary_existing" {
+  filter {
+    name   = "tag:Environment"
+    values = [var.environment]
+  }
+  filter {
+    name   = "tag:DeploymentType"
+    values = ["canary"]
+  }
+}
+
 data "aws_autoscaling_group" "production_current" {
   count = length(data.aws_autoscaling_groups.production_existing.names) > 0 ? 1 : 0
   name  = "anyhasher-${var.environment}-production"
 }
 
+data "aws_autoscaling_group" "canary_current" {
+  count = length(data.aws_autoscaling_groups.canary_existing.names) > 0 ? 1 : 0
+  name  = "anyhasher-${var.environment}-canary"
+}
+
 data "aws_instances" "production_current" {
-  count = length(data.aws_autoscaling_groups.production_existing.names) > 0 ? 1 : 0
+  count = local.production_asg_exists ? 1 : 0
   filter {
     name   = "tag:Environment"
     values = [var.environment]
@@ -31,12 +48,38 @@ data "aws_instances" "production_current" {
   }
 }
 
+data "aws_instances" "canary_current" {
+  count = local.canary_asg_exists ? 1 : 0
+  filter {
+    name   = "tag:Environment"
+    values = [var.environment]
+  }
+  filter {
+    name   = "tag:DeploymentType"
+    values = ["canary"]
+  }
+  filter {
+    name   = "instance-state-name"
+    values = ["running"]
+  }
+}
+
 data "aws_instance" "production_first" {
-  count       = length(data.aws_autoscaling_groups.production_existing.names) > 0 && length(data.aws_instances.production_current[0].ids) > 0 ? 1 : 0
+  count       = local.production_asg_exists ? 1 : 0
   instance_id = data.aws_instances.production_current[0].ids[0]
+}
+
+data "aws_instance" "canary_first" {
+  count       = local.canary_asg_exists ? 1 : 0
+  instance_id = data.aws_instances.canary_current[0].ids[0]
 }
 
 locals {
   production_asg_exists = contains(data.aws_autoscaling_groups.production_existing.names, "anyhasher-${var.environment}-production")
-  current_production_version = local.production_asg_exists && length(data.aws_instance.production_first) > 0 ? lookup(data.aws_instance.production_first[0].tags, "Version", var.ver) : var.ver
+  canary_asg_exists = contains(data.aws_autoscaling_groups.canary_existing.names, "anyhasher-${var.environment}-canary")
+  current_production_version = local.production_asg_exists && length(data.aws_instance.production_first) > 0 ? lookup(data.aws_instance.production_first[0].tags, "Version", var.ver) : "first-deployment"
+  current_canary_version = local.canary_asg_exists && length(data.aws_instance.canary_first) > 0 ? lookup(data.aws_instance.canary_first[0].tags, "Version", var.ver) : "first-deployment"
+  current_production_desired_capacity = local.production_asg_exists && length(data.aws_autoscaling_group.production_current) > 0 ? data.aws_autoscaling_group.production_current[0].desired_capacity : 0
+  current_canary_desired_capacity = local.canary_asg_exists && length(data.aws_autoscaling_group.canary_current) > 0 ? data.aws_autoscaling_group.canary_current[0].desired_capacity : 0
+  current_canary_percentage = local.canary_asg_exists ? var.canary_traffic_percentage : 0
 }

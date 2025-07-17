@@ -63,11 +63,12 @@ jobs:
     needs: upload_artifact
     runs-on: ubuntu-latest
     outputs:
-      target_group_arn: ${{ steps.apply_changes.outputs.target_group_arn }}
-      previous_version: ${{ steps.apply_changes.outputs.previous_version }}
-      previous_desired_capacity: ${{ steps.apply_changes.outputs.previous_desired_capacity }}
-      asg_name: ${{ steps.apply_changes.outputs.asg_name }}
-      desired_capacity: ${{ steps.apply_changes.outputs.desired_capacity }}
+      target_group_arn: ${{ inputs.canary && steps.apply_canary.outputs.target_group_arn || steps.apply_changes.outputs.production_target_group_arn }}
+      asg_name: ${{ inputs.canary && steps.apply_canary.outputs.asg_name || steps.apply_changes.outputs.production_asg_name }}
+      previous_version: ${{ inputs.canary && steps.apply_canary.outputs.current_canary_version || steps.apply_changes.outputs.current_production_version }}
+      previous_canary_desired_capacity: ${{ inputs.canary && steps.apply_canary.outputs.current_canary_desired_capacity || steps.apply_changes.outputs.current_canary_desired_capacity }}
+      previous_production_desired_capacity: ${{ inputs.canary && steps.apply_canary.outputs.current_production_desired_capacity || steps.apply_changes.outputs.current_production_desired_capacity }}
+      previous_canary_percentage: ${{ inputs.canary && steps.apply_canary.outputs.current_canary_percentage || 0 }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -84,18 +85,30 @@ jobs:
 
       - name: Apply Rolling Deployment
         id: apply_changes
+        if: ${{ !inputs.canary }}
         uses: dflook/terraform-apply@v2
         with:
-          workspace: prod
+          workspace: canary
           auto_approve: true
           var_file: |
             util/terraform/environments/prod/backend.tfvars
           variables: |
             ver="${{ inputs.version }}"
-            desired_capacity=2
-            min_healthy_percentage=50
-            checkpoint_wait=300
           path: util/terraform/backend
+
+      - name: Apply Canary Deployment
+        id: apply_canary
+        if: ${{ inputs.canary }}
+        run: |
+          cd util/terraform/backend
+          chmod +x ../../scripts/backend/canary-safe-deploy.sh
+          ../../scripts/backend/canary-safe-deploy.sh "${{ inputs.version }}" "${{ inputs.canary_percentage }}" "${{ inputs.canary_desired_capacity }}" "${{ inputs.production_desired_capacity }}"
+          echo "target_group_arn=$(terraform output -raw canary_target_group_arn)" >> $GITHUB_OUTPUT
+          echo "asg_name=$(terraform output -raw canary_asg_name)" >> $GITHUB_OUTPUT
+          echo "current_canary_version=$(terraform output -raw current_canary_version)" >> $GITHUB_OUTPUT
+          echo "current_canary_desired_capacity=$(terraform output -raw current_canary_desired_capacity)" >> $GITHUB_OUTPUT
+          echo "current_canary_percentage=$(terraform output -raw current_canary_percentage)" >> $GITHUB_OUTPUT
+          echo "current_production_desired_capacity=$(terraform output -raw current_production_desired_capacity)" >> $GITHUB_OUTPUT
 
   wait_for_health:
     name: 🩺 Health Check
@@ -137,21 +150,29 @@ jobs:
           aws-region: us-east-1
 
       - name: Rollback to previous version
+        if: ${{ !inputs.canary }}
         uses: dflook/terraform-apply@v2
         with:
-          workspace: prod
+          workspace: canary
           auto_approve: true
           var_file: |
             util/terraform/environments/prod/backend.tfvars
           variables: |
             ver="${{ needs.deploy.outputs.previous_version }}"
-            desired_capacity=${{ needs.deploy.outputs.previous_desired_capacity }}
+            production_desired_capacity=${{ needs.deploy.outputs.previous_production_desired_capacity }}
           path: util/terraform/backend
+
+      - name: Rollback Canary Deployment
+        if: ${{ inputs.canary }}
+        run: |
+          cd util/terraform/backend
+          chmod +x ../../scripts/backend/canary-safe-deploy.sh
+          ../../scripts/backend/canary-safe-deploy.sh "${{ needs.deploy.outputs.previous_version }}" "${{ needs.deploy.outputs.previous_canary_percentage }}" "${{ needs.deploy.outputs.previous_canary_desired_capacity }}" "${{ needs.deploy.outputs.previous_production_desired_capacity }}"
 
       - name: Rollback Summary
         run: |
           chmod +x util/scripts/backend/rollback-summary.sh
-          ./util/scripts/backend/rollback-summary.sh "${{ inputs.version }}" "${{ needs.deploy.outputs.previous_version }}" "${{ needs.deploy.outputs.asg_name }}" "${{ needs.deploy.outputs.previous_desired_capacity }}" "${{ needs.deploy.outputs.target_group_arn }}"
+          ./util/scripts/backend/rollback-summary.sh "${{ inputs.version }}" "${{ needs.deploy.outputs.previous_version }}" "${{ needs.deploy.outputs.asg_name }}" "${{ needs.deploy.outputs.previous_production_desired_capacity }}" "${{ needs.deploy.outputs.target_group_arn }}"
 
   smoke_test:
     name: 🧪 Smoke Test
@@ -167,10 +188,10 @@ jobs:
       - name: Run Smoke Tests
         run: |
           chmod +x ./util/scripts/backend/smoke-test.sh
-          ./util/scripts/backend/smoke-test.sh https://api.anyhasher.io
+          ./util/scripts/backend/smoke-test.sh https://canary-api.anyhasher.io
 
       - name: Deployment Success Summary
         if: needs.rollback.result != 'success'
         run: |
           chmod +x util/scripts/backend/deployment-success-summary.sh
-          ./util/scripts/backend/deployment-success-summary.sh "${{ inputs.version }}" "https://api.anyhasher.io"
+          ./util/scripts/backend/deployment-success-summary.sh "${{ inputs.version }}" "https://canary-api.anyhasher.io"

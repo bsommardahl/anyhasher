@@ -1,6 +1,8 @@
 #!/bin/bash
 # canary-safe-deploy.sh
 
+terraform workspace select canary
+
 function deploy_canary_safe() {
     local version=$1
     local final_percentage=${2:-10}
