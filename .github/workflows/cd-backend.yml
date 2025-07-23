@@ -167,7 +167,7 @@ jobs:
           var_file: |
             util/terraform/environments/prod/backend.tfvars
           variables: |
-            active_environment=${{ inputs.active_environment }}
+            active_environment="${{ inputs.active_environment }}"
           path: util/terraform/backend
 
   smoke_test:
