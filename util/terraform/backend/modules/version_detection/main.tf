@@ -1,51 +1,44 @@
-# Get current production ASG information
-data "aws_autoscaling_groups" "production_existing" {
+data "aws_autoscaling_groups" "blue_existing" {
   filter {
     name   = "tag:Environment"
     values = [var.environment]
   }
   filter {
-    name   = "tag:DeploymentType"
-    values = ["production"]
+    name   = "tag:DeploymentColor"
+    values = ["blue"]
   }
 }
 
-data "aws_autoscaling_groups" "canary_existing" {
+data "aws_autoscaling_groups" "green_existing" {
   filter {
     name   = "tag:Environment"
     values = [var.environment]
   }
   filter {
-    name   = "tag:DeploymentType"
-    values = ["canary"]
+    name   = "tag:DeploymentColor"
+    values = ["green"]
   }
 }
 
-data "aws_lb_listener" "https" {
-  count = local.production_asg_exists ? 1 : 0
-  load_balancer_arn = var.alb_arn
-  port              = 443
+data "aws_autoscaling_group" "blue_current" {
+  count = length(data.aws_autoscaling_groups.blue_existing.names) > 0 ? 1 : 0
+  name  = "anyhasher-${var.environment}-blue"
 }
 
-data "aws_autoscaling_group" "production_current" {
-  count = length(data.aws_autoscaling_groups.production_existing.names) > 0 ? 1 : 0
-  name  = "anyhasher-${var.environment}-production"
+data "aws_autoscaling_group" "green_current" {
+  count = length(data.aws_autoscaling_groups.green_existing.names) > 0 ? 1 : 0
+  name  = "anyhasher-${var.environment}-green"
 }
 
-data "aws_autoscaling_group" "canary_current" {
-  count = length(data.aws_autoscaling_groups.canary_existing.names) > 0 ? 1 : 0
-  name  = "anyhasher-${var.environment}-canary"
-}
-
-data "aws_instances" "production_current" {
-  count = local.production_asg_exists ? 1 : 0
+data "aws_instances" "blue_current" {
+  count = local.blue_asg_exists ? 1 : 0
   filter {
     name   = "tag:Environment"
     values = [var.environment]
   }
   filter {
-    name   = "tag:DeploymentType"
-    values = ["production"]
+    name   = "tag:DeploymentColor"
+    values = ["blue"]
   }
   filter {
     name   = "instance-state-name"
@@ -53,15 +46,15 @@ data "aws_instances" "production_current" {
   }
 }
 
-data "aws_instances" "canary_current" {
-  count = local.canary_asg_exists ? 1 : 0
+data "aws_instances" "green_current" {
+  count = local.green_asg_exists ? 1 : 0
   filter {
     name   = "tag:Environment"
     values = [var.environment]
   }
   filter {
-    name   = "tag:DeploymentType"
-    values = ["canary"]
+    name   = "tag:DeploymentColor"
+    values = ["green"]
   }
   filter {
     name   = "instance-state-name"
@@ -69,29 +62,21 @@ data "aws_instances" "canary_current" {
   }
 }
 
-data "aws_instance" "production_first" {
-  count       = local.production_asg_exists ? 1 : 0
-  instance_id = data.aws_instances.production_current[0].ids[0]
+data "aws_instance" "blue_first" {
+  count       = local.blue_asg_exists ? 1 : 0
+  instance_id = data.aws_instances.blue_current[0].ids[0]
 }
 
-data "aws_instance" "canary_first" {
-  count       = local.canary_asg_exists ? 1 : 0
-  instance_id = data.aws_instances.canary_current[0].ids[0]
+data "aws_instance" "green_first" {
+  count       = local.green_asg_exists ? 1 : 0
+  instance_id = data.aws_instances.green_current[0].ids[0]
 }
 
 locals {
-  production_asg_exists = contains(data.aws_autoscaling_groups.production_existing.names, "anyhasher-${var.environment}-production")
-  canary_asg_exists = contains(data.aws_autoscaling_groups.canary_existing.names, "anyhasher-${var.environment}-canary")
-  previous_production_version = local.production_asg_exists && length(data.aws_instance.production_first) > 0 ? lookup(data.aws_instance.production_first[0].tags, "Version", var.ver) : "first-deployment"
-  previous_canary_version = local.canary_asg_exists && length(data.aws_instance.canary_first) > 0 ? lookup(data.aws_instance.canary_first[0].tags, "Version", var.ver) : "first-deployment"
-  previous_production_desired_capacity = local.production_asg_exists && length(data.aws_autoscaling_group.production_current) > 0 ? data.aws_autoscaling_group.production_current[0].desired_capacity : 0
-  previous_canary_desired_capacity = local.canary_asg_exists && length(data.aws_autoscaling_group.canary_current) > 0 ? data.aws_autoscaling_group.canary_current[0].desired_capacity : 0
-  previous_canary_percentage = try(
-    [for action in data.aws_lb_listener.https[0].default_action :
-      length(action.forward) > 0 && length(tolist(action.forward[0].target_group)) > 1 ?
-      tolist(action.forward[0].target_group)[0].weight : 0
-      if action.type == "forward"
-    ][0],
-    0
-  )
+  blue_asg_exists                 = contains(data.aws_autoscaling_groups.blue_existing.names, "anyhasher-${var.environment}-blue")
+  green_asg_exists                = contains(data.aws_autoscaling_groups.green_existing.names, "anyhasher-${var.environment}-green")
+  previous_blue_version           = local.blue_asg_exists && length(data.aws_instance.blue_first) > 0 ? lookup(data.aws_instance.blue_first[0].tags, "Version", "first-deployment") : "first-deployment"
+  previous_green_version          = local.green_asg_exists && length(data.aws_instance.green_first) > 0 ? lookup(data.aws_instance.green_first[0].tags, "Version", "first-deployment") : "first-deployment"
+  previous_blue_desired_capacity  = local.blue_asg_exists && length(data.aws_autoscaling_group.blue_current) > 0 ? data.aws_autoscaling_group.blue_current[0].desired_capacity : 0
+  previous_green_desired_capacity = local.green_asg_exists && length(data.aws_autoscaling_group.green_current) > 0 ? data.aws_autoscaling_group.green_current[0].desired_capacity : 0
 }

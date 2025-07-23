@@ -52,7 +52,7 @@ resource "aws_lb_target_group" "green" {
 
   tags = {
     Name = "anyhasher-${var.environment}-green"
-    Type = "blue"
+    Type = "green"
   }
 }
 
@@ -85,38 +85,20 @@ resource "aws_lb_listener" "https" {
   }
 }
 
-# Rule to route traffic to blue environment when X-Environment header is "blue"
-resource "aws_lb_listener_rule" "route_to_blue" {
+# Rule to route traffic to inactive environment only when X-Environment header matches
+resource "aws_lb_listener_rule" "route_to_inactive_environment" {
   listener_arn = aws_lb_listener.https.arn
   priority     = 100
 
   action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.blue.arn
+    target_group_arn = var.active_environment == "blue" ? aws_lb_target_group.green.arn : aws_lb_target_group.blue.arn
   }
 
   condition {
     http_header {
       http_header_name = "X-Environment"
-      values           = ["blue"]
-    }
-  }
-}
-
-# Rule to route traffic to green environment when X-Environment header is "green"
-resource "aws_lb_listener_rule" "route_to_green" {
-  listener_arn = aws_lb_listener.https.arn
-  priority     = 101
-
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.green.arn
-  }
-
-  condition {
-    http_header {
-      http_header_name = "X-Environment"
-      values           = ["green"]
+      values           = [var.active_environment == "blue" ? "green" : "blue"]
     }
   }
 }

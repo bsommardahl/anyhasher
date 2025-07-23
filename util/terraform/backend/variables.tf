@@ -18,19 +18,27 @@ variable "active_environment" {
   }
 }
 
-variable "desired_capacity" {
-  description = "Desired capacity for active environment"
+variable "blue_desired_capacity" {
+  description = "Desired capacity for blue environment"
   type        = number
-  default     = 2
+  default     = null
+}
+
+variable "green_desired_capacity" {
+  description = "Desired capacity for green environment"
+  type        = number
+  default     = null
 }
 
 variable "blue_version" {
   description = "Application version for blue environment"
   type        = string
+  default     = null
 }
 
 variable "green_version" {
   description = "Application version for green environment"
   type        = string
+  default     = null
 }
 
