@@ -69,7 +69,7 @@ jobs:
     uses: ./.github/workflows/cd-backend.yml
     with:
       version: ${{ github.sha }}
-      active_environment: blue
+      active_environment: green
       desired_capacity: 2
     secrets: inherit
 
