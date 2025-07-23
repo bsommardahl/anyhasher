@@ -32,3 +32,33 @@ output "green_version" {
   description = "Version deployed to green environment"
   value       = var.green_version
 }
+
+output "previous_blue_version" {
+  description = "Previous version running in blue deployment"
+  value       = module.version_detection.previous_blue_version
+}
+
+output "previous_green_version" {
+  description = "Previous version running in green deployment"
+  value       = module.version_detection.previous_green_version
+}
+
+output "previous_blue_desired_capacity" {
+  description = "Previous desired capacity for blue ASG"
+  value       = module.version_detection.previous_blue_desired_capacity
+}
+
+output "previous_green_desired_capacity" {
+  description = "Previous desired capacity for green ASG"
+  value       = module.version_detection.previous_green_desired_capacity
+}
+
+output "blue_target_group_arn" {
+  description = "ARN of the blue target group"
+  value       = module.bluegreen_alb.blue_target_group_arn
+}
+
+output "green_target_group_arn" {
+  description = "ARN of the green target group"
+  value       = module.bluegreen_alb.green_target_group_arn
+}

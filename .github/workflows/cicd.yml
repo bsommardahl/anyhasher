@@ -3,21 +3,21 @@
 # 1. Detect changes in frontend/backend code or workflows
 # 2. Build frontend and backend artifacts (CI)
 # 3. Upload backend artifact to S3
-# 4. Deploy backend (canary or rolling) with Terraform
+# 4. Deploy backend (Decoupled or rolling) with Terraform
 # 5. Deploy frontend to S3 and update backend URL
 # 6. Wait for backend health checks (ALB)
 # 7. Run smoke tests for backend and frontend
 # 8. Rollback automatically if health/smoke tests fail
-# 9. Optionally promote canary to production manually
+# 9. Optionally promote Decoupled to production manually
 # 10. Summarize deployment or rollback results
 
-name: Canary Deployment CI/CD Pipeline
+name: Decoupled Deployment CI/CD Pipeline
 run-name: "🛠️ ${{ github.event.head_commit.message }} (${{ github.sha }})"
 on:
   push:
     branches:
       # - main
-      - canary-deployment #normally 'main'
+      - decoupled-deployments #normally 'main'
 
 jobs:
   detect-changes:
@@ -61,7 +61,7 @@ jobs:
     uses: ./.github/workflows/cd-frontend.yml
     with:
       ref: ${{ github.sha }}
-      backend_url: canary-api.anyhasher.io
+      backend_url: decoupled-api.anyhasher.io
     secrets: inherit
 
   cd-backend:
@@ -69,8 +69,7 @@ jobs:
     uses: ./.github/workflows/cd-backend.yml
     with:
       version: ${{ github.sha }}
-      canary: true
-      canary_percentage: 40
-      canary_desired_capacity: 2
-      production_desired_capacity: 2
+      active_environment: green
+      desired_capacity: 3
     secrets: inherit
+

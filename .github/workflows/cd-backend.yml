@@ -8,26 +8,15 @@ on:
         description: "The version of this deployment (ex: git commit sha)"
         required: true
         type: string
-      canary:
-        description: "Whether to deploy as a canary (default: false)"
+      active_environment:
+        description: "Target environment for deployment (blue or green)"
         required: true
-        type: boolean
-        default: false
-      canary_percentage:
-        description: "Final traffic percentage for canary deployment (default: 10)"
-        required: true
-        type: number
-        default: 10
-      canary_desired_capacity:
-        description: "Desired capacity for canary deployment (default: 1)"
+        type: string
+      desired_capacity:
+        description: "Desired capacity for the deployment (default: 2)"
         required: true
         type: number
-        default: 1
-      production_desired_capacity:
-        description: "Desired capacity for production deployment (default: 2)"
-        required: true
-        type: number
-        default: 2        
+        default: 2
 
 jobs:
   upload_artifact:
@@ -59,16 +48,14 @@ jobs:
           ./util/scripts/backend/upload-to-s3.sh "${{ inputs.version }}"
 
   deploy:
-    name: 🚀 Canary/Rolling Deployment
+    name: 🚀 Blue/Green Deployment
     needs: upload_artifact
     runs-on: ubuntu-latest
     outputs:
-      target_group_arn: ${{ inputs.canary && steps.apply_canary.outputs.target_group_arn || steps.apply_changes.outputs.production_target_group_arn }}
-      asg_name: ${{ inputs.canary && steps.apply_canary.outputs.asg_name || steps.apply_changes.outputs.production_asg_name }}
-      previous_version: ${{ inputs.canary && steps.apply_canary.outputs.previous_canary_version || steps.apply_changes.outputs.previous_production_version }}
-      previous_canary_desired_capacity: ${{ inputs.canary && steps.apply_canary.outputs.previous_canary_desired_capacity || steps.apply_changes.outputs.previous_canary_desired_capacity }}
-      previous_production_desired_capacity: ${{ inputs.canary && steps.apply_canary.outputs.previous_production_desired_capacity || steps.apply_changes.outputs.previous_production_desired_capacity }}
-      previous_canary_percentage: ${{ inputs.canary && steps.apply_canary.outputs.previous_canary_percentage || 0 }}
+      target_group_arn: ${{ steps.apply_bluegreen.outputs.target_group_arn }}
+      asg_name: ${{ steps.apply_bluegreen.outputs.asg_name }}
+      previous_version: ${{ steps.apply_bluegreen.outputs.previous_version }}
+      previous_desired_capacity: ${{ steps.apply_bluegreen.outputs.previous_desired_capacity }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -83,25 +70,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Apply Rolling Deployment
-        id: apply_changes
-        if: ${{ !inputs.canary }}
-        uses: dflook/terraform-apply@v2
-        with:
-          workspace: canary
-          auto_approve: true
-          var_file: |
-            util/terraform/environments/prod/backend.tfvars
-          variables: |
-            ver="${{ inputs.version }}"
-          path: util/terraform/backend
-
-      - name: Apply Canary Deployment
-        id: apply_canary
-        if: ${{ inputs.canary }}
+      - name: Apply Blue/Green Deployment
+        id: apply_bluegreen
         run: |
-          chmod +x ./util/scripts/backend/run-canary-deploy-pipeline.sh
-          ./util/scripts/backend/run-canary-deploy-pipeline.sh "${{ inputs.version }}" "${{ inputs.canary_percentage }}" "${{ inputs.canary_desired_capacity }}" "${{ inputs.production_desired_capacity }}"
+          chmod +x ./util/scripts/backend/run-bluegreen-deploy-pipeline.sh
+          ./util/scripts/backend/run-bluegreen-deploy-pipeline.sh "${{ inputs.version }}" "${{ inputs.desired_capacity }}" "${{ inputs.active_environment }}"
 
   wait_for_health:
     name: 🩺 Health Check
@@ -143,10 +116,10 @@ jobs:
           aws-region: us-east-1
 
       - name: Rollback to previous version
-        if: ${{ !inputs.canary }}
+        if: ${{ !inputs.decoupled }}
         uses: dflook/terraform-apply@v2
         with:
-          workspace: canary
+          workspace: decoupled
           auto_approve: true
           var_file: |
             util/terraform/environments/prod/backend.tfvars
@@ -155,21 +128,51 @@ jobs:
             production_desired_capacity=${{ needs.deploy.outputs.previous_production_desired_capacity }}
           path: util/terraform/backend
 
-      - name: Rollback Canary Deployment
-        if: ${{ inputs.canary }}
+      - name: Rollback decoupled Deployment
+        if: ${{ inputs.decoupled }}
         run: |
           cd util/terraform/backend
-          chmod +x ../../scripts/backend/canary-safe-deploy.sh
-          ../../scripts/backend/canary-safe-deploy.sh "${{ needs.deploy.outputs.previous_version }}" "${{ needs.deploy.outputs.previous_canary_percentage }}" "${{ needs.deploy.outputs.previous_canary_desired_capacity }}" "${{ needs.deploy.outputs.previous_production_desired_capacity }}"
+          chmod +x ../../scripts/backend/decoupled-safe-deploy.sh
+          ../../scripts/backend/decoupled-safe-deploy.sh "${{ needs.deploy.outputs.previous_version }}" "${{ needs.deploy.outputs.previous_canary_percentage }}" "${{ needs.deploy.outputs.previous_canary_desired_capacity }}" "${{ needs.deploy.outputs.previous_production_desired_capacity }}"
 
       - name: Rollback Summary
         run: |
           chmod +x util/scripts/backend/rollback-summary.sh
-          ./util/scripts/backend/rollback-summary.sh "${{ inputs.version }}" "${{ needs.deploy.outputs.previous_version }}" "${{ needs.deploy.outputs.asg_name }}" "${{ needs.deploy.outputs.previous_production_desired_capacity }}" "${{ needs.deploy.outputs.previous_canary_desired_capacity }}" "${{ needs.deploy.outputs.target_group_arn }}"
+          ./util/scripts/backend/rollback-summary.sh "${{ inputs.version }}" "${{ needs.deploy.outputs.previous_version }}" "${{ needs.deploy.outputs.asg_name }}" "${{ needs.deploy.outputs.previous_production_desired_capacity }}" "${{ needs.deploy.outputs.previous_decoupled_desired_capacity }}" "${{ needs.deploy.outputs.target_group_arn }}"
+
+  promote_to_production:
+    name: 🔥 Promote to Production Traffic
+    needs: [deploy, wait_for_health]
+    if: success() && needs.wait_for_health.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Switch Traffic to New Environment
+        uses: dflook/terraform-apply@v2
+        with:
+          workspace: decoupled
+          auto_approve: true
+          var_file: |
+            util/terraform/environments/prod/backend.tfvars
+          variables: |
+            active_environment=${{ inputs.active_environment }}
+          path: util/terraform/backend
 
   smoke_test:
     name: 🧪 Smoke Test
-    needs: [deploy, wait_for_health, rollback]
+    needs: [rollback, promote_to_production]
     if: always() && (needs.wait_for_health.result == 'success' || needs.rollback.result == 'success')
     runs-on: ubuntu-latest
     env:
@@ -181,10 +184,10 @@ jobs:
       - name: Run Smoke Tests
         run: |
           chmod +x ./util/scripts/backend/smoke-test.sh
-          ./util/scripts/backend/smoke-test.sh https://canary-api.anyhasher.io
+          ./util/scripts/backend/smoke-test.sh https://decoupled-api.anyhasher.io
 
       - name: Deployment Success Summary
         if: needs.rollback.result != 'success'
         run: |
           chmod +x util/scripts/backend/deployment-success-summary.sh
-          ./util/scripts/backend/deployment-success-summary.sh "${{ inputs.version }}" "https://canary-api.anyhasher.io"
+          ./util/scripts/backend/deployment-success-summary.sh "${{ inputs.version }}" "https://decoupled-api.anyhasher.io"
