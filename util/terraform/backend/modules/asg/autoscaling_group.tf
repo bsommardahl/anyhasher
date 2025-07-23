@@ -1,9 +1,5 @@
-locals {
-  asg_name = "anyhasher-${var.environment}-${var.deployment_type}"
-}
-
 resource "aws_autoscaling_group" "this" {
-  name                = local.asg_name
+  name                = "anyhasher-${var.environment}-${var.deployment_color}"
   desired_capacity    = var.desired_capacity
   max_size            = var.desired_capacity * 2
   min_size            = 0
@@ -28,7 +24,7 @@ resource "aws_autoscaling_group" "this" {
 
   tag {
     key                 = "Name"
-    value               = local.asg_name
+    value               = "anyhasher-${var.environment}-${var.deployment_color}"
     propagate_at_launch = true
   }
 
@@ -45,8 +41,8 @@ resource "aws_autoscaling_group" "this" {
   }
 
   tag {
-    key                 = "DeploymentType"
-    value               = var.deployment_type
+    key                 = "DeploymentColor"
+    value               = var.deployment_color
     propagate_at_launch = true
   }
 

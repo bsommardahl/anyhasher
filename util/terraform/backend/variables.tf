@@ -8,37 +8,29 @@ variable "route53_record_name" {}
 variable "ami_id" {}
 variable "key_name" {}
 variable "instance_type" {}
-variable "ver" {
-  description = "Git version or tag for this deployment"
+
+variable "active_environment" {
+  description = "Active environment for traffic routing (blue or green)"
   type        = string
-}
-
-# Canary deployment variables
-variable "canary_enabled" {
-  description = "Enable canary deployment strategy"
-  type        = bool
-  default     = false
-}
-
-variable "canary_traffic_percentage" {
-  description = "Percentage of traffic to route to canary deployment"
-  type        = number
-  default     = 10
-  
   validation {
-    condition     = var.canary_traffic_percentage >= 0 && var.canary_traffic_percentage <= 50
-    error_message = "Canary traffic percentage must be between 1 and 50."
+    condition     = contains(["blue", "green"], var.active_environment)
+    error_message = "Active environment must be either 'blue' or 'green'."
   }
 }
 
-variable "production_desired_capacity" {
-  description = "Desired capacity for production ASG"
+variable "desired_capacity" {
+  description = "Desired capacity for active environment"
   type        = number
   default     = 2
 }
 
-variable "canary_desired_capacity" {
-  description = "Desired capacity for canary ASG"
-  type        = number
-  default     = 1
+variable "blue_version" {
+  description = "Application version for blue environment"
+  type        = string
 }
+
+variable "green_version" {
+  description = "Application version for green environment"
+  type        = string
+}
+

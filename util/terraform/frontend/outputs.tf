@@ -4,5 +4,5 @@ output "bucket_name" {
 
 output "website_endpoint" {
   description = "Frontend URL"
-  value       = "http://canary-app.anyhasher.io"
+  value       = "http://decoupled-app.anyhasher.io"
 }

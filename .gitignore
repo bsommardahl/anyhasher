@@ -32,5 +32,6 @@ yarn-error.log*
 inventory/
 
 rollback-backup/
+CLAUDE.md
 
 *.tar.gz

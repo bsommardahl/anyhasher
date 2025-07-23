@@ -26,7 +26,12 @@ resource "aws_security_group" "alb_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  lifecycle {
+    create_before_destroy = true
+  }
+
   tags = {
     Name = "anyhasher-${var.environment}-alb-sg"
   }
 }
+

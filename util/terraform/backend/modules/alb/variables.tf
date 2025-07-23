@@ -5,14 +5,8 @@ variable "domain_root" {}
 variable "route53_zone_id" {}
 variable "route53_record_name" {}
 
-variable "canary_enabled" {
-  description = "Enable canary deployment strategy"
-  type        = bool
-  default     = false
+variable "active_environment" {
+  description = "Active environment (blue or green)"
+  type        = string
 }
 
-variable "canary_traffic_percentage" {
-  description = "Percentage of traffic to route to canary deployment"
-  type        = number
-  default     = 10
-}

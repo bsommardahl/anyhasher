@@ -9,7 +9,7 @@ echo "Starting user data script at $(date)"
 VERSION="${version}"
 S3_BUCKET="${s3_bucket}"
 ENVIRONMENT="${environment}"
-DEPLOYMENT_TYPE="${deployment_type}"
+DEPLOYMENT_COLOR="${deployment_color}"
 
 # Install only essential tools for Ansible
 echo "Installing essential tools..."
@@ -43,7 +43,7 @@ sudo chown -R ubuntu:ubuntu /home/ubuntu/anyhasher
 # Create deployment metadata file for monitoring
 echo "Creating deployment metadata..."
 sudo mkdir -p /opt/anyhasher
-echo "{\"version\":\"$VERSION\",\"environment\":\"$ENVIRONMENT\",\"deployment_type\":\"$DEPLOYMENT_TYPE\",\"deployed_at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" | sudo tee /opt/anyhasher/deployment.json
+echo "{\"version\":\"$VERSION\",\"environment\":\"$ENVIRONMENT\",\"deployment_type\":\"$DEPLOYMENT_COLOR\",\"deployed_at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" | sudo tee /opt/anyhasher/deployment.json
 
 # Download Ansible playbooks from S3
 echo "Downloading Ansible playbooks from S3..."
@@ -51,14 +51,14 @@ sudo aws s3 cp s3://$S3_BUCKET/ansible/ /tmp/ansible/ --recursive || echo "No An
 
 # Run Ansible playbook if it exists
 if [ -f "/tmp/ansible/deploy.yml" ]; then
-    echo "Running Ansible configuration..."
-    cd /tmp/ansible
-    # Create simple inventory for localhost
-    echo "localhost ansible_connection=local" > /tmp/ansible/inventory
-    # Run playbook
-    sudo -u ubuntu ansible-playbook -i inventory deploy.yml --connection=local || echo "Ansible playbook failed, continuing..."
+  echo "Running Ansible configuration..."
+  cd /tmp/ansible
+  # Create simple inventory for localhost
+  echo "localhost ansible_connection=local" >/tmp/ansible/inventory
+  # Run playbook
+  sudo -u ubuntu ansible-playbook -i inventory deploy.yml --connection=local || echo "Ansible playbook failed, continuing..."
 else
-    echo "No Ansible playbook found, skipping configuration..."
+  echo "No Ansible playbook found, skipping configuration..."
 fi
 
 echo "User data script completed successfully at $(date)"

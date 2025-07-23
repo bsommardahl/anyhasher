@@ -8,15 +8,9 @@ variable "public_subnet_ids" { type = list(string) }
 variable "alb_sg_id" {}
 variable "desired_capacity" {}
 
-variable "deployment_type" {
-  description = "Type of deployment: production or canary"
+variable "deployment_color" {
+  description = "Deployment color (blue or green)"
   type        = string
-  default     = "production"
-
-  validation {
-    condition     = contains(["production", "canary"], var.deployment_type)
-    error_message = "Deployment type must be either 'production' or 'canary'."
-  }
 }
 
 variable "ver" {
