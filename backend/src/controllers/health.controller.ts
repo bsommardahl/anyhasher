@@ -4,7 +4,7 @@ class HealthController {
       status: 'healthy',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
-      version: process.env.npm_package_version || '1.0.0-green'
+      version: process.env.npm_package_version || '1.0.0-blue'
     };
 
     response.status(200).send(healthStatus);
