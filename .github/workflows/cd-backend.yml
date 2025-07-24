@@ -119,7 +119,7 @@ jobs:
       - name: Rollback
         run: |
           chmod +x ./util/scripts/backend/run-bluegreen-deploy-pipeline.sh
-          ./util/scripts/backend/run-bluegreen-deploy-pipeline.sh "${{ needs.deploy.outputs.previous_version }}" "${{ inputs.active_environment }}" "${{ needs.deploy.outputs.previous_desired_capacity }}"
+          ./util/scripts/backend/run-bluegreen-deploy-pipeline.sh "${{ needs.deploy.outputs.previous_version }}" "${{ needs.deploy.outputs.previous_desired_capacity }}" "${{ inputs.active_environment }}"
 
       - name: Rollback Summary
         run: |
