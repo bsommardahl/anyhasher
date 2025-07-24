@@ -13,3 +13,4 @@ sudo apt-get install -y \
   libgbm-dev
 
 echo "✅ System dependencies installed successfully"
+

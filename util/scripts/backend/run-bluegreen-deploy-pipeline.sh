@@ -46,3 +46,5 @@ else
   echo "asg_name=$(terraform output -raw blue_asg_name)" >>"$GITHUB_OUTPUT"
   echo "previous_version=$(terraform output -raw previous_blue_version)" >>"$GITHUB_OUTPUT"
 fi
+
+echo "current_active_env=$CURRENT_ACTIVE_ENV" >>"$GITHUB_OUTPUT"

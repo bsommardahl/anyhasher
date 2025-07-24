@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BUCKET_NAME="canary-app.anyhasher.io"
+BUCKET_NAME="decoupled-app.anyhasher.io"
 BACKUP_DIR="./rollback-backup"
 
 echo "🔄 Starting frontend backup from: $BUCKET_NAME"
