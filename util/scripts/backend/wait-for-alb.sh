@@ -9,7 +9,7 @@ while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
 
   # Get healthy instances from ALB and check if they have the correct version tag
   HEALTHY_INSTANCES=$(aws elbv2 describe-target-health --target-group-arn "$TG_ARN" \
-    --query 'TargetHealthDescriptions[?TargetHealth.State==`healthyyyy`].Target.Id' --output text)
+    --query 'TargetHealthDescriptions[?TargetHealth.State==`healthy`].Target.Id' --output text)
 
   for instance_id in $HEALTHY_INSTANCES; do
     INSTANCE_VERSION=$(aws ec2 describe-tags --filters "Name=resource-id,Values=$instance_id" "Name=key,Values=Version" \
