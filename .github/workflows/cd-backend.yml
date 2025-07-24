@@ -116,18 +116,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Rollback to previous version
-        uses: dflook/terraform-apply@v2
-        with:
-          workspace: decoupled
-          auto_approve: true
-          var_file: |
-            util/terraform/environments/prod/backend.tfvars
-          variables: |
-            ver="${{ needs.deploy.outputs.previous_version }}"
-            production_desired_capacity=${{ needs.deploy.outputs.previous_desired_capacity }}
-            active_environment="${{ needs.deploy.outputs.current_active_env }}"
-          path: util/terraform/backend
+      - name: Rollback
+        run: |
+          chmod +x ./util/scripts/backend/run-bluegreen-deploy-pipeline.sh
+          ./util/scripts/backend/run-bluegreen-deploy-pipeline.sh "${{ needs.deploy.outputs.previous_version }}" "${{ inputs.active_environment }}" "${{ needs.deploy.outputs.previous_desired_capacity }}"
 
       - name: Rollback Summary
         run: |
