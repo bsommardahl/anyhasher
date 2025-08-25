@@ -38,10 +38,16 @@ jobs:
               - 'frontend/**'
               - '.github/workflows/ci-frontend.yml'
               - '.github/workflows/cd-frontend.yml'
+              - '.github/workflows/cicd.yml'
+              - 'util/terraform/frontend/**'
+              - 'util/scripts/frontend/**'
             backend:
               - 'backend/**'
               - '.github/workflows/ci-backend.yml'
               - '.github/workflows/cd-backend.yml'
+              - '.github/workflows/cicd.yml'
+              - 'util/terraform/backend/**'
+              - 'util/scripts/backend/**'
 
   ci-frontend:
     needs: detect-changes
