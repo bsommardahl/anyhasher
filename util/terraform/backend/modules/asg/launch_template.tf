@@ -21,8 +21,7 @@ resource "aws_launch_template" "this" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      //Name           = "anyhasher-${var.environment}-${substr(var.ver, -6, -1)}"
-      Name           = "anyhasher-${substr(var.ver, -6, -1)}"
+      Name           = "anyhasher-${var.environment}-${var.deployment_type}-${substr(var.ver, -6, -1)}"
       Version        = var.ver
       Deployment     = "${var.environment}-${var.deployment_type}-${var.ver}"
       DeploymentType = var.deployment_type
