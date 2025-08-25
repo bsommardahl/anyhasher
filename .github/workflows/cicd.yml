@@ -46,20 +46,20 @@ jobs:
   ci-frontend:
     needs: detect-changes
     if: needs.detect-changes.outputs.frontend == 'true'
-    uses: .github/workflows/ci-frontend.yml@rolling-deployments
+    uses: ./.github/workflows/ci-frontend.yml
     with:
       ref: ${{ github.sha }}
 
   ci-backend:
     needs: detect-changes
     if: needs.detect-changes.outputs.backend == 'true'
-    uses: ./.github/workflows/ci-backend.yml@rolling-deployments
+    uses: ./.github/workflows/ci-backend.yml
     with:
       ref: ${{ github.sha }}
 
   cd-frontend:
     needs: ci-frontend
-    uses: ./.github/workflows/cd-frontend.yml@rolling-deployments
+    uses: ./.github/workflows/cd-frontend.yml
     with:
       ref: ${{ github.sha }}
       backend_url: api.anyhasher.io
@@ -67,7 +67,7 @@ jobs:
 
   cd-backend:
     needs: ci-backend
-    uses: ./.github/workflows/cd-backend.yml@rolling-deployments
+    uses: ./.github/workflows/cd-backend.yml
     with:
       version: ${{ github.sha }}
     secrets: inherit
