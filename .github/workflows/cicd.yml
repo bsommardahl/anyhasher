@@ -5,13 +5,13 @@
 # Deploy Artifacts
 # Deploy Frontend
 # Start Rolling Out Backend Instances (chain reaction)
-# Create Infrastructure
-# Apply Configuration
-# Install App
-# Test New Version
-# Add to Load Balancer
-# Kill One Old Instance
-# Repeat
+## Create Infrastructure
+## Apply Configuration
+## Install App
+## Test New Version
+## Add to Load Balancer
+## Kill One Old Instance
+## Repeat
 
 name: Rolling Deployment CI/CD Pipeline
 run-name: "🛠️ ${{ github.event.head_commit.message }} (${{ github.sha }})"
@@ -46,7 +46,7 @@ jobs:
   ci-frontend:
     needs: detect-changes
     if: needs.detect-changes.outputs.frontend == 'true'
-    uses: ./.github/workflows/ci-frontend.yml
+    uses: .github/workflows/ci-frontend.yml
     with:
       ref: ${{ github.sha }}
 

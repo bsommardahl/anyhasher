@@ -23,6 +23,7 @@ resource "aws_launch_template" "this" {
       Name       = "anyhasher-${var.environment}-backend"
       Version    = var.ver
       Deployment = "${var.environment}-${var.ver}"
+      DeploymentType = "rolling"
     }
   }
 }
