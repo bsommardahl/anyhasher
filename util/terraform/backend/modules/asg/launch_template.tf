@@ -20,7 +20,7 @@ resource "aws_launch_template" "this" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      Name       = "anyhasher-rolling-${var.environment}-backend"
+      Name       = "anyhasher-${var.environment}-${var.ver}"
       Version    = var.ver
       Deployment = "${var.environment}-${var.ver}"
       DeploymentType = "rolling"
