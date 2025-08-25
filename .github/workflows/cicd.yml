@@ -70,7 +70,7 @@ jobs:
     with:
       version: ${{ github.sha }}
       canary: true
-      canary_percentage: 40
-      canary_desired_capacity: 4
+      canary_percentage: 20
+      canary_desired_capacity: 2
       production_desired_capacity: 10
     secrets: inherit
