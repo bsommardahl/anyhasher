@@ -26,30 +26,6 @@ resource "aws_autoscaling_group" "this" {
     triggers = ["launch_template"]
   }
 
-  # tag {
-  #   key                 = "Name"
-  #   value               = local.asg_name
-  #   propagate_at_launch = true
-  # }
-
-  # tag {
-  #   key                 = "Version"
-  #   value               = var.ver
-  #   propagate_at_launch = true
-  # }
-
-  # tag {
-  #   key                 = "Environment"
-  #   value               = var.environment
-  #   propagate_at_launch = true
-  # }
-
-  # tag {
-  #   key                 = "DeploymentType"
-  #   value               = var.deployment_type
-  #   propagate_at_launch = true
-  # }
-
   lifecycle {
     create_before_destroy = true
   }
