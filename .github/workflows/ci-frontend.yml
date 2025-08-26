@@ -29,13 +29,16 @@ jobs:
           path: frontend/node_modules
           key: fe-node-${{ inputs.ref }}-${{ hashFiles('frontend/package-lock.json') }}
 
-      - name: Clean npm cache
+      - name: Clean npm cache and verify registry
         if: steps.cache.outputs.cache-hit != 'true'
-        run: npm cache clean --force
+        run: |
+          npm cache clean --force
+          npm cache verify
+          npm ping
 
       - name: Install Deps
         if: steps.cache.outputs.cache-hit != 'true'
-        run: cd frontend && npm ci
+        run: cd frontend && npm ci --verbose
 
       - name: Build
         run: |
@@ -62,13 +65,16 @@ jobs:
           path: frontend/node_modules
           key: fe-node-${{ inputs.ref }}-${{ hashFiles('frontend/package-lock.json') }}
 
-      - name: Clean npm cache
+      - name: Clean npm cache and verify registry
         if: steps.cache.outputs.cache-hit != 'true'
-        run: npm cache clean --force
+        run: |
+          npm cache clean --force
+          npm cache verify
+          npm ping
 
       - name: Install Deps
         if: steps.cache.outputs.cache-hit != 'true'
-        run: cd frontend && npm i
+        run: cd frontend && npm i --verbose
 
       - name: Check for security issue
         run: cd frontend && npm audit --omit=dev --audit-level=critical
@@ -102,13 +108,16 @@ jobs:
           path: frontend/node_modules
           key: fe-node-${{ inputs.ref }}-${{ hashFiles('frontend/package-lock.json') }}
 
-      - name: Clean npm cache
+      - name: Clean npm cache and verify registry
         if: steps.cache.outputs.cache-hit != 'true'
-        run: npm cache clean --force
+        run: |
+          npm cache clean --force
+          npm cache verify
+          npm ping
 
       - name: Install Deps
         if: steps.cache.outputs.cache-hit != 'true'
-        run: cd frontend && npm i
+        run: cd frontend && npm i --verbose
 
       - name: Build
         run: cd frontend && npm run build
