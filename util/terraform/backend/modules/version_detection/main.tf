@@ -62,13 +62,13 @@ data "aws_instances" "canary_current" {
 }
 
 data "aws_instance" "production_first" {
-  count       = local.production_asg_exists ? 1 : 0
-  instance_id = data.aws_instances.production_current[0].ids[0]
+  count       = local.production_asg_exists && length(data.aws_instances.production_current) > 0 && length(data.aws_instances.production_current[0].ids) > 0 ? 1 : 0
+  instance_id = length(data.aws_instances.production_current) > 0 && length(data.aws_instances.production_current[0].ids) > 0 ? data.aws_instances.production_current[0].ids[0] : null
 }
 
 data "aws_instance" "canary_first" {
-  count       = local.canary_asg_exists ? 1 : 0
-  instance_id = data.aws_instances.canary_current[0].ids[0]
+  count       = local.canary_asg_exists && length(data.aws_instances.canary_current) > 0 && length(data.aws_instances.canary_current[0].ids) > 0 ? 1 : 0
+  instance_id = length(data.aws_instances.canary_current) > 0 && length(data.aws_instances.canary_current[0].ids) > 0 ? data.aws_instances.canary_current[0].ids[0] : null
 }
 
 locals {
