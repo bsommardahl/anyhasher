@@ -74,7 +74,7 @@ jobs:
     uses: ./.github/workflows/cd-backend.yml
     with:
       version: ${{ github.sha }}
-      canary: true
+      canary: false
       canary_percentage: 20
       canary_desired_capacity: 2
       production_desired_capacity: 10
