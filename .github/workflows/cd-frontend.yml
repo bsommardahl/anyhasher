@@ -123,6 +123,7 @@ jobs:
         id: smoke-tests
         working-directory: frontend/e2e
         run: |
+          npm cache clean --force
           npm ci
           npm run smoke
         env:

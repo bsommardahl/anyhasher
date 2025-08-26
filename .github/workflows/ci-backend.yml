@@ -27,6 +27,9 @@ jobs:
         with:
           node-version: 20.x
 
+      - name: Clean npm cache
+        run: npm cache clean --force
+
       - name: Install Deps
         run: cd backend && npm ci
 
@@ -63,6 +66,10 @@ jobs:
           path: node_modules
           key: be-node-${{ hashFiles('backend/package-lock.json') }}
 
+      - name: Clean npm cache
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm cache clean --force
+
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: cd backend && npm i
@@ -84,6 +91,10 @@ jobs:
         with:
           path: node_modules
           key: be-node-${{ hashFiles('backend/package-lock.json') }}
+
+      - name: Clean npm cache
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm cache clean --force
 
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
@@ -131,6 +142,10 @@ jobs:
         with:
           path: backend/node_modules
           key: be-node-${{ hashFiles('backend/package-lock.json') }}
+
+      - name: Clean npm cache
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm cache clean --force
 
       - name: Install Deps
         if: steps.cache.outputs.cache-hit != 'true'
