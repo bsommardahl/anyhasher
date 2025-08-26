@@ -2,14 +2,14 @@
 data "aws_autoscaling_groups" "production_existing" {
   filter {
     name   = "auto-scaling-group-name"
-    values = ["anyhasher-${var.environment}-production*"]
+    values = ["anyhasher-${var.environment}-production"]
   }
 }
 
 data "aws_autoscaling_groups" "canary_existing" {
   filter {
     name   = "auto-scaling-group-name"
-    values = ["anyhasher-${var.environment}-canary*"]
+    values = ["anyhasher-${var.environment}-canary"]
   }
 }
 
