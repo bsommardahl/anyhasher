@@ -1,23 +1,15 @@
 # Get current production ASG information
 data "aws_autoscaling_groups" "production_existing" {
   filter {
-    name   = "tag:Environment"
-    values = [var.environment]
-  }
-  filter {
-    name   = "tag:DeploymentType"
-    values = ["production"]
+    name   = "auto-scaling-group-name"
+    values = ["anyhasher-${var.environment}-production*"]
   }
 }
 
 data "aws_autoscaling_groups" "canary_existing" {
   filter {
-    name   = "tag:Environment"
-    values = [var.environment]
-  }
-  filter {
-    name   = "tag:DeploymentType"
-    values = ["canary"]
+    name   = "auto-scaling-group-name"
+    values = ["anyhasher-${var.environment}-canary*"]
   }
 }
 
