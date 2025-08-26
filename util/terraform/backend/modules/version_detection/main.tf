@@ -32,10 +32,6 @@ data "aws_autoscaling_group" "canary_current" {
 data "aws_instances" "production_current" {
   count = local.production_asg_exists ? 1 : 0
   filter {
-    name   = "tag:Environment"
-    values = [var.environment]
-  }
-  filter {
     name   = "tag:DeploymentType"
     values = ["production"]
   }
@@ -47,10 +43,6 @@ data "aws_instances" "production_current" {
 
 data "aws_instances" "canary_current" {
   count = local.canary_asg_exists ? 1 : 0
-  filter {
-    name   = "tag:Environment"
-    values = [var.environment]
-  }
   filter {
     name   = "tag:DeploymentType"
     values = ["canary"]
