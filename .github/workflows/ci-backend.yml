@@ -28,7 +28,7 @@ jobs:
           node-version: 20.x
 
       - name: Install Deps
-        run: cd backend && npm i
+        run: cd backend && npm ci
 
       - name: Build
         run: cd backend && npm run build

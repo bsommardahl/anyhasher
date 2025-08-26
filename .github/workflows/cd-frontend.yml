@@ -123,7 +123,7 @@ jobs:
         id: smoke-tests
         working-directory: frontend/e2e
         run: |
-          npm install
+          npm ci
           npm run smoke
         env:
           CI: true
