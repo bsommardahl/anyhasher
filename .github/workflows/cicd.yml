@@ -76,6 +76,6 @@ jobs:
       version: ${{ github.sha }}
       canary: true
       canary_percentage: 20 # Only apply when canary is true otherwise perform rolling update with default values in .tfvars
-      canary_desired_capacity: 2 # Only apply when canary is true otherwise perform rolling update with default values in .tfvars
-      production_desired_capacity: 10 # Only apply when canary is true otherwise perform rolling update with default values in .tfvars
+      canary_desired_capacity: 4 # Only apply when canary is true otherwise perform rolling update with default values in .tfvars
+      production_desired_capacity: 8 # Only apply when canary is true otherwise perform rolling update with default values in .tfvars
     secrets: inherit
