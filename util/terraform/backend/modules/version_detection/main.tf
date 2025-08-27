@@ -63,12 +63,12 @@ data "aws_instances" "green_current" {
 }
 
 data "aws_instance" "blue_first" {
-  count       = local.blue_asg_exists ? 1 : 0
+  count       = local.blue_asg_exists && length(data.aws_instances.blue_current) > 0 && length(data.aws_instances.blue_current[0].ids) > 0 ? 1 : 0
   instance_id = data.aws_instances.blue_current[0].ids[0]
 }
 
 data "aws_instance" "green_first" {
-  count       = local.green_asg_exists ? 1 : 0
+  count       = local.green_asg_exists && length(data.aws_instances.green_current) > 0 && length(data.aws_instances.green_current[0].ids) > 0 ? 1 : 0
   instance_id = data.aws_instances.green_current[0].ids[0]
 }
 
