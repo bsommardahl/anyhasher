@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "prestart": "npm run build",
-    "start": "node build/server.js",
+    "start": "test -f .env && node --env-file=.env build/server.js || node build/server.js",
     "test": "jest",
     "build": "tsc",
     "postbuild": "cp package*.json build && cd build && npm ci --production",
