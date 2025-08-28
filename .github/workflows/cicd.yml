@@ -70,5 +70,5 @@ jobs:
     with:
       version: ${{ github.sha }}
       use_green_environment: true
-      blue_desired_capacity: 2
+      blue_desired_capacity: 4
     secrets: inherit
