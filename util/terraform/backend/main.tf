@@ -11,7 +11,7 @@ module "bluegreen_alb" {
   domain_root         = var.domain_root
   route53_zone_id     = var.route53_zone_id
   route53_record_name = var.route53_record_name
-  active_environment  = var.active_environment
+  use_green_environment  = var.use_green_environment
 }
 
 module "blue_asg" {
@@ -32,6 +32,8 @@ module "blue_asg" {
 }
 
 module "green_asg" {
+  count = var.use_green_environment ? 1 : 0
+
   source                = "./modules/asg"
   environment           = var.environment
   deployment_color      = "green"

@@ -19,7 +19,7 @@ output "blue_target_group_arn" {
 }
 
 output "green_target_group_arn" {
-  description = "ARN of the green target group"
-  value       = aws_lb_target_group.green.arn
+  description = "ARN of the green target group (null if not created)"
+  value       = var.use_green_environment ? aws_lb_target_group.green[0].arn : null
 }
 

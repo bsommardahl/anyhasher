@@ -9,25 +9,22 @@ variable "ami_id" {}
 variable "key_name" {}
 variable "instance_type" {}
 
-variable "active_environment" {
-  description = "Active environment for traffic routing (blue or green)"
-  type        = string
-  validation {
-    condition     = contains(["blue", "green"], var.active_environment)
-    error_message = "Active environment must be either 'blue' or 'green'."
-  }
+variable "use_green_environment" {
+  description = "Usage of green environment"
+  type        = bool
+  default     = false
 }
 
 variable "blue_desired_capacity" {
   description = "Desired capacity for blue environment"
   type        = number
-  default     = null
+  default     = 2
 }
 
 variable "green_desired_capacity" {
   description = "Desired capacity for green environment"
   type        = number
-  default     = null
+  default     = 1
 }
 
 variable "blue_version" {

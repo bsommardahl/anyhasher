@@ -33,6 +33,8 @@ resource "aws_lb_target_group" "blue" {
 }
 
 resource "aws_lb_target_group" "green" {
+  count = var.use_green_environment ? 1 : 0
+  
   name                 = "anyhasher-${var.environment}-green-tg"
   port                 = 5001
   protocol             = "HTTP"
@@ -81,24 +83,26 @@ resource "aws_lb_listener" "https" {
 
   default_action {
     type             = "forward"
-    target_group_arn = var.active_environment == "blue" ? aws_lb_target_group.blue.arn : aws_lb_target_group.green.arn
+    target_group_arn = aws_lb_target_group.blue.arn  # Always forward to blue as it's always active
   }
 }
 
-# Rule to route traffic to inactive environment only when X-Environment header matches
-resource "aws_lb_listener_rule" "route_to_inactive_environment" {
+# Rule to route traffic to green environment only when X-Environment header is "green" and green exists
+resource "aws_lb_listener_rule" "route_to_green_environment" {
+  count = var.use_green_environment ? 1 : 0
+  
   listener_arn = aws_lb_listener.https.arn
   priority     = 100
 
   action {
     type             = "forward"
-    target_group_arn = var.active_environment == "blue" ? aws_lb_target_group.green.arn : aws_lb_target_group.blue.arn
+    target_group_arn = aws_lb_target_group.green[0].arn
   }
 
   condition {
     http_header {
       http_header_name = "X-Environment"
-      values           = [var.active_environment == "blue" ? "green" : "blue"]
+      values           = ["green"]
     }
   }
 }

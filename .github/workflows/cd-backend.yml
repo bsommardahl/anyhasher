@@ -8,15 +8,14 @@ on:
         description: "The version of this deployment (ex: git commit sha)"
         required: true
         type: string
-      active_environment:
-        description: "Target environment for deployment (blue or green)"
+      use_green_environment:
+        description: "Whether to use green environment for deployment"
         required: true
-        type: string
-      desired_capacity:
-        description: "Desired capacity for the deployment (default: 2)"
+        type: boolean
+      blue_desired_capacity:
+        description: "Desired capacity for the blue environment (default: 2)"
         required: true
         type: number
-        default: 2
 
 jobs:
   upload_artifact:
@@ -56,7 +55,6 @@ jobs:
       asg_name: ${{ steps.apply_bluegreen.outputs.asg_name }}
       previous_version: ${{ steps.apply_bluegreen.outputs.previous_version }}
       previous_desired_capacity: ${{ steps.apply_bluegreen.outputs.previous_desired_capacity }}
-      current_active_env: ${{ steps.apply_bluegreen.outputs.current_active_env }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -75,7 +73,7 @@ jobs:
         id: apply_bluegreen
         run: |
           chmod +x ./util/scripts/backend/run-bluegreen-deploy-pipeline.sh
-          ./util/scripts/backend/run-bluegreen-deploy-pipeline.sh "${{ inputs.version }}" "${{ inputs.desired_capacity }}" "${{ inputs.active_environment }}"
+          ./util/scripts/backend/run-bluegreen-deploy-pipeline.sh "${{ inputs.version }}" "${{ inputs.blue_desired_capacity }}" "${{ inputs.use_green_environment }}"
 
   wait_for_health:
     name: 🩺 Health Check
@@ -97,10 +95,26 @@ jobs:
           chmod +x ./util/scripts/backend/wait-for-alb.sh
           ./util/scripts/backend/wait-for-alb.sh "${{ needs.deploy.outputs.target_group_arn }}" "${{ inputs.version }}"
 
+  smoke_test:
+    name: 🧪 Smoke Test
+    needs: [deploy, wait_for_health]
+    if: always() && (needs.wait_for_health.result == 'success')
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ inputs.version }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Smoke Tests
+        run: |
+          chmod +x ./util/scripts/backend/smoke-test.sh
+          ./util/scripts/backend/smoke-test.sh https://decoupled-api.anyhasher.io "${{ inputs.use_green_environment }}"
+
   rollback:
     name: 🔄 Rollback
-    needs: [deploy, wait_for_health]
-    if: failure() && needs.wait_for_health.result == 'failure' && needs.deploy.outputs.previous_version != 'first-deployment'
+    needs: [deploy, smoke_test, wait_for_health]
+    if: failure() && needs.wait_for_health.result == 'failure' || needs.smoke_test.result == 'failure'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -119,17 +133,17 @@ jobs:
       - name: Rollback
         run: |
           chmod +x ./util/scripts/backend/run-bluegreen-deploy-pipeline.sh
-          ./util/scripts/backend/run-bluegreen-deploy-pipeline.sh "${{ needs.deploy.outputs.previous_version }}" "${{ needs.deploy.outputs.previous_desired_capacity }}" "${{ inputs.active_environment }}"
+          ./util/scripts/backend/run-bluegreen-deploy-pipeline.sh "${{ needs.deploy.outputs.previous_version }}" "${{ needs.deploy.outputs.previous_desired_capacity }}" "false"
 
       - name: Rollback Summary
         run: |
           chmod +x util/scripts/backend/rollback-summary.sh
-          ./util/scripts/backend/rollback-summary.sh "${{ inputs.version }}" "${{ needs.deploy.outputs.previous_version }}" "${{ needs.deploy.outputs.asg_name }}" "${{ needs.deploy.outputs.previous_desired_capacity }}" "${{ inputs.active_environment }}" "${{ needs.deploy.outputs.target_group_arn }}"
+          ./util/scripts/backend/rollback-summary.sh "${{ inputs.version }}" "${{ needs.deploy.outputs.previous_version }}" "${{ needs.deploy.outputs.asg_name }}" "${{ needs.deploy.outputs.previous_desired_capacity }}" "${{ needs.deploy.outputs.target_group_arn }}"
 
   promote_to_production:
-    name: 🔥 Promote to Production Traffic
-    needs: [deploy, wait_for_health]
-    if: success() && needs.wait_for_health.result == 'success'
+    name: 🔥 Promote to Blue
+    needs: [deploy, smoke_test, wait_for_health]
+    if: success() && needs.wait_for_health.result == 'success' || needs.smoke_test.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -145,29 +159,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Switch Traffic to New Environment
+      - name: Set green version to blue
         run: |
-          chmod +x ./util/scripts/backend/promote-to-production.sh
-          ./util/scripts/backend/promote-to-production.sh "${{ inputs.version }}" "${{ inputs.active_environment }}" "${{ inputs.desired_capacity }}"
-
-  smoke_test:
-    name: 🧪 Smoke Test
-    needs: [rollback, promote_to_production]
-    if: always() && (needs.wait_for_health.result == 'success' || needs.rollback.result == 'success')
-    runs-on: ubuntu-latest
-    env:
-      VERSION: ${{ inputs.version }}
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Run Smoke Tests
-        run: |
-          chmod +x ./util/scripts/backend/smoke-test.sh
-          ./util/scripts/backend/smoke-test.sh https://decoupled-api.anyhasher.io
+          chmod +x ./util/scripts/backend/run-bluegreen-deploy-pipeline.sh
+          ./util/scripts/backend/run-bluegreen-deploy-pipeline.sh "${{ inputs.version }}" "${{ inputs.blue_desired_capacity }}" "false"
 
       - name: Deployment Success Summary
-        if: needs.rollback.result != 'success'
         run: |
           chmod +x util/scripts/backend/deployment-success-summary.sh
-          ./util/scripts/backend/deployment-success-summary.sh "${{ inputs.version }}" "https://decoupled-api.anyhasher.io" "${{ inputs.active_environment }}"
+          ./util/scripts/backend/deployment-success-summary.sh "${{ inputs.version }}" "https://decoupled-api.anyhasher.io"
