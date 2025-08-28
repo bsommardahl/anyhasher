@@ -20,7 +20,7 @@ if [ "$USE_GREEN_ENVIRONMENT" = "true" ]; then
   terraform apply -auto-approve \
     -var-file="../environments/prod/backend.tfvars" \
     -var="use_green_environment=true" \
-    -var="$VERSION_VAR" \
+    -var="$VERSION_VAR"
 else
   VERSION_VAR="blue_version=$VERSION"
   CAPACITY_VAR="blue_desired_capacity=$DESIRED_CAPACITY"
