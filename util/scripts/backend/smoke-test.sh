@@ -12,7 +12,7 @@ else
   response=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/health" || echo "000")
 fi
 
-if [ "$response" = "400" ]; then
+if [ "$response" = "200" ]; then
   echo "✅ Application is responding correctly!"
 else
   echo "❌ Application is not responding (HTTP $response)"
