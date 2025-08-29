@@ -46,3 +46,8 @@ output "green_target_group_arn" {
   description = "ARN of the green target group (null if not created)"
   value       = module.bluegreen_alb.green_target_group_arn
 }
+
+output "blue_desired_capacity" {
+  description = "Current desired capacity of the blue ASG"
+  value       = var.blue_desired_capacity
+}
