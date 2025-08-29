@@ -34,10 +34,10 @@ fi
 echo "Deployment completed successfully"
 
 if [ "$USE_GREEN_ENVIRONMENT" = "true" ]; then
-  echo "previous_blue_desired_capacity=$(terraform output -raw previous_blue_desired_capacity)" >>"$GITHUB_OUTPUT"
+  echo "previous_desired_capacity=$(terraform output -raw previous_blue_desired_capacity)" >>"$GITHUB_OUTPUT"
   echo "target_group_arn=$(terraform output -raw green_target_group_arn)" >>"$GITHUB_OUTPUT"
   echo "asg_name=$(terraform output -raw green_asg_name)" >>"$GITHUB_OUTPUT"
-  echo "previous_blue_version=$(terraform output -raw previous_blue_version)" >>"$GITHUB_OUTPUT"
+  echo "previous_version=$(terraform output -raw previous_blue_version)" >>"$GITHUB_OUTPUT"
 else
   echo "previous_desired_capacity=$(terraform output -raw previous_blue_desired_capacity)" >>"$GITHUB_OUTPUT"
   echo "target_group_arn=$(terraform output -raw blue_target_group_arn)" >>"$GITHUB_OUTPUT"
