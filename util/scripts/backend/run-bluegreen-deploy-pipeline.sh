@@ -16,11 +16,13 @@ echo "Use green environment: $USE_GREEN_ENVIRONMENT"
 
 if [ "$USE_GREEN_ENVIRONMENT" = "true" ]; then
   VERSION_VAR="green_version=$VERSION"
+  PREVIOUS_BLUE_CAPACITY=$(terraform output -raw previous_blue_desired_capacity)
 
   terraform apply -auto-approve \
     -var-file="../environments/prod/backend.tfvars" \
     -var="use_green_environment=true" \
-    -var="$VERSION_VAR"
+    -var="$VERSION_VAR" \
+    -var="blue_desired_capacity=$PREVIOUS_BLUE_CAPACITY"
 else
   VERSION_VAR="blue_version=$VERSION"
   CAPACITY_VAR="blue_desired_capacity=$DESIRED_CAPACITY"
