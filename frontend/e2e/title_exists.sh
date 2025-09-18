@@ -1,0 +1,1 @@
+curl -s $1 | grep -q "AnyHasher" && echo "Found" || echo "Not Found"
