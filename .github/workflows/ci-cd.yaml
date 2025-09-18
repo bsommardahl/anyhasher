@@ -162,4 +162,6 @@ jobs:
 
       - name: Run Frontend Smoke Test
         run: |
-          frontend/e2e/title_exists.sh ${{ needs.deploy.outputs.my_url }}          
+          cd frontend/e2e
+          chmod +x title_exists.sh
+          title_exists.sh ${{ needs.deploy.outputs.my_url }}          
