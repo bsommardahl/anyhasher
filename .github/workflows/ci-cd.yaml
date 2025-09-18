@@ -164,4 +164,4 @@ jobs:
         run: |
           cd frontend/e2e
           chmod +x title_exists.sh
-          title_exists.sh ${{ needs.deploy.outputs.my_url }}          
+          ./title_exists.sh ${{ needs.deploy.outputs.my_url }}          
