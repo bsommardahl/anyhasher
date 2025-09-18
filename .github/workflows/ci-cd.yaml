@@ -12,6 +12,16 @@ jobs:
       - name: Checkout Code 
         uses: actions/checkout@v3
 
+      - uses: actions/setup-node@v4
+        with: 
+          node-version: 16.x
+      
+      - name: Cache Node Modules
+        uses: actions/cache@v4
+        with:
+          path: frontend/node_modules
+          key: fe-node-${{ hashFiles('frontend/package-lock.json') }}
+
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
@@ -35,6 +45,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Cache Node Modules
+        uses: actions/cache@v4
+        with:
+          path: frontend/node_modules
+          key: fe-node-${{ hashFiles('frontend/package-lock.json') }}
+          
       - name: Setup Node 16
         uses: actions/setup-node@v4
         with:
@@ -53,6 +69,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Cache Node Modules
+        uses: actions/cache@v4
+        with:
+          path: frontend/node_modules
+          key: fe-node-${{ hashFiles('frontend/package-lock.json') }}
+          
       - name: Setup Node 16
         uses: actions/setup-node@v4
         with:
@@ -63,3 +85,19 @@ jobs:
 
       - name: 😂 Lint code
         run: cd frontend && npm run lint
+
+  security-audit: 
+    name: Audit Deps
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+        
+      - name: ensure node installed and right version
+        uses: actions/setup-node@v4
+        with: 
+          node-version: 16.x
+
+      - name: audit
+        run: cd frontend && npm audit --omit=dev 
