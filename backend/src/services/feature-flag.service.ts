@@ -18,6 +18,8 @@ class FeatureFlagService {
             if (key.startsWith(flagPrefix)) {
                 const flagName = key.substring(flagPrefix.length).toLowerCase();
                 this.flags.set(flagName, value === 'true');
+                /* tslint:disable-next-line */
+                console.log(`${flagName} ${value}`);
             }
         }
     }
