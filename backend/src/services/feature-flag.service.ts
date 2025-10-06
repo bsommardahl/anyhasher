@@ -12,8 +12,7 @@ class FeatureFlagService {
     }
 
     private initializeFlags(): void {
-        //e.g. FEATURE_ENHANCED_RESPONSE
-        const flagPrefix = 'FEATURE_'; 
+        const flagPrefix = 'FEATURE_'; // e.g. FEATURE_ENHANCED_RESPONSE
 
         for (const [key, value] of Object.entries(process.env)) {
             if (key.startsWith(flagPrefix)) {
