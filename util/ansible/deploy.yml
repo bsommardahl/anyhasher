@@ -3,6 +3,6 @@
   hosts: ec2
   gather_facts: false
   roles:
-    - configure-server
     - set-feature-flags
+    - configure-server
     - deploy-artifact

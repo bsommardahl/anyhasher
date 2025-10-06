@@ -24,3 +24,10 @@
     line: '{{ item.key }}="{{ item.value }}"'
   loop: "{{ feature_flags | dict2items }}"
   become: yes
+
+- name: Reload systemd and restart service
+  ansible.builtin.systemd:
+    name: pm2-ubuntu.service
+    daemon_reload: true
+    state: restarted
+  become: yes
