@@ -1,7 +1,7 @@
 ---
 - name: Copy feature flags file to remote
   ansible.builtin.copy:
-    src: ".feature-flags"
+    src: "/.feature-flags"
     dest: "/tmp/.feature-flags"
     mode: '0644'
 
