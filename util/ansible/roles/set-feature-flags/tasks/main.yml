@@ -28,5 +28,5 @@
   become: yes
 
 - name: Source the environment file
-  shell: source /etc/environment
+  shell: . /etc/environment
   become: yes
