@@ -24,15 +24,3 @@
     line: '{{ item.key }}="{{ item.value }}"'
   loop: "{{ feature_flags | dict2items }}"
   become: yes
-
-- name: Source the environment file
-  ansible.builtin.shell: . /etc/environment
-  become: yes
-
-- name: Display the FEATURE_ENHANCED_RESPONSE feature flag
-  ansible.builtin.shell: echo FEATURE_ENHANCED_RESPONSE=$FEATURE_ENHANCED_RESPONSE
-  become: yes
-
-- name: Display the env file
-  ansible.builtin.shell: cat /etc/environment
-  become: yes
