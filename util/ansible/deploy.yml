@@ -4,4 +4,5 @@
   gather_facts: false
   roles:
     - configure-server
+    - set-feature-flags
     - deploy-artifact
