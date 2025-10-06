@@ -1,7 +1,13 @@
 ---
+- name: Copy feature flags file to remote
+  ansible.builtin.copy:
+    src: ".feature-flags"
+    dest: "/tmp/.feature-flags"
+    mode: '0644'
+
 - name: Read feature flags from file
   ansible.builtin.slurp:
-    src: "/.feature-flags"
+    src: "/tmp/.feature-flags"
   register: flags_file
 
 - name: Parse feature flags into variables
