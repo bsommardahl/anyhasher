@@ -19,7 +19,7 @@ class FeatureFlagService {
                 const flagName = key.substring(flagPrefix.length).toLowerCase();
                 this.flags.set(flagName, value === 'true');
             }
-        }        
+        }
     }
 
     isEnabled(flagName: string): boolean {
@@ -31,7 +31,7 @@ class FeatureFlagService {
             name,
             enabled
         }));
-    }    
+    }
 }
 
 const featureFlagService = new FeatureFlagService();
