@@ -16,7 +16,7 @@ on:
     outputs:
       backend_url:
         value: ${{ jobs.provision.outputs.backend_url }}
-      
+
 jobs:
   provision:
     name: 🏢 Provision Backend Infrastructure
@@ -74,7 +74,15 @@ jobs:
           path: backend/build/
 
       - name: Inject Feature Flags
-        run: cp ./.feature-flags backend/build/.env
+        run: |
+          ls -la
+          echo "----------"
+          ls -la backend
+          echo "----------"
+          cp ./.feature-flags backend/build/.env
+          echo "----------"
+          ls -la backend/build
+          echo "----------"
 
       - name: Configure Backend Infrastructure
         uses: dawidd6/action-ansible-playbook@v2
@@ -108,4 +116,5 @@ jobs:
           ./backend-smoke.sh
 
       #- name: Simulate an error
-      #  run: exit 1  
+      #  run: exit 1
+
