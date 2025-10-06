@@ -74,7 +74,7 @@ jobs:
           path: backend/build/
 
       - name: Inject Feature Flags
-        run: copy ./.feature-flags backend/build/.env
+        run: cp ./.feature-flags backend/build/.env
 
       - name: Configure Backend Infrastructure
         uses: dawidd6/action-ansible-playbook@v2
