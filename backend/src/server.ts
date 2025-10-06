@@ -5,6 +5,8 @@ import hashRoutes from './routes/hash.routes';
 import healthRoutes from './routes/health.routes';
 import featureFlagRoutes from './routes/feature-flag.routes';
 
+import 'dotenv/config';
+
 const app = express();
 const port = process.env.PORT || 5001;
 
