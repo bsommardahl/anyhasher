@@ -1,74 +1,78 @@
-# PIPELINE FLOW:
+# PLANNING STEPS:
 # =====================
-# 1. Detect changes in frontend/backend code or workflows
-# 2. Build frontend and backend artifacts (CI)
-# 3. Upload backend artifact to S3
-# 4. Deploy backend (Decoupled or rolling) with Terraform
-# 5. Deploy frontend to S3 and update backend URL
-# 6. Wait for backend health checks (ALB)
-# 7. Run smoke tests for backend and frontend
-# 8. Rollback automatically if health/smoke tests fail
-# 9. Optionally promote Decoupled to production manually
-# 10. Summarize deployment or rollback results
-
-name: Decoupled Deployment CI/CD Pipeline
+# Discover Changes
+# Build Artifact
+# Deploy Artifact
+  # Create Infrastructure
+  # Apply Configuration
+  # Install App
+  # Test New Version
+  # Promote New Version
+  # Kill Old Version
+  
+name: Blue-Green CI/CD Pipeline
 run-name: "🛠️ ${{ github.event.head_commit.message }} (${{ github.sha }})"
 on:
-  push:
+  push: 
     branches:
-      # - main
-      - decoupled-deployments #normally 'main'
+      - blue-green-demo   #normally 'main'
 
 jobs:
-  detect-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      frontend: ${{ steps.changes.outputs.frontend }}
-      backend: ${{ steps.changes.outputs.backend }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v2
-        id: changes
-        with:
-          base: ${{ github.event.before }}
-          filters: |
-            frontend:
-              - 'frontend/**'
-              - '.github/workflows/ci-frontend.yml'
-              - '.github/workflows/cd-frontend.yml'
-            backend:
-              - 'backend/**'
-              - '.github/workflows/ci-backend.yml'
-              - '.github/workflows/cd-backend.yml'
-              - '.github/workflows/cicd.yml'
-
+  
   ci-frontend:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.frontend == 'true'
     uses: ./.github/workflows/ci-frontend.yml
     with:
-      ref: ${{ github.sha }}
+      ref: ${{ github.sha }}    
 
   ci-backend:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.backend == 'true'
     uses: ./.github/workflows/ci-backend.yml
     with:
-      ref: ${{ github.sha }}
-
-  cd-frontend:
-    needs: ci-frontend
-    uses: ./.github/workflows/cd-frontend.yml
-    with:
-      ref: ${{ github.sha }}
-      backend_url: decoupled-api.anyhasher.io
-    secrets: inherit
+      ref: ${{ github.sha }}    
 
   cd-backend:
-    needs: ci-backend
+    needs: [ci-frontend, ci-backend]
     uses: ./.github/workflows/cd-backend.yml
-    with:
-      version: ${{ github.sha }}
-      use_green_environment: true
-      blue_desired_capacity: 4
+    with: 
+      ref: ${{ github.sha }}    
+    secrets: inherit
+
+  cd-frontend:
+    needs: [cd-backend]
+    uses: ./.github/workflows/cd-frontend.yml
+    with: 
+      ref: ${{ github.sha }}    
+      backend_url: ${{ needs.cd-backend.outputs.backend_url }}
+    secrets: inherit
+
+  promote:
+    needs: [cd-frontend]
+    uses: ./.github/workflows/promote.yml
+    with: 
+      ref: ${{ github.sha }}
+      s3_bucket_hostname: ${{ needs.cd-frontend.outputs.s3_bucket_hostname }}
+    secrets: inherit
+
+  cleanup:
+    needs: [promote]
+    uses: ./.github/workflows/cleanup.yml
+    with: 
+      ref: ${{ needs.promote.outputs.previous_ref }}
+      env_name: Previous Blue
+      reason: decommissioning
+    secrets: inherit
+
+  failure:
+    needs: [cd-backend, cd-frontend, promote]
+    # We need some extra logic to prevent cleanup when a CI failure
+    if: |
+      failure() && (
+        needs.cd-backend.result != 'skipped' ||
+        needs.cd-frontend.result != 'skipped' ||
+        needs.promote.result != 'skipped'
+      ) 
+    uses: ./.github/workflows/cleanup.yml
+    with: 
+      ref: ${{ github.sha }}
+      env_name: Green
+      reason: failure
     secrets: inherit

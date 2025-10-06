@@ -1,15 +1,20 @@
 ---
-- name: Install Node.js and npm
+- name: Upgrade packages
   become: true
-  ansible.builtin.apt:
+  apt:
+    upgrade: "yes"
+
+- name: Install dependencies
+  become: true
+  apt:
     name: ["nodejs", "npm"]
-    state: present
-    update_cache: false
+    state: latest
+    update_cache: yes
 
 - name: Install pm2
   become: true
-  community.general.npm:
+  npm:
     name: pm2
-    global: true
-    production: true
+    global: yes
+    production: yes
     state: present

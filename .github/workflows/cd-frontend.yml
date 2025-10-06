@@ -1,9 +1,8 @@
 name: Deploy Frontend
 run-name: "🚛 CD: Deploying Frontend Artifact (${{ inputs.ref }})"
-
 on:
   workflow_call:
-    inputs:
+    inputs:  
       ref:
         required: true
         type: string
@@ -15,17 +14,22 @@ on:
         required: true
       AWS_SECRET_ACCESS_KEY:
         required: true
+      EC2_PRIVATE_KEY:
+        required: true
     outputs:
-      frontend_url:
+      frontend_url: 
         value: ${{ jobs.provision.outputs.frontend_url }}
-
+      s3_bucket_hostname: 
+        value: ${{ jobs.provision.outputs.s3_bucket_hostname }}
+      
 jobs:
   provision:
     name: 🏛️ Provision Frontend Infrastructure
     outputs:
-      frontend_url: ${{ steps.provision.outputs.website_endpoint }}
+      frontend_url: http://${{ steps.provision.outputs.website_endpoint }}
+      s3_bucket_hostname: ${{ steps.provision.outputs.website_endpoint }}
       bucket_name: ${{ steps.provision.outputs.bucket_name }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -40,117 +44,48 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: Provision Frontend Infrastructure
-        id: provision
-        uses: dflook/terraform-apply@v2
+      - name: Use commit workspace
+        uses: dflook/terraform-new-workspace@v1
         with:
-          workspace: decoupled
+          path: util/terraform/frontend
+          workspace: anyhasher-frontend-${{ inputs.ref }}
+
+      - name: Provision
+        id: provision
+        uses: dflook/terraform-apply@v1
+        with:
+          workspace: anyhasher-frontend-${{ inputs.ref }}
           auto_approve: true
-          var_file: |
-            util/terraform/environments/prod/frontend.tfvars
           path: util/terraform/frontend
           variables: |
-            ver = "${{ inputs.ref }}"
+            bucket_name = "anyhasher-frontend-${{ inputs.ref }}"
 
   deploy:
-    name: 🚚 Deploy Frontend to S3
+    name: 🚚 Deploy Frontend Artifact
     needs: [provision]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    environment:
+      name: Green Frontend
+      url: ${{ needs.provision.outputs.frontend_url }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Create Rollback Backup
-        run: |
-          echo "📦 Creating backup of current frontend version..."
-          chmod +x util/scripts/frontend/download-front-rollback.sh
-          ./util/scripts/frontend/download-front-rollback.sh
-        continue-on-error: true
-
-      - name: Upload Rollback Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: rollback-frontend-${{ inputs.ref }}
-          path: rollback-backup/
-          retention-days: 7
-        continue-on-error: true
-
       - name: Get Frontend Artifact
         uses: actions/download-artifact@v4
         with:
           name: frontend-artifact-${{ inputs.ref }}
           path: frontend/build
 
-      - name: Replace Backend URL
+      - name: Prepare frontend with backend url
         uses: jacobtomlinson/gha-find-replace@v3
         with:
           find: http://localhost:5001
-          replace: https://${{ inputs.backend_url }}
-          include: "frontend/build/**/*.js"
-          regex: false
+          replace: ${{ inputs.backend_url }}
+          #regex: false
 
-      - name: Deploy to S3
-        run: |
-          aws s3 sync frontend/build/ s3://${{ needs.provision.outputs.bucket_name }} --delete
-          aws s3 cp frontend/build/index.html s3://${{ needs.provision.outputs.bucket_name }}/index.html --cache-control "no-cache"
-
-  verify:
-    name: 🧪 Smoke Test Frontend
-    needs: [provision, deploy]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Store Release Artifact
+        uses: actions/upload-artifact@v4
         with:
-          node-version: "20"
-
-      - name: Install system dependencies
-        run: |
-          chmod +x util/scripts/frontend/install-e2e-dependencies.sh
-          ./util/scripts/frontend/install-e2e-dependencies.sh
-
-      - name: Run E2E Smoke Tests
-        id: smoke-tests
-        working-directory: frontend/e2e
-        run: |
-          npm install
-          npm run smoke
-        env:
-          CI: true
-          PUPPETEER_HEADLESS: true
-          TEST_URL: ${{ needs.provision.outputs.frontend_url }}
-        continue-on-error: true
-
-      - name: Frontend Deployment Success Summary
-        if: steps.smoke-tests.outcome == 'success'
-        run: |
-          chmod +x util/scripts/frontend/deployment-success-summary.sh
-          ./util/scripts/frontend/deployment-success-summary.sh "${{ inputs.ref }}" "${{ needs.provision.outputs.frontend_url }}" "${{ inputs.backend_url }}" "${{ needs.provision.outputs.bucket_name }}"
-
-      - name: Trigger Rollback on Failure
-        if: steps.smoke-tests.outcome == 'failure'
-        run: |
-          echo "🚨 Smoke tests failed - rollback will be triggered"
-          exit 1
-
-  rollback:
-    name: 🔄 Rollback Frontend
-    needs: [provision, deploy, verify]
-    runs-on: ubuntu-latest
-    if: failure() && needs.verify.result == 'failure'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+          name: frontend-release-${{ inputs.ref }}
+          path: frontend/build
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -159,23 +94,22 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Download Rollback Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: rollback-frontend-${{ inputs.ref }}
-          path: rollback-backup/
-
-      - name: Rollback to Previous Version
+      - name: Upload frontend to S3 Bucket
         run: |
-          chmod +x util/scripts/frontend/rollback-frontend.sh
-          ./util/scripts/frontend/rollback-frontend.sh "${{ needs.provision.outputs.bucket_name }}"
+          aws s3 cp frontend/build s3://${{ needs.provision.outputs.bucket_name }} --region=us-east-1 --recursive
 
-      - name: Verify Rollback
-        run: |
-          chmod +x util/scripts/frontend/verify-rollback.sh
-          ./util/scripts/frontend/verify-rollback.sh "${{ needs.provision.outputs.frontend_url }}"
+  verify:
+    name: 🧪 Check Frontend
+    needs: [provision, deploy]
+    runs-on: ubuntu-22.04 #There's a problem with the ubuntu-24.04 image and Puppeteer
+    permissions: write-all
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Rollback Summary
+      - name: Run Frontend Smoke Test
         run: |
-          chmod +x util/scripts/frontend/rollback-summary.sh
-          ./util/scripts/frontend/rollback-summary.sh "${{ inputs.ref }}" "${{ needs.provision.outputs.frontend_url }}"
+          export TEST_URL=${{ needs.provision.outputs.frontend_url }}
+          cd frontend/e2e
+          npm install
+          npm run smoke
