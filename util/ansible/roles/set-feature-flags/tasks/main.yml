@@ -11,26 +11,28 @@
   register: flags_file
 
 - name: Parse feature flags into variables
-  set_fact:
+  ansible.builtin.set_fact:
     feature_flags: "{{ feature_flags | default({}) | combine({ item.split('=')[0]: item.split('=')[1] }) }}"
   loop: "{{ (flags_file['content'] | b64decode).splitlines() }}"
   when: item and '=' in item
 
 - name: Ensure feature flags are present in /etc/environment
-  lineinfile:
-    path: /etc/environment
+  ansible.builtin.lineinfile:
+    dest: /etc/environment
+    state: present
     regexp: '^{{ item.key }}='
     line: '{{ item.key }}="{{ item.value }}"'
-    create: yes
-    state: present
-    backrefs: yes
   loop: "{{ feature_flags | dict2items }}"
   become: yes
 
 - name: Source the environment file
-  shell: . /etc/environment
+  ansible.builtin.shell: . /etc/environment
   become: yes
 
 - name: Display the FEATURE_ENHANCED_RESPONSE feature flag
-  shell: echo FEATURE_ENHANCED_RESPONSE=$FEATURE_ENHANCED_RESPONSE
+  ansible.builtin.shell: echo FEATURE_ENHANCED_RESPONSE=$FEATURE_ENHANCED_RESPONSE
+  become: yes
+
+- name: Display the env file
+  ansible.builtin.shell: cat /etc/environment
   become: yes
