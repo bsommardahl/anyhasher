@@ -5,6 +5,5 @@ const router = Router();
 
 router.get('/', featureFlagController.getAllFlags);
 router.get('/:flagName', featureFlagController.getFlag);
-router.put('/:flagName', featureFlagController.updateFlag);
 
 export default router;
