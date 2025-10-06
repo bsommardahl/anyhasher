@@ -30,3 +30,7 @@
 - name: Source the environment file
   shell: . /etc/environment
   become: yes
+
+- name: Display the FEATURE_ENHANCED_RESPONSE feature flag
+  shell: echo FEATURE_ENHANCED_RESPONSE=$FEATURE_ENHANCED_RESPONSE
+  become: yes
