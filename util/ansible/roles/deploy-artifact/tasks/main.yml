@@ -5,4 +5,4 @@
     dest: ~/anyhasher
 
 - name: Start Server
-  ansible.builtin.shell: "cd ~/anyhasher/build && pm2 start server.js"
+  ansible.builtin.shell: "cd ~/anyhasher/build && pm2 start server.js --node-args='-r dotenv/config'"
