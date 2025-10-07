@@ -6,11 +6,12 @@ else
     exit 1
 fi
 
-if curl -s ${BACKEND_URL}/feature-flags/enhanced_response | grep '"enabled": *true'
-then
-    echo "Enhanced response feature flag is enabled!"
+ENHANCED_RESPONSE_ENABLED=$(grep "^FEATURE_ENHANCED_RESPONSE=" /.feature-flags | cut -d'=' -f2)
+if curl -s ${BACKEND_URL}/feature-flags/enhanced_response | grep "\"enabled\": *${ENHANCED_RESPONSE_ENABLED}"
+then}
+    echo "Enhanced response feature flag is ${ENHANCED_RESPONSE_ENABLED} (correct)."
 else
-    echo "Enhanced response feature flag is not enabled!"
+    echo "Enhanced response feature flag is not ${ENHANCED_RESPONSE_ENABLED} (incorrect)!"
     exit 1
 fi
 
