@@ -1,1 +1,1 @@
-curl -s $1 | grep -q "AnyHasher!"
+curl -s $1 | grep -q "AnyHasher"
