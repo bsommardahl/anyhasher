@@ -24,5 +24,21 @@ jobs:
         uses: actions/upload-pages-artifact@v3 
         with:
           path: frontend/build
+  
+  security-audit:
+    name: Audit Deps
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v6
+        
+      - name: ensure node installed and right version
+        uses: actions/setup-node@v6
+        with: 
+          node-version: 16.x
+
+      - name: audit
+        run: cd frontend && npm audit --omit=dev 
 
 
