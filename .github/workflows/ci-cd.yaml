@@ -104,10 +104,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # - name: Initialize CodeQL
-      #   uses: github/codeql-action/init@v3
-      #   with:
-      #     config-file: ./.github/codeql/codeql.config.yml
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          config-file: ./.github/codeql/codeql.config.yml
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -127,8 +127,8 @@ jobs:
       - name: Build
         run: cd frontend && npm run build
 
-      # - name: Perform Analysis
-      #   uses: github/codeql-action/analyze@v3
+      - name: Perform Analysis
+        uses: github/codeql-action/analyze@v3
 
   deploy:
     name: 🚚 Deploy Frontend Artifact
