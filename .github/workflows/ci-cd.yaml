@@ -94,3 +94,38 @@ jobs:
 
       - name: 😂 Lint code
         run: cd frontend && npm run lint
+
+static-analysis:
+    name: 🔬 Run Static Code Analysis
+    needs: [build]
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          config-file: ./.github/codeql/codeql.config.yml
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 16.x
+
+      - name: Cache Node Modules
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: frontend/node_modules
+          key: fe-node-${{ hashFiles('frontend/package-lock.json') }}
+
+      - name: Install Deps
+        run: cd frontend && npm i
+
+      - name: Build
+        run: cd frontend && npm run build
+
+      - name: Perform Analysis
+        uses: github/codeql-action/analyze@v3
