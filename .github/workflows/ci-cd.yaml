@@ -5,6 +5,7 @@ on:
     
 jobs:
   build: 
+    needs: security-audit
     name: Build Frontend Artifact
     runs-on: ubuntu-latest
     steps:
@@ -33,7 +34,6 @@ jobs:
   
   security-audit:
     name: Audit Deps
-    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: checkout code
