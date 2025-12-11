@@ -59,4 +59,20 @@ jobs:
       - name: Run the unit tests
         run: cd frontend && npm run test-ci
 
+  lint:
+    name: 🧼 Ensure Code Style
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v6
 
+      - name: Setup Node 16
+        uses: actions/setup-node@v6
+        with:
+          node-version: 16.x
+
+      - name: Install deps
+        run: cd frontend && npm i
+
+      - name: 😂 Lint code
+        run: cd frontend && npm run lint
