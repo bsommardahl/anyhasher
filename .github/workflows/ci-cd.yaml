@@ -95,7 +95,7 @@ jobs:
       - name: 😂 Lint code
         run: cd frontend && npm run lint
 
-static-analysis:
+  static-analysis:
     name: 🔬 Run Static Code Analysis
     needs: [build]
     runs-on: ubuntu-latest
